@@ -1,0 +1,6 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>Fetch the existing provisioning result for order #{{ order.pk }} and reconcile local order and subscription records. This can update billing-side service state. It does not submit a new VPS request or retry provisioning.</p>
+<p>Verified payment, existing request, lease and polling checks still apply.</p>
+<form method="post">{% csrf_token %}<button type="submit">Reconcile status</button> <a href="{% url 'management:portal_order_change' order.pk %}">Cancel</a></form>
+{% endblock %}

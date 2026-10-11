@@ -1,0 +1,5 @@
+{% extends "admin/change_form.html" %}
+{% block object-tools-items %}
+{% if can_sync %}<li><a href="{% url 'management:portal_order_sync' original.pk %}">Reconcile provisioning status</a></li>{% endif %}
+{{ block.super }}
+{% endblock %}
