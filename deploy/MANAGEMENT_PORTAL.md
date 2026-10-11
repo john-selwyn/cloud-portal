@@ -66,8 +66,30 @@ The `PYTHONPATH` line is specific to this workstation's existing test dependenci
 
 Coverage includes anonymous/customer/inactive-staff denial, missing model permissions, legacy-admin bypass attempts, superuser legacy access, forged workflow edits, CSRF, method restrictions, sensitive-field omission, customer ownership protection, plan validation/resource preservation, pagination, permission-filtered totals, audit attribution, unpaid-order refusal, and a successful reconciliation with mocked provisioner GET that reuses a single subscription.
 
+### Additional PostgreSQL verification — 11 October 2026
+
+The user requested direct testing. The same feature code at `630f19c` was tested again on SQLite (**168 passed in 18.682 seconds**) and on an isolated local PostgreSQL instance (**168 passed in 40.457 seconds**). No application-code repair was necessary.
+
+- PostgreSQL identity queried over the actual connection: **PostgreSQL 17.11, x86_64-windows**, listening only on `127.0.0.1:55432`.
+- Portable binaries came from [EDB's PostgreSQL binary downloads](https://www.enterprisedb.com/download-postgresql-binaries?lang=en), archive `postgresql-17.11-3-windows-x64-binaries.zip`. No Windows service was installed.
+- A new disposable cluster used SCRAM password authentication and a random temporary credential. No production configuration or credentials were used. The initialization password file was removed after cluster creation; no credential is recorded here.
+- Local base database: `management_portal_validation`; disposable Django test database: `test_management_portal_validation`. These are unrelated to the server-side rename-test database.
+- Applying the existing migrations to this empty local database succeeded. Schema introspection verified `portal_customer`, `portal_invoice`, `portal_order`, `portal_payment`, `portal_subscription`, `portal_vpsplan`, `portal_vpspoweroperation`, and `portal_xenditcheckout`, with no `billing_` application tables.
+- Django system checks passed and `makemigrations --check --dry-run` again reported no changes.
+- The runner destroyed its test database and stopped the temporary PostgreSQL server successfully at completion. The downloaded runtime remains only as local workspace test tooling.
+
+The exact verified workstation command, from **Windows PowerShell in the project workspace root**, was:
+
+```powershell
+python -u management_pg_test.py
+```
+
+`management_pg_test.py` is a workstation-local helper outside this Git repository. It creates a fresh cluster under `.management-pg-check`, binds only to localhost, overrides Django's database target before initialization, clears integration credentials, runs migrations/checks/tests, and stops the cluster in a `finally` block. It requires the extracted portable runtime in `.management-pg-check/runtime/pgsql` and the existing local Python test dependencies. This command is **LOCAL TEST CONFIGURATION**, not a server deployment procedure. It was executed with permission to run localhost processes outside the restricted shell sandbox, not as a PostgreSQL Windows service.
+
+This confirms PostgreSQL behavior on a clean renamed schema. It does not test a production-data rename, Ubuntu service configuration, Nginx, or actual payment/provisioner endpoints; those endpoints remain mocked in the automated suite.
+
 ## Remaining verification and rollback
 
-This is development verification, not production or PostgreSQL verification. After the rename plan is completed/reviewed, validate the branch in a separate staging checkout and isolated PostgreSQL database with representative non-sensitive data and reviewed staff roles. Do not use production credentials or enable real payment/provisioning integrations for a casual preview. Review UI usability with the intended staff before promotion.
+This is development verification on SQLite and PostgreSQL, not production or server-staging verification. After the rename plan is completed/reviewed, validate the branch in a separate server staging checkout with representative non-sensitive data and reviewed staff roles. Do not use production credentials or enable real payment/provisioning integrations for a casual preview. Review UI usability with the intended staff before promotion.
 
 No rollback is required on production because nothing was deployed. To abandon the feature before deployment, leave its branch and use the existing rename branch; no feature schema rollback is needed. Future deployment rollback must use a revision compatible with the completed rename schema, preserve any profile/plan edits, and follow the separately approved rename recovery procedure. Do not deploy the old pre-rename app against renamed tables.
