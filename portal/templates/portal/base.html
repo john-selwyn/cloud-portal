@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
 <title>{% block title %}Customer portal{% endblock %} | ICT Ventures Cloud Portal</title>
-<link rel="stylesheet" href="{% static 'portal/portal.css' %}?v=access-stages-1">
-<link rel="stylesheet" href="{% static 'portal/portal-modern.css' %}">
-<link rel="stylesheet" href="{% static 'portal/storefront.css' %}">
+<link rel="stylesheet" href="{% static 'portal/portal.css' %}?v=redesign-1">
+<link rel="stylesheet" href="{% static 'portal/portal-modern.css' %}?v=redesign-1">
+<link rel="stylesheet" href="{% static 'portal/storefront.css' %}?v=redesign-1">
 <link rel="icon" type="image/svg+xml" href="{% static 'portal/favicon.svg' %}">
 <meta name="description" content="Explore ICT Ventures VPS and web hosting, and manage your services and invoices.">
 </head>
@@ -19,20 +19,20 @@
 <span class="brand-icon" aria-hidden="true">+</span>
 <span class="brand-copy"><strong>ICT Ventures</strong><small>Cloud Portal</small></span>
 </a>
-<nav aria-label="Main navigation">
+<nav class="main-nav" aria-label="Main navigation">
 {% with current=request.resolver_match.url_name %}
-<a class="{% if current == 'web_hosting' %}active{% endif %}" href="{% url 'web_hosting' %}">Web hosting</a>
+<a class="{% if current == 'web_hosting' %}active{% endif %}" href="{% url 'web_hosting' %}"{% if current == 'web_hosting' %} aria-current="page"{% endif %}>Web hosting</a>
 {% if user.is_authenticated %}
-<a class="{% if current == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a>
-<a class="{% if current == 'my_vps' or current == 'vps_detail' %}active{% endif %}" href="{% url 'my_vps' %}">My VPS</a>
-<a class="{% if current == 'plans' or current == 'select_plan' or current == 'order_review' %}active{% endif %}" href="{% url 'plans' %}">VPS Plans</a>
-<a class="{% if current == 'orders' or current == 'order_detail' %}active{% endif %}" href="{% url 'orders' %}">Orders</a>
-<a class="{% if current == 'invoices' or current == 'invoice' %}active{% endif %}" href="{% url 'invoices' %}">Invoices</a>
-<a class="{% if current == 'account' %}active{% endif %}" href="{% url 'account' %}">Account</a>
+<a class="{% if current == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"{% if current == 'dashboard' %} aria-current="page"{% endif %}>Dashboard</a>
+<a class="{% if current == 'my_vps' or current == 'vps_detail' %}active{% endif %}" href="{% url 'my_vps' %}"{% if current == 'my_vps' or current == 'vps_detail' %} aria-current="page"{% endif %}>My VPS</a>
+<a class="{% if current == 'plans' or current == 'select_plan' or current == 'order_review' %}active{% endif %}" href="{% url 'plans' %}"{% if current == 'plans' or current == 'select_plan' or current == 'order_review' %} aria-current="page"{% endif %}>VPS Plans</a>
+<a class="{% if current == 'orders' or current == 'order_detail' %}active{% endif %}" href="{% url 'orders' %}"{% if current == 'orders' or current == 'order_detail' %} aria-current="page"{% endif %}>Orders</a>
+<a class="{% if current == 'invoices' or current == 'invoice' %}active{% endif %}" href="{% url 'invoices' %}"{% if current == 'invoices' or current == 'invoice' %} aria-current="page"{% endif %}>Invoices</a>
+<a class="{% if current == 'account' %}active{% endif %}" href="{% url 'account' %}"{% if current == 'account' %} aria-current="page"{% endif %}>Account</a>
 <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-button" type="submit">Logout</button></form>
 {% else %}
-<a class="{% if current == 'plans' %}active{% endif %}" href="{% url 'plans' %}">VPS Plans</a>
-<a class="{% if current == 'login' %}active{% endif %}" href="{% url 'login' %}">Login</a>
+<a class="{% if current == 'plans' %}active{% endif %}" href="{% url 'plans' %}"{% if current == 'plans' %} aria-current="page"{% endif %}>VPS Plans</a>
+<a class="{% if current == 'login' %}active{% endif %}" href="{% url 'login' %}"{% if current == 'login' %} aria-current="page"{% endif %}>Login</a>
 <a class="button small" href="{% url 'register' %}">Create account</a>
 {% endif %}
 {% endwith %}
