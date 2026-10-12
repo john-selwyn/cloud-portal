@@ -1,9 +1,9 @@
 import uuid
 from django.contrib import messages
 from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
+from .account_access import customer_required
 from django.core import signing
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse
@@ -24,6 +24,8 @@ CHECKOUT_SALT = 'billing.order-review'
 
 
 def customer_for(user):
+    if user.is_staff or user.is_superuser:
+        raise PermissionDenied("Staff accounts do not create customer profiles.")
     # Support accounts that predate automatic customer profiles.
     return Customer.objects.get_or_create(user=user, defaults={
         'full_name': user.get_full_name() or user.get_username(),
@@ -43,6 +45,8 @@ def web_hosting(request):
 @require_http_methods(['GET', 'POST'])
 def register(request):
     if request.user.is_authenticated:
+        if request.user.is_staff or request.user.is_superuser:
+            return redirect('management:index')
         return redirect('dashboard')
     form = RegistrationForm(request.POST if request.method == 'POST' else None)
     if request.method == 'POST' and form.is_valid():
@@ -58,7 +62,7 @@ def register(request):
     return render(request, 'portal/register.html', {'form': form})
 
 
-@login_required
+@customer_required
 @require_GET
 def dashboard(request):
     customer = customer_for(request.user)
@@ -75,7 +79,7 @@ def dashboard(request):
     })
 
 
-@login_required
+@customer_required
 @require_GET
 def my_vps(request):
     services = (
@@ -87,7 +91,7 @@ def my_vps(request):
     return render(request, 'portal/my_vps.html', {'services': services})
 
 
-@login_required
+@customer_required
 @require_GET
 def vps_detail(request, order_id):
     order = get_object_or_404(
@@ -99,7 +103,7 @@ def vps_detail(request, order_id):
     return render(request, 'portal/vps_detail.html', {'order': order})
 
 
-@login_required
+@customer_required
 @require_GET
 def vps_runtime_status(request, order_id):
     order = get_object_or_404(
@@ -180,7 +184,7 @@ def vps_runtime_status(request, order_id):
 
 
 @never_cache
-@login_required
+@customer_required
 @require_POST
 @sensitive_variables()
 def windows_credentials(request, order_id):
@@ -200,7 +204,7 @@ def windows_credentials(request, order_id):
     return JsonResponse({'rdp_access': credentials})
 
 
-@login_required
+@customer_required
 @require_POST
 def vps_power(request, order_id, action):
     if action not in {'start', 'shutdown', 'reboot'}:
@@ -260,7 +264,7 @@ def plans(request):
     })
 
 
-@login_required
+@customer_required
 @require_http_methods(['GET', 'POST'])
 def select_plan(request, plan_id):
     plan = get_object_or_404(VPSPlan, pk=plan_id, is_active=True)
@@ -287,7 +291,7 @@ def select_plan(request, plan_id):
                   status=400 if request.method == 'POST' else 200)
 
 
-@login_required
+@customer_required
 @require_POST
 def order_confirm(request):
     try:
@@ -311,21 +315,21 @@ def order_confirm(request):
     return redirect('invoice', order_id=order.pk)
 
 
-@login_required
+@customer_required
 @require_GET
 def orders(request):
     records = Order.objects.filter(customer__user=request.user).select_related('plan', 'invoice').order_by('-created_at', '-pk')
     return render(request, 'portal/orders.html', {'page_obj': Paginator(records, 20).get_page(request.GET.get('page'))})
 
 
-@login_required
+@customer_required
 @require_GET
 def order_detail(request, order_id):
     order = get_object_or_404(Order.objects.select_related('plan', 'invoice'), pk=order_id, customer__user=request.user)
     return render(request, 'portal/order_detail.html', {'order': order, **payment_context(order)})
 
 
-@login_required
+@customer_required
 @require_GET
 def provisioning_status(request, order_id):
     order = get_object_or_404(
@@ -355,14 +359,14 @@ def provisioning_status(request, order_id):
     })
 
 
-@login_required
+@customer_required
 @require_GET
 def invoices(request):
     records = Invoice.objects.filter(order__customer__user=request.user).select_related('order').order_by('-created_at', '-pk')
     return render(request, 'portal/invoices.html', {'page_obj': Paginator(records, 20).get_page(request.GET.get('page'))})
 
 
-@login_required
+@customer_required
 @require_GET
 def invoice(request, order_id):
     record = get_object_or_404(Invoice.objects.select_related('order__plan', 'order__customer'),
@@ -370,7 +374,7 @@ def invoice(request, order_id):
     return render(request, 'portal/invoice.html', {'invoice': record, 'order': record.order, **payment_context(record.order)})
 
 
-@login_required
+@customer_required
 @require_http_methods(['GET', 'POST'])
 def account(request):
     form = AccountForm(request.POST if request.method == 'POST' else None, instance=customer_for(request.user))
