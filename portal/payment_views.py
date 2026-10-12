@@ -1,7 +1,7 @@
 import json
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+from .account_access import customer_required
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,7 +16,7 @@ from .models import Invoice, Order
 
 
 @transaction.non_atomic_requests
-@login_required
+@customer_required
 @require_POST
 def pay_now(request, order_id):
     order = get_object_or_404(Order, pk=order_id, customer__user=request.user)
@@ -34,7 +34,7 @@ def pay_now(request, order_id):
     return redirect(xendit.checkout_url(checkout.payment_link_url))
 
 
-@login_required
+@customer_required
 @require_GET
 def payment_return(request, order_id):
     # No API request and no state change. A browser is never evidence of payment.

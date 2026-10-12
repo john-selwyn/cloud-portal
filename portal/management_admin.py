@@ -17,6 +17,8 @@ from django.views.decorators.http import require_http_methods
 from . import provisioning
 from .admin import CustomerAdmin, InvoiceAdmin, OrderAdmin, PaymentAdmin, SubscriptionAdmin, VPSPlanAdmin
 from .models import Customer, Invoice, Order, Payment, Subscription, VPSPlan
+from django.contrib.auth.models import User
+from .staff_admin import StaffAccountAdmin
 
 
 class ManagementSite(admin.AdminSite):
@@ -26,12 +28,21 @@ class ManagementSite(admin.AdminSite):
     index_template = "management/index.html"
     site_url = None
 
+    def get_app_list(self, request, app_label=None):
+        app_list = super().get_app_list(request, app_label)
+        for app in app_list:
+            for model in app["models"]:
+                if app["app_label"] == "auth" and model["object_name"] == "User":
+                    model["name"] = "Staff accounts"
+        return app_list
+
     def get_urls(self):
         return [path("services/", self.admin_view(self.services), name="services")] + super().get_urls()
 
     def each_context(self, request):
         context = super().each_context(request)
         context["can_view_services"] = request.user.has_perm("portal.view_order")
+        context["can_manage_staff"] = request.user.is_superuser
         return context
 
     def index(self, request, extra_context=None):
@@ -39,7 +50,10 @@ class ManagementSite(admin.AdminSite):
         for model, label in [(Customer, "Customers"), (Order, "Orders"), (VPSPlan, "Plans"),
                              (Invoice, "Invoices"), (Payment, "Payments"), (Subscription, "Subscriptions")]:
             if request.user.has_perm(f"portal.view_{model._meta.model_name}"):
-                cards.append({"label": label, "count": model.objects.count(),
+                records = model.objects.all()
+                if model is Customer:
+                    records = records.filter(user__is_staff=False, user__is_superuser=False)
+                cards.append({"label": label, "count": records.count(),
                               "url": reverse(f"management:portal_{model._meta.model_name}_changelist")})
         recent_actions = []
         for entry in LogEntry.objects.filter(user=request.user).select_related("content_type").order_by("-action_time", "-pk")[:10]:
@@ -79,6 +93,7 @@ class ManagementSite(admin.AdminSite):
 
 
 management_site = ManagementSite(name="management")
+management_site.register(User, StaffAccountAdmin)
 
 
 class LegacyAdminAuthenticationForm(AdminAuthenticationForm):
@@ -122,8 +137,21 @@ class WorkflowRecordMixin(NoDeleteMixin):
 class ManagedCustomerAdmin(NoDeleteMixin, CustomerAdmin):
     search_fields = ("full_name", "company", "user__username", "user__email")
     list_select_related = ("user",)
-    fields = ("user", "full_name", "company", "phone", "created_at")
-    readonly_fields = ("user", "created_at")
+    fields = ("user", "account_kind", "full_name", "company", "phone", "created_at")
+    readonly_fields = ("user", "account_kind", "created_at")
+
+    def get_queryset(self, request):
+        records = super().get_queryset(request)
+        if request.resolver_match and request.resolver_match.url_name == "portal_customer_changelist":
+            return records.filter(user__is_staff=False, user__is_superuser=False)
+        # Historical orders may still link an old staff-associated profile.
+        return records
+
+    @admin.display(description="Account type")
+    def account_kind(self, obj):
+        if obj.user.is_staff or obj.user.is_superuser:
+            return "Historical staff-linked profile (existing records retained)"
+        return "Customer"
 
     def has_add_permission(self, request):
         # Account registration already creates exactly one customer profile.

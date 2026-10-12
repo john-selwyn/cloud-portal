@@ -5,7 +5,7 @@ from .models import Customer
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def ensure_customer(sender, instance, created, raw=False, **kwargs):
-    if created and not raw:
+    if created and not raw and not instance.is_staff and not instance.is_superuser:
         Customer.objects.get_or_create(user=instance, defaults={
             'full_name': instance.get_full_name() or instance.get_username(),
         })

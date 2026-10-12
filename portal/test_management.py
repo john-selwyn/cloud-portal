@@ -11,6 +11,11 @@ from .models import Invoice, Order, Payment, Subscription, VPSPlan
 from .provisioning_api import ProvisioningResult
 
 
+def force_staff_login(client, user):
+    client.force_login(user)
+    client.cookies["management_sessionid"] = client.cookies.pop("sessionid").value
+
+
 class ManagementTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -30,7 +35,7 @@ class ManagementTests(TestCase):
 
     def grant(self, *codes):
         self.staff.user_permissions.add(*Permission.objects.filter(content_type__app_label="portal", codename__in=codes))
-        self.client.force_login(self.staff)
+        force_staff_login(self.client, self.staff)
 
     def url(self, model, action="changelist", pk=None):
         return reverse(f"management:portal_{model}_{action}", args=[pk] if pk else [])
@@ -53,7 +58,7 @@ class ManagementTests(TestCase):
     def test_inactive_staff_cannot_access(self):
         self.staff.is_active = False
         self.staff.save()
-        self.client.force_login(self.staff)
+        force_staff_login(self.client, self.staff)
         self.assertEqual(self.client.get(reverse("management:index")).status_code, 302)
 
     def test_legacy_admin_rejects_staff_bypass_and_preserves_superuser_access(self):
@@ -81,14 +86,15 @@ class ManagementTests(TestCase):
         self.assertEqual(response.context["page"].paginator.count, 31)
         self.assertEqual(len(response.context["page"]), 1)
 
-    def test_staff_navigation_is_not_shown_to_customers(self):
+    def test_staff_and_customer_navigation_stays_separate(self):
         self.client.force_login(self.customer)
         self.assertNotContains(self.client.get(reverse("dashboard")), 'href="/management/"')
-        self.client.force_login(self.staff)
-        self.assertContains(self.client.get(reverse("dashboard")), 'href="/management/"')
+        force_staff_login(self.client, self.staff)
+        self.assertEqual(self.client.get(reverse("dashboard")).status_code, 302)
+        self.assertEqual(self.client.get(reverse("management:index")).status_code, 200)
 
     def test_staff_without_model_permissions_sees_no_records(self):
-        self.client.force_login(self.staff)
+        force_staff_login(self.client, self.staff)
         response = self.client.get(reverse("management:index"))
         self.assertContains(response, "No record permissions assigned")
         for url in self.protected_urls()[1:]:
@@ -171,7 +177,7 @@ class ManagementTests(TestCase):
     def test_sync_requires_csrf_and_rejects_other_methods(self, sync):
         self.grant("view_order", "change_order")
         client = Client(enforce_csrf_checks=True)
-        client.force_login(self.staff)
+        force_staff_login(client, self.staff)
         url = self.url("order", "sync", self.order.pk)
         self.assertEqual(client.post(url).status_code, 403)
         self.assertEqual(self.client.put(url).status_code, 405)
@@ -233,9 +239,10 @@ class ManagementWorkflowTests(TransactionTestCase):
                                   codename__in=["view_order", "change_order"]))
         plan = VPSPlan.objects.create(name="Compute", cpu=2, ram=4, storage=64,
                                      monthly_price=299, yearly_price=2990)
-        order = Order.objects.create(customer=staff.customer_profile, plan=plan,
+        buyer = User.objects.create_user("buyer")
+        order = Order.objects.create(customer=buyer.customer_profile, plan=plan,
                                      billing_cycle="MONTHLY", amount=299)
-        self.client.force_login(staff)
+        force_staff_login(self.client, staff)
         with patch("portal.provisioning.api_request") as api:
             response = self.client.post(reverse("management:portal_order_sync", args=[order.pk]), follow=True)
         self.assertContains(response, "A verified server-side payment is required.")
@@ -247,13 +254,14 @@ class ManagementWorkflowTests(TransactionTestCase):
                                   codename__in=["view_order", "change_order"]))
         plan = VPSPlan.objects.create(name="Compute", cpu=2, ram=4, storage=64,
                                      monthly_price=299, yearly_price=2990)
-        order = Order.objects.create(customer=staff.customer_profile, plan=plan,
+        buyer = User.objects.create_user("buyer")
+        order = Order.objects.create(customer=buyer.customer_profile, plan=plan,
             billing_cycle="MONTHLY", amount=299, status="PROVISIONING", provisioning_payload={"order_id": 1})
         invoice = Invoice.objects.create(order=order, invoice_number="PAID-1", amount=299,
             status="PAID", due_date=timezone.now(), paid_at=timezone.now())
         Payment.objects.create(invoice=invoice, provider="VERIFIED_FIXTURE", transaction_id="paid1",
                                amount=299, status="SUCCESS", paid_at=timezone.now())
-        self.client.force_login(staff)
+        force_staff_login(self.client, staff)
         url = reverse("management:portal_order_sync", args=[order.pk])
         result = ProvisioningResult(status="ACTIVE", vps_id="20", vmid="1020", progress=100,
                                     ip_address="10.60.0.20", ssh_host="ssh.example.invalid", ssh_port=22020)

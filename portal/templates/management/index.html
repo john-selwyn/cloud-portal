@@ -3,6 +3,7 @@
 <section aria-label="Operations summary">
   <p>Manage customer profiles and plans, and inspect billing and service records.</p>
   {% if can_view_services %}<p><a class="button" href="{% url 'management:services' %}">View VPS services</a></p>{% endif %}
+  {% if can_manage_staff %}<p><a class="button" href="{% url 'management:auth_user_changelist' %}">Staff accounts</a> <a href="{% url 'management:auth_user_add' %}">Add staff account</a></p>{% endif %}
   <div class="module">
     <table><caption>Record totals</caption><tbody>
       {% for card in cards %}<tr><th scope="row"><a href="{{ card.url }}">{{ card.label }}</a></th><td>{{ card.count }}</td></tr>{% empty %}
