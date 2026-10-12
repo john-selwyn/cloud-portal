@@ -5,7 +5,7 @@ Last updated: 2026-10-12. Keep this file free of passwords, tokens, keys and cus
 ## Branches and commits
 - Source branch: `codex/windows-rdp`, verified commit `738156c7c4246908d0f9756cb482ed3d5ca70289`.
 - Redesign branch: `design/portal-redesign` (created from the source commit).
-- Latest saved commit: local commit "Improve portal navigation and page styling" on `design/portal-redesign` (not pushed; see Save state).
+- Latest saved commit: `5d46b2c` "Improve portal navigation and page styling", pushed to `origin/design/portal-redesign`.
 - The repository's default branch was not used or assumed to match the deployed site.
 
 ## Scope rules (from the project brief)
@@ -76,6 +76,5 @@ Batch 1 is complete pending your visual review. Next:
 5. Batch 5: plans, select_plan, review_order, orders, order_detail, invoices, invoice, payment pages, web_hosting.
 
 ## Save state
-- Saved to local branch `design/portal-redesign` in the working copy (commit recorded below).
-- This commit exists only in the working copy used for this session; pushing to GitHub was not possible from there (no write access to the repository). Nothing is on GitHub yet. Apply the patch file or copy the changed files into your own clone, then commit and push yourself.
-- Commit hash: run `git log -1 --format=%H design/portal-redesign` (a commit cannot contain its own hash). Message: "Improve portal navigation and page styling".
+- Batch 1 is committed (`5d46b2c`) and pushed to `origin/design/portal-redesign`. `origin/codex/windows-rdp` is unchanged at `738156c`.
+- Nothing is deployed. Nothing is uncommitted as of this update.
