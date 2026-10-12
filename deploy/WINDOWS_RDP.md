@@ -1,5 +1,8 @@
 # Windows 11 checkout and RDP
 
+> **Superseded deployment names — 12 October 2026:** The legacy rollout instructions below are historical. Production now uses `/opt/cloud-portal`, `cloud-portal.service`, application label `portal`, and `cloud_portal_db` / `cloud_portal_user`. Do not replay the old branch-switch, stash or migration instructions on the renamed deployment. Use [Cloud Portal cutover and current commands](CLOUD_PORTAL_RENAME.md).
+
+
 Windows ordering is disabled by default (`WINDOWS_ORDERING_ENABLED=False`).
 Plans must have at least 2 vCPU, 4 GB RAM, and 64 GB storage. Windows orders use
 the provisioner's generated Admin password rather than an SSH public key.
