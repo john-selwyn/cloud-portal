@@ -1,5 +1,8 @@
 # Public SSH endpoint rollout
 
+> **Superseded deployment names — 12 October 2026:** The legacy rollout instructions below are historical. Production now uses `/opt/cloud-portal`, `cloud-portal.service`, application label `portal`, and `cloud_portal_db` / `cloud_portal_user`. Do not replay the old branch-switch, stash or migration instructions on the renamed deployment. Use [Cloud Portal cutover and current commands](CLOUD_PORTAL_RENAME.md).
+
+
 Use `feature/shared-ip-ssh` with the matching branch in `john-selwyn/VPS-server`.
 The full deployment guide is [in the provisioner repository](https://github.com/john-selwyn/VPS-server/blob/feature/shared-ip-ssh/deploy/PUBLIC_SSH.md).
 

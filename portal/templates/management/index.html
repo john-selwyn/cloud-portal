@@ -1,0 +1,24 @@
+{% extends "admin/index.html" %}
+{% block content %}
+<section aria-label="Operations summary">
+  <p>Manage customer profiles and plans, and inspect billing and service records.</p>
+  {% if can_view_services %}<p><a class="button" href="{% url 'management:services' %}">View VPS services</a></p>{% endif %}
+  <div class="module">
+    <table><caption>Record totals</caption><tbody>
+      {% for card in cards %}<tr><th scope="row"><a href="{{ card.url }}">{{ card.label }}</a></th><td>{{ card.count }}</td></tr>{% empty %}
+      <tr><td>No record permissions assigned. Ask an administrator for the access needed for your role.</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+</section>
+{{ block.super }}
+{% endblock %}
+{% block sidebar %}
+<div id="content-related"><div class="module" id="recent-actions-module">
+  <h2>Recent actions</h2><h3>My actions</h3>
+  {% if recent_actions %}<ul class="actionlist">
+  {% for action in recent_actions %}<li>
+    {% if action.url %}<a href="{{ action.url }}">{{ action.entry.object_repr }}</a>{% else %}{{ action.entry.object_repr }}{% endif %}
+    <br><span class="mini quiet">{{ action.entry.action_time }} · {{ action.entry.get_change_message }}</span>
+  </li>{% endfor %}</ul>{% else %}<p>None available.</p>{% endif %}
+</div></div>
+{% endblock %}

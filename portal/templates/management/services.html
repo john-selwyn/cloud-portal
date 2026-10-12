@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'management:index' %}">Overview</a> &rsaquo; VPS services</div>{% endblock %}
+{% block content %}
+<p>Recorded provisioning state; opening this page does not contact the provisioner. Open an order to inspect its last check or request reconciliation.</p>
+<form method="get">
+  <label for="q">Customer, order number or VMID</label> <input id="q" name="q" value="{{ q }}" maxlength="200">
+  <label for="status">Status</label> <select id="status" name="status"><option value="">All statuses</option>{% for value,label in statuses %}<option value="{{ value }}"{% if status == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+  <button type="submit">Search</button> <a href="{% url 'management:services' %}">Clear</a>
+</form>
+<div style="overflow-x:auto; margin-top:1.5rem">
+<table><caption>{{ page.paginator.count }} VPS service records</caption>
+<thead><tr><th scope="col">Order</th><th scope="col">Customer</th><th scope="col">Plan / OS</th><th scope="col">Status</th><th scope="col">VMID</th><th scope="col">IP address</th><th scope="col">Last checked</th></tr></thead>
+<tbody>{% for order in page %}<tr>
+<td><a href="{% url 'management:portal_order_change' order.pk %}">#{{ order.pk }}</a></td><td>{{ order.customer.full_name }}</td>
+<td>{{ order.plan.name }} / {{ order.get_operating_system_display }}</td><td>{{ order.get_status_display }} · {{ order.provisioning_progress }}%</td>
+<td>{{ order.provisioning_vmid|default:"Pending" }}</td><td>{{ order.provisioning_ip_address|default:"Pending" }}</td><td>{{ order.provisioning_checked_at|default:"Never" }}</td>
+</tr>{% empty %}<tr><td colspan="7">No VPS services match these filters.</td></tr>{% endfor %}</tbody></table>
+</div>
+<p>Page {{ page.number }} of {{ page.paginator.num_pages }}.
+{% if page.has_previous %}<a href="?q={{ q|urlencode }}&amp;status={{ status|urlencode }}&amp;page={{ page.previous_page_number }}">Previous</a>{% endif %}
+{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;status={{ status|urlencode }}&amp;page={{ page.next_page_number }}">Next</a>{% endif %}</p>
+{% endblock %}
