@@ -1,6 +1,10 @@
 # Staff Management Portal
 
-Development verified: 11 October 2026. **Not deployed. Do not deploy this branch or run production migrations while the internal rename is unfinished.**
+Development verified: 11 October 2026. **Deployment preparation updated: 12 October 2026.**
+
+The internal rename prerequisite is now complete according to the user's live terminal evidence. VM200 connects to `cloud_portal_db` as `cloud_portal_user`, Django checks pass, one active staff superuser exists, and `cloud-portal.service` is active. The latest inspected live commit is `738156c` on `codex/windows-rdp`. Its subsequent documentation/environment-example commits have been merged into this feature branch so a fast-forward rollout preserves the live history. The Management Portal itself is not yet verified as deployed. No production migrations are needed for this feature.
+
+The 11 October handoff below is historical. Its statements that the rename was unfinished and production still used `billing_db` are superseded by [the verified cutover record](CLOUD_PORTAL_RENAME.md) and the 12 October deployment preparation above.
 
 ## Branch and production boundary
 
