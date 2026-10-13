@@ -108,6 +108,31 @@ input[type=checkbox] { width: auto; margin-right: var(--space-2); }
 .errorlist { list-style: none; padding-left: 0; margin: 0 0 var(--space-2); font-weight: 600; }
 form ul.errorlist { color: var(--danger); font-size: .9rem; }
 
+/* ---------- Auth and account pages ---------- */
+.auth { max-width: 480px; margin: var(--space-6) auto; padding: var(--space-6); }
+.auth h1 { font-size: 1.75rem; margin-bottom: var(--space-3); }
+.auth > .muted { margin-bottom: var(--space-5); }
+.auth-form p, .account-form p { margin-bottom: var(--space-4); }
+.auth-form label, .account-form label { margin-bottom: var(--space-1); font-size: .92rem; }
+.auth-form .helptext, .account-form .helptext { margin-top: var(--space-2); font-size: .85rem; line-height: 1.5; }
+.auth-form .helptext ul, .account-form .helptext ul {
+  margin: var(--space-1) 0 0;
+  padding-left: 1.2rem;
+  font-size: .85rem;
+}
+.auth-form .helptext li, .account-form .helptext li { margin-bottom: var(--space-1); }
+input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] {
+  border-color: var(--danger);
+  box-shadow: inset 3px 0 0 var(--danger);
+}
+.auth-form .errorlist, .account-form .errorlist { margin-bottom: var(--space-2); }
+button.wide { width: 100%; padding: var(--space-3) var(--space-5); }
+.auth-switch { margin: var(--space-5) 0 0; padding-top: var(--space-4); border-top: 1px solid var(--line); font-size: .92rem; }
+.account-layout { align-items: start; }
+.account-layout .card h2 { margin-bottom: var(--space-4); }
+.account-layout .details { margin: 0; }
+.account-form button { margin-top: var(--space-1); }
+
 /* ---------- Tables, badges, status ---------- */
 th { background: var(--surface-alt); }
 .badge { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
@@ -146,6 +171,8 @@ th { background: var(--surface-alt); }
   .site-footer { flex-direction: column; gap: var(--space-3); }
 }
 @media (max-width: 520px) {
+  .auth { padding: var(--space-5); margin: var(--space-4) auto; }
+  .account-form button { width: 100%; }
   .main-nav a:not(.button),
   .main-nav .nav-button { padding: var(--space-2); font-size: .85rem; }
   .actions { align-items: stretch; flex-direction: column; gap: var(--space-3); }
