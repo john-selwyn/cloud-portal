@@ -66,6 +66,18 @@ Changed files:
 Kept exactly as before: every Django variable, condition, loop and URL name (diffed), all links, the provisioning percentage text and bar width, the "Assigning..." IP fallback, `order_table.html` (shared partial, left for Batch 5). These two pages contain no JavaScript and nothing polls them.
 Not added: no new data, counts or buttons.
 
+### Batch 3 visual approval
+- On 2026-10-13 the project owner reviewed the Batch 3 preview and reported being happy with its appearance.
+- This approval is limited to what the owner reviewed. States the owner did not report seeing (for example a provisioning server, a failed server, the empty states, phone width) and any functional, keyboard or screen-reader checks are not marked as passed.
+
+## Completed — Batch 4 (VPS detail, provisioning status)
+Changed files:
+- `portal/templates/portal/vps_detail.html`: one change, `class="back-link"` on the "My VPS" link. The `<script>` block, forms, CSRF tokens, IDs, `data-*` attributes, conditions and URL names are untouched.
+- `portal/templates/portal/provisioning_status.html`: two additive changes. (1) The root card gets ` provisioning-failed` when the server-rendered `order.status == 'FAILED'` (the script is not included for FAILED, so the red state previously only appeared after a poll); (2) `class="provisioning-warning"` added next to `id="provisioning-warning"`. The `<script>` block and every ID/data attribute are untouched. This partial is also included by `order_detail.html`, `invoice.html` and `payment_return.html`, so the new look appears there as well.
+- `portal/static/portal/portal-modern.css`: new "Server management and provisioning" section: global `[hidden]{display:none!important}` (protects JS `hidden` toggles from any `display` rule), card-style provisioning status with teal accent edge and red failed state, thinner progress bar, cleaner stage pills/wait box/meta row, two-column management grid (a lone last card spans the row), ruled detail lists, grid-based connection boxes with copy buttons (no absolute positioning, stacked on phones), styled Windows password box with a secondary Hide button, tidy power controls and help text, dashed "preparing" cards, full-width stacked power buttons on phones.
+
+Constraints honoured: #runtime-state, #setup-vps-state and #setup-access-state have their `className` overwritten by the page scripts, so they are styled only through parent selectors and existing state classes; copy buttons stay text-only because the script stores and restores `textContent`; no ARIA values were added to the progress bar because the script does not update them (a static value would go stale).
+
 ## Dependencies that must be preserved
 Inline JS lives in three templates (not yet touched):
 - `provisioning_status.html`: IDs `provisioning-status`, `provisioning-step`, `provisioning-percent`, `provisioning-bar`, `provisioning-vmid`, `provisioning-ip`, `setup-vps-state`, `setup-access-state`, `access-wait-status`, `access-wait-message`, `access-wait-elapsed`, `access-next-check`; `data-status-url`, `data-order-id`, `data-initial-status`, `data-operating-system`, `data-initial-ip`, `data-initial-access`. JS sets classes `setup-stage` + `complete`/`working`, `.provisioning-bar.complete`, `.provisioning-failed`, and uses the `hidden` attribute on `#access-wait-status`.
@@ -94,29 +106,39 @@ Inline JS lives in three templates (not yet touched):
 - Django tags/variables diffed: only additions are `order.status|lower` and `order.provisioning_progress` reused for the new class/attributes.
 - CSS brace balance OK. Contrast computed for new combinations: neutral badge 6.57:1, muted text on empty-state background 5.52:1, link on that background 5.68:1.
 
+### Batch 4 checks (performed 2026-10-13)
+- Full project suite `manage.py test portal` (146 tests) on a throwaway in-memory SQLite settings file kept outside the repository: 146 passed, system check clean.
+- Rendered `vps_detail`, `order_detail` and `invoice` for 7 states (Linux active; Linux active without SSH details; Linux provisioning; provisioning with error; Windows active with RDP; Windows active without RDP; failed) = 21 pages, from the previous and new templates. Result: `<script>` bodies byte-identical on 21/21; apart from `class` attributes the markup is identical on 21/21 (after normalising CSRF tokens and render timestamps); the only class changes are the three listed above (back-link on 7 pages, `provisioning-failed` on the 3 FAILED pages, `provisioning-warning` on 3 pages).
+- JavaScript: the repository has no JS tests. A throwaway jsdom harness (kept outside the repository, not committed) ran the real inline scripts of all 21 rendered pages with mocked `fetch`, clipboard and `confirm`, so no request or power command could reach infrastructure. Behaviour was identical before and after on 18/21 pages, and on the other 3 (FAILED pages) the only difference is the intended `provisioning-failed` class present at load. Observed on the new pages: power state transitions (running, stopped, command running, command needing review, status unavailable) set the correct text, state class, enabled/disabled buttons and help text; confirm dialogs cancel Shutdown/Reboot on "No" and allow them on "Yes", Start has none; copy buttons copy the right values, show "Copied" then restore, and show "Copy failed" when the clipboard rejects; Windows password reveal sends a POST with the CSRF header, fills the read-only field, copies it, hides on request, auto-hides after the timer, and shows the failure message when the request fails; provisioning polling updates percent, bar width, step, VMID, IP and stage pills, shows the wait box when active without access details, triggers one page reload on activation, and marks the card failed on a FAILED poll. Zero script errors.
+- Screenshots (Chromium, all network mocked, local CSS) of vps_detail for 6 states at 1280px and 390px reviewed by the assistant: no horizontal overflow in any of the 12; layout issues found (divider gaps, centred title on phones) were fixed and the affected states re-checked (Linux active, Windows with revealed password, provisioning on phone; Linux active, provisioning and failed on desktop).
+- Contrast computed for new combinations: failed card text 6.17:1, warning text 6.34:1, meta/help text on tinted background 5.52:1, stage pills 5.76-6.28:1, white on teal buttons 5.13:1. Disabled power buttons (4.09:1) are disabled controls.
+
 ## Not yet checked (needs a real browser or the running site)
-- Batch 3 pages (dashboard, My VPS) have not been seen rendered by the assistant (no screenshots possible in its environment) and have not yet been reviewed by the owner on desktop, tablet or phone widths, including with a provisioning server, a failed server and the empty states.
-- Browser rendering of the new summary-card rows, the three-column facts grid with long IPv6 addresses, and the dashed empty-state card is unverified.
-- Validation-error styling on login/register/account was not reported as checked by the owner.
-- Pages not yet restyled or reviewed: vps_detail, provisioning_status, plans, select_plan, review_order, orders, order_detail, invoices, invoice, payment_return, checkout_error, web_hosting (and the shared `order_table.html`). They inherit the Batch 1 colours and header only.
+- Batch 4 pages have not been reviewed by the owner. The assistant's screenshots used mocked data in headless Chromium, not the real site, and did not cover: the waiting-for-access box with its timers on a live server, a Windows server still waiting for RDP, the password box on phone width (only partly seen), the `invoice`, `order_detail` and `payment_return` pages with the new provisioning card, or tablet widths.
+- No real VPS power command, password reveal, clipboard permission prompt or live polling was exercised; all were mocked. Real-browser clipboard behaviour (HTTPS requirement, permission prompts) is unverified.
 - Keyboard tab order, focus visibility and a screen-reader pass are still to be run on all pages.
+- Batch 3 states not reported as reviewed by the owner (provisioning/failed servers, empty states, phone width) and validation-error styling on login/register/account remain unconfirmed.
+- Pages not yet restyled: plans, select_plan, review_order, orders, order_detail, order_table partial, invoices, invoice, pay_button, payment_return, checkout_error, web_hosting, pagination (they inherit the Batch 1 look and, for the provisioning card, Batch 4).
 - The real site configuration (.env, PostgreSQL) has not been used by the assistant; tests ran on SQLite.
-- Pagination (`nav.pagination`) was re-styled in Batch 1 and not viewed.
 
 ## Known problems / risks
 - The bare `.active`, `.pending`, `.paid`, `.failed`, `.cancelled` classes in `portal.css` style any element with those class names, not only `.badge`. Nav links use `.active` and are overridden by `.main-nav a.active`; left as is for now.
-- `.nav-wrap` and `.container` now share one width (1240px); previously 1200px vs 1240px.
-- Cancelled orders/invoices (and void invoices) now show a neutral grey badge instead of red. Revert `.badge.cancelled, .badge.void` in `portal-modern.css` if red is preferred.
-- Dashboard greeting prints "Welcome, ." if a customer's full name is empty (existing behavior, not changed because it would alter a template condition).
-- Dashboard "Active VPS" counts active subscriptions while the server list shows paid orders in several states, so the two can differ (existing behavior).
+- `.nav-wrap` and `.container` share one width (1240px); previously 1200px vs 1240px.
+- Cancelled orders/invoices (and void invoices) show a neutral grey badge instead of red. Revert `.badge.cancelled, .badge.void` in `portal-modern.css` if red is preferred.
+- Dashboard greeting prints "Welcome, ." if a customer's full name is empty (existing behaviour, left unchanged).
+- Dashboard "Active VPS" counts active subscriptions while the server list shows paid orders in several states, so they can differ (existing behaviour).
+- On `vps_detail`, a FAILED server still shows the "Preparing remote access" spinner and message because the template only checks SSH/RDP fields (existing behaviour, left unchanged because it is a template condition).
+- The provisioning progress bar is not exposed as a progressbar to assistive technology; doing so needs the script to update ARIA values, which is out of scope.
+- The global `[hidden]{display:none!important}` rule affects any element using the `hidden` attribute across the site; this is intended.
+- Pages that include the provisioning partial (order, invoice, payment return) now use the Batch 4 card style before their own batch review.
 
 ## Current task and exact next step
-Batch 3 is complete and pushed, pending the owner's visual review. Next:
-1. Owner: preview dashboard and My VPS (ideally with a provisioning server, a failed server and an empty account) on desktop and phone width; report anything off.
-2. Batch 4: `vps_detail.html` (connection boxes, Windows password reveal, power controls, confirmations) and `provisioning_status.html` (progress, stages, wait timers). High risk: edit presentation only; re-verify every ID, class and data attribute in the Dependencies section before and after.
-3. Batch 5: plans, select_plan, review_order, orders, order_detail, order_table partial, invoices, invoice, pay_button, payment_return, checkout_error, web_hosting, pagination.
-Nothing is deployed. Do not merge to the source branch or deploy until the owner asks.
+Batch 4 is complete and pushed, pending the owner's visual review. Next:
+1. Owner: preview a VPS detail page for an active Linux server and, if available, a Windows server and one still provisioning (desktop and phone width). Do not trigger real power commands just to test styling. Also glance at order detail, invoice and payment-return pages, which share the provisioning card. Report anything off.
+2. Batch 5: plans, select_plan (JS: `id_operating_system`, `id_ssh_public_key`, `access-help`; keep `form.as_p` structure), review_order, orders, order_detail, `order_table.html` partial, invoices, invoice, pay_button, payment_return, checkout_error, web_hosting, pagination. Re-check payment buttons and checkout forms carefully.
+3. Final pass: keyboard/focus/screen-reader review, remove now-unused legacy CSS in `portal.css`, final owner sign-off, then the owner decides on merging. Nothing is deployed.
+Do not merge to the source branch or deploy until the owner asks.
 
 ## Save state
-- Earlier commits: Batch 1 `5d46b2c`, `d283cb0`; Batch 2 `e1b176a`. Batch 3 is committed on `design/portal-redesign` and pushed to `origin/design/portal-redesign`; get the latest hash with `git log -1 --format=%H origin/design/portal-redesign` (a commit cannot contain its own hash).
+- Earlier commits: Batch 1 `5d46b2c`, `d283cb0`; Batch 2 `e1b176a`; Batch 3 `e4f14e5`. Batch 4 is committed on `design/portal-redesign` and pushed to `origin/design/portal-redesign`; get the latest hash with `git log -1 --format=%H origin/design/portal-redesign` (a commit cannot contain its own hash).
 - `origin/codex/windows-rdp` is unchanged at `738156c`. Nothing is merged or deployed. No uncommitted work as of this update.

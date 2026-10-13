@@ -199,6 +199,146 @@ th { background: var(--surface-alt); }
   .page-heading > .button { width: 100%; }
 }
 
+/* ---------- Server management and provisioning ----------
+   Page scripts toggle `hidden` and overwrite className on #runtime-state, #setup-vps-state and
+   #setup-access-state, so those elements are styled only from parent selectors, never by extra classes. */
+[hidden] { display: none !important; }
+.back-link { display: inline-block; font-size: .92rem; font-weight: 600; }
+.server-title { align-items: center; margin: var(--space-3) 0 var(--space-5); }
+.server-title h1 { margin-bottom: var(--space-1); }
+.server-title p { margin-bottom: 0; }
+
+/* Provisioning status card (also included on order, invoice and payment pages) */
+.notice.provisioning-card {
+  margin: var(--space-4) 0 var(--space-5);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius);
+  color: var(--ink);
+}
+.notice.provisioning-card.provisioning-failed {
+  background: var(--danger-bg);
+  border-color: #e3b4ba;
+  border-left-color: var(--danger);
+  color: var(--danger);
+}
+.provisioning-heading { gap: var(--space-4); }
+.provisioning-heading p { margin: var(--space-1) 0 0; }
+.provisioning-percent { font-size: 1.75rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.provisioning-progress-label { color: var(--muted); font-size: .8rem; }
+.notice.provisioning-card .provisioning-track { height: 10px; margin: var(--space-4) 0; }
+.provisioning-bar.complete { background: var(--success); }
+.setup-stages { gap: var(--space-2); margin: var(--space-4) 0; }
+.setup-stages .setup-stage { padding: .4rem .85rem; font-size: .875rem; font-weight: 600; }
+.access-wait-status {
+  margin: var(--space-3) 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.access-wait-timing { font-variant-numeric: tabular-nums; }
+.provisioning-meta {
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+.provisioning-meta strong { color: var(--ink); overflow-wrap: anywhere; }
+.notice.provisioning-card p.provisioning-warning {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--warning-bg);
+  border-radius: var(--radius-sm);
+  color: var(--warning);
+  font-size: .9rem;
+}
+
+/* Management grid: two columns; a lone last card spans the full row */
+.manage-grid { gap: var(--space-5); margin-top: var(--space-5); }
+.manage-grid .card:last-child { grid-column: auto; }
+.manage-grid .card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.manage-grid .card h2 { margin-bottom: var(--space-3); font-size: 1.15rem; }
+.manage-grid .details { grid-template-columns: minmax(7rem, 11rem) minmax(0, 1fr); gap: 0; margin: 0; }
+.manage-grid .details dt, .manage-grid .details dd { padding: var(--space-3) 0; border-bottom: 1px solid var(--line); }
+.manage-grid .details dd { padding-left: var(--space-4); }
+.manage-grid .details dt:nth-last-child(2), .manage-grid .details dd:last-child { border-bottom: 0; }
+.manage-grid .server-card-actions { margin-top: var(--space-4); }
+
+/* Power controls */
+.power-actions { gap: var(--space-3); margin: var(--space-4) 0 var(--space-3); }
+.power-button { min-width: 7rem; }
+.power-help {
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-alt);
+  border-left: 3px solid var(--primary-line);
+  border-radius: var(--radius-sm);
+  font-size: .9rem;
+}
+
+/* Remote access */
+.connection-box {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--space-3);
+  align-items: center;
+  margin: var(--space-3) 0;
+  padding: var(--space-3) var(--space-4);
+}
+.connection-box span, .connection-box strong { grid-column: 1; }
+.connection-box code { overflow-wrap: anywhere; font-size: .95rem; }
+.connection-box .copy-button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  position: static;
+  transform: none;
+  min-width: 8rem;
+  margin: 0;
+}
+#windows-access-form { margin-top: var(--space-4); }
+#windows-password-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 var(--space-2);
+  padding: var(--space-4);
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+#windows-password-box label, #windows-password-box input { grid-column: 1 / -1; }
+#windows-password { font-family: Consolas, Monaco, monospace; }
+#windows-password-box .copy-button { position: static; transform: none; padding: .5rem .75rem; font-size: .85rem; }
+#hide-windows-password { background: var(--surface); border-color: var(--control-border); color: var(--ink); }
+#hide-windows-password:hover { background: var(--surface-alt); color: var(--ink); }
+#windows-access-message { margin: var(--space-2) 0; font-size: .9rem; }
+#windows-access-message:empty { margin: 0; }
+.manage-grid .empty {
+  padding: var(--space-5) var(--space-4);
+  background: var(--surface-alt);
+  border: 1px dashed var(--primary-line);
+  border-radius: var(--radius-sm);
+}
+.manage-grid .empty h3 { margin: var(--space-3) 0 var(--space-2); font-size: 1.05rem; }
+.manage-grid .empty p { max-width: 44ch; margin: 0 auto var(--space-2); font-size: .92rem; }
+.manage-grid .empty p:last-child { margin-bottom: 0; }
+
+@media (max-width: 800px) {
+  .server-title { align-items: flex-start; gap: var(--space-3); }
+}
+@media (max-width: 520px) {
+  .notice.provisioning-card { padding: var(--space-4); }
+  .provisioning-heading { flex-wrap: wrap; }
+  #windows-password { font-size: .85rem; }
+  .connection-box { grid-template-columns: minmax(0, 1fr); }
+  .connection-box .copy-button { grid-column: 1; grid-row: auto; width: 100%; margin-top: var(--space-2); }
+  .power-actions { display: grid; grid-template-columns: 1fr; }
+  .power-actions form, .power-button { width: 100%; }
+}
+
 /* ---------- Footer ---------- */
 .site-footer {
   display: flex;

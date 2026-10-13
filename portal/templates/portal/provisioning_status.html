@@ -1,5 +1,5 @@
 {% if order.invoice.status == 'PAID' %}
-<div class="notice provisioning-card"
+<div class="notice provisioning-card{% if order.status == 'FAILED' %} provisioning-failed{% endif %}"
      id="provisioning-status"
      data-status-url="{% url 'customer_provisioning_status' order.pk %}"
      data-order-id="{{ order.pk }}"
@@ -56,7 +56,7 @@
   </div>
 
   {% if order.provisioning_error and order.status != 'FAILED' %}
-    <p id="provisioning-warning">We could not confirm the latest provisioning status. Your payment is safe; status checks will continue.</p>
+    <p id="provisioning-warning" class="provisioning-warning">We could not confirm the latest provisioning status. Your payment is safe; status checks will continue.</p>
   {% endif %}
 </div>
 
