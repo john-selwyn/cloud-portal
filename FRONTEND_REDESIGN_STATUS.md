@@ -1,6 +1,6 @@
 # Frontend redesign status — ICT Ventures Cloud Portal
 
-Last updated: 2026-10-13. Keep this file free of passwords, tokens, keys and customer data.
+Last updated: 2026-10-13.
 
 ## Branches and commits
 - Source branch: `codex/windows-rdp`, verified commit `738156c7c4246908d0f9756cb482ed3d5ca70289`.
@@ -53,6 +53,19 @@ Changed files:
 Kept exactly as before: `{{ form.as_p }}` rendering, field names, labels, help text, validation messages (all produced by the existing Django forms), `{% csrf_token %}`, the hidden `next` field on login, form methods, form actions (none; forms post to their own URL), and all URL names. No JavaScript is used on these pages.
 Deliberately not added: forgot-password/reset links (no reset templates or email setup in this project) and any "change email/username" controls (the account form only edits full name, company and phone).
 
+### Batch 2 visual approval
+- On 2026-10-13 the project owner reviewed the Batch 2 preview and reported being happy with its appearance.
+- This is a visual approval only, limited to what the owner looked at. No other checks (functional, keyboard, screen reader, every viewport or error state) were reported by the owner.
+
+## Completed — Batch 3 (dashboard, My VPS)
+Changed files:
+- `portal/templates/portal/dashboard.html`: summary cards get `stat-card` / `stat-label` / `stat-value` / `stat-link` classes and the group is a labelled list; server cards get a status class (`server-card-<status>`); provisioning track gets `role="progressbar"` with `aria-valuenow` from the same `order.provisioning_progress` variable; "Manage VPS" is wrapped in the existing `.server-card-actions`; the empty-state link to the plans page is now a small button (the trailing arrow was dropped from its text).
+- `portal/templates/portal/my_vps.html`: server cards get the status class; provisioning track gets the same progressbar attributes.
+- `portal/static/portal/portal-modern.css`: new "Dashboard and VPS lists" section (equal-height summary cards, IP shown on its own row with vCPU/RAM/storage below, thicker accent edge on provisioning (primary) and failed (danger) cards, dashed empty-state cards, compact summary rows on phones, full-width primary button on small screens). `.badge.cancelled` and `.badge.void` are now neutral grey instead of red; failed stays red.
+
+Kept exactly as before: every Django variable, condition, loop and URL name (diffed), all links, the provisioning percentage text and bar width, the "Assigning..." IP fallback, `order_table.html` (shared partial, left for Batch 5). These two pages contain no JavaScript and nothing polls them.
+Not added: no new data, counts or buttons.
+
 ## Dependencies that must be preserved
 Inline JS lives in three templates (not yet touched):
 - `provisioning_status.html`: IDs `provisioning-status`, `provisioning-step`, `provisioning-percent`, `provisioning-bar`, `provisioning-vmid`, `provisioning-ip`, `setup-vps-state`, `setup-access-state`, `access-wait-status`, `access-wait-message`, `access-wait-elapsed`, `access-next-check`; `data-status-url`, `data-order-id`, `data-initial-status`, `data-operating-system`, `data-initial-ip`, `data-initial-access`. JS sets classes `setup-stage` + `complete`/`working`, `.provisioning-bar.complete`, `.provisioning-failed`, and uses the `hidden` attribute on `#access-wait-status`.
@@ -75,27 +88,35 @@ Inline JS lives in three templates (not yet touched):
 - Django tags/variables in the three templates are identical to the previous versions (diffed).
 - CSS brace balance for `portal-modern.css`: OK.
 
+### Batch 3 checks (performed 2026-10-13)
+- Full project suite `manage.py test portal` (146 tests) run against a throwaway in-memory SQLite settings file kept outside the repository: 146 passed, system check reported no issues. This includes the existing dashboard scoping, My VPS scoping/IP, "Manage VPS" and "Your VPS servers" tests.
+- Rendered dashboard and My VPS with the Django test client against both the previous templates and the new ones, with an empty account and with seeded paid ACTIVE, PROVISIONING (0% and 42%), FAILED and PAID orders, a PENDING order, and another customer's order: visible text, hrefs, badge classes/labels, progress widths, IP values, form/script counts and h1 are identical, except the empty-state link text lost its trailing arrow. Other customer's server did not appear.
+- Django tags/variables diffed: only additions are `order.status|lower` and `order.provisioning_progress` reused for the new class/attributes.
+- CSS brace balance OK. Contrast computed for new combinations: neutral badge 6.57:1, muted text on empty-state background 5.52:1, link on that background 5.68:1.
+
 ## Not yet checked (needs a real browser or the running site)
-- Batch 2 pages (login, register, account) have not been seen rendered by the assistant (no screenshots possible in its environment) and have not yet been reviewed by the owner at desktop, tablet or phone widths.
-- Visual look of validation-error states on login/register/account (error text, red field highlight, password rule list) is untested in a browser.
-- Pages not yet restyled or reviewed: dashboard, my_vps, vps_detail, provisioning_status, plans, select_plan, review_order, orders, order_detail, invoices, invoice, payment_return, checkout_error, web_hosting. They inherit the Batch 1 colours and header only.
+- Batch 3 pages (dashboard, My VPS) have not been seen rendered by the assistant (no screenshots possible in its environment) and have not yet been reviewed by the owner on desktop, tablet or phone widths, including with a provisioning server, a failed server and the empty states.
+- Browser rendering of the new summary-card rows, the three-column facts grid with long IPv6 addresses, and the dashed empty-state card is unverified.
+- Validation-error styling on login/register/account was not reported as checked by the owner.
+- Pages not yet restyled or reviewed: vps_detail, provisioning_status, plans, select_plan, review_order, orders, order_detail, invoices, invoice, payment_return, checkout_error, web_hosting (and the shared `order_table.html`). They inherit the Batch 1 colours and header only.
 - Keyboard tab order, focus visibility and a screen-reader pass are still to be run on all pages.
-- `manage.py check` passed inside the test run; the real site configuration (.env, PostgreSQL) and the remaining test modules have not been run by the assistant.
+- The real site configuration (.env, PostgreSQL) has not been used by the assistant; tests ran on SQLite.
 - Pagination (`nav.pagination`) was re-styled in Batch 1 and not viewed.
 
 ## Known problems / risks
-- The bare `.active`, `.pending`, `.paid`, `.failed` classes in `portal.css` style any element with those class names, not only `.badge`. Nav links use `.active` and are overridden by `.main-nav a.active`; left as is for now.
+- The bare `.active`, `.pending`, `.paid`, `.failed`, `.cancelled` classes in `portal.css` style any element with those class names, not only `.badge`. Nav links use `.active` and are overridden by `.main-nav a.active`; left as is for now.
 - `.nav-wrap` and `.container` now share one width (1240px); previously 1200px vs 1240px.
-- Dashboard "stat" cards lost the decorative circle; other pages' layouts are otherwise unchanged and unreviewed.
+- Cancelled orders/invoices (and void invoices) now show a neutral grey badge instead of red. Revert `.badge.cancelled, .badge.void` in `portal-modern.css` if red is preferred.
+- Dashboard greeting prints "Welcome, ." if a customer's full name is empty (existing behavior, not changed because it would alter a template condition).
+- Dashboard "Active VPS" counts active subscriptions while the server list shows paid orders in several states, so the two can differ (existing behavior).
 
 ## Current task and exact next step
-Batch 2 is complete and pushed, pending the owner's visual review. Next:
-1. Owner: preview login, register (try an invalid submission), and account on desktop and phone width; report anything off.
-2. Batch 3: `dashboard.html`, `my_vps.html` (server cards, status badges, empty states). Re-check the Dependencies section before editing.
-3. Batch 4: `vps_detail.html` (connection boxes, password reveal, power controls, confirmations) and `provisioning_status.html`. High risk: edit presentation only, re-verify every ID/class/data attribute listed above.
-4. Batch 5: plans, select_plan, review_order, orders, order_detail, invoices, invoice, payment_return, checkout_error, web_hosting.
+Batch 3 is complete and pushed, pending the owner's visual review. Next:
+1. Owner: preview dashboard and My VPS (ideally with a provisioning server, a failed server and an empty account) on desktop and phone width; report anything off.
+2. Batch 4: `vps_detail.html` (connection boxes, Windows password reveal, power controls, confirmations) and `provisioning_status.html` (progress, stages, wait timers). High risk: edit presentation only; re-verify every ID, class and data attribute in the Dependencies section before and after.
+3. Batch 5: plans, select_plan, review_order, orders, order_detail, order_table partial, invoices, invoice, pay_button, payment_return, checkout_error, web_hosting, pagination.
 Nothing is deployed. Do not merge to the source branch or deploy until the owner asks.
 
 ## Save state
-- Batch 1 commits: `5d46b2c`, `d283cb0`. Batch 2 is committed on `design/portal-redesign` and pushed to `origin/design/portal-redesign`; get the latest hash with `git log -1 --format=%H origin/design/portal-redesign` (a commit cannot contain its own hash).
+- Earlier commits: Batch 1 `5d46b2c`, `d283cb0`; Batch 2 `e1b176a`. Batch 3 is committed on `design/portal-redesign` and pushed to `origin/design/portal-redesign`; get the latest hash with `git log -1 --format=%H origin/design/portal-redesign` (a commit cannot contain its own hash).
 - `origin/codex/windows-rdp` is unchanged at `738156c`. Nothing is merged or deployed. No uncommitted work as of this update.

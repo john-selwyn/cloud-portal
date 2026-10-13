@@ -8,20 +8,20 @@
 <a class="button" href="{% url 'plans' %}">Create VPS &rarr;</a>
 </div>
 
-<div class="grid stats">
-<div class="card">
-<span>Total orders</span>
-<strong>{{ order_count }}</strong>
+<div class="grid stats" role="list" aria-label="Account summary">
+<div class="card stat-card" role="listitem">
+<span class="stat-label">Total orders</span>
+<strong class="stat-value">{{ order_count }}</strong>
 </div>
-<div class="card">
-<span>Active VPS</span>
-<strong>{{ active_count }}</strong>
-<a href="{% url 'my_vps' %}">Manage servers &rarr;</a>
+<div class="card stat-card" role="listitem">
+<span class="stat-label">Active VPS</span>
+<strong class="stat-value">{{ active_count }}</strong>
+<a class="stat-link" href="{% url 'my_vps' %}">Manage servers &rarr;</a>
 </div>
-<div class="card">
-<span>Pending invoices</span>
-<strong>{{ pending_count }}</strong>
-<a href="{% url 'invoices' %}">View invoices &rarr;</a>
+<div class="card stat-card" role="listitem">
+<span class="stat-label">Pending invoices</span>
+<strong class="stat-value">{{ pending_count }}</strong>
+<a class="stat-link" href="{% url 'invoices' %}">View invoices &rarr;</a>
 </div>
 </div>
 
@@ -37,7 +37,7 @@
 {% if services %}
 <div class="server-grid dashboard-servers">
 {% for order in services %}
-<article class="card server-card">
+<article class="card server-card server-card-{{ order.status|lower }}">
 <div class="server-card-head">
 <div>
 <p class="eyebrow">VMID {{ order.provisioning_vmid|default:"—" }}</p>
@@ -48,7 +48,7 @@
 
 {% if order.status == 'PROVISIONING' %}
 <div class="server-progress">
-<div class="provisioning-track"><div class="provisioning-bar" style="width:{{ order.provisioning_progress }}%"></div></div>
+<div class="provisioning-track" role="progressbar" aria-label="Provisioning progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ order.provisioning_progress }}"><div class="provisioning-bar" style="width:{{ order.provisioning_progress }}%"></div></div>
 <small>{{ order.provisioning_progress }}% &mdash; {{ order.provisioning_step|default:"Preparing VPS..." }}</small>
 </div>
 {% endif %}
@@ -59,7 +59,9 @@
 <div><dt>RAM</dt><dd>{{ order.plan.ram }} GB</dd></div>
 <div><dt>Disk</dt><dd>{{ order.plan.storage }} GB</dd></div>
 </dl>
+<div class="server-card-actions">
 <a class="button small" href="{% url 'vps_detail' order.pk %}">Manage VPS</a>
+</div>
 </article>
 {% endfor %}
 </div>
@@ -67,7 +69,7 @@
 <div class="card empty compact-empty">
 <h2>No VPS servers yet.</h2>
 <p>Your paid VPS services will appear here.</p>
-<a href="{% url 'plans' %}">Browse VPS plans &rarr;</a>
+<a class="button small" href="{% url 'plans' %}">Browse VPS plans</a>
 </div>
 {% endif %}
 </section>

@@ -13,7 +13,7 @@
 {% if services %}
 <div class="server-grid">
   {% for order in services %}
-  <article class="card server-card">
+  <article class="card server-card server-card-{{ order.status|lower }}">
     <div class="server-card-head">
       <div>
         <p class="eyebrow">VPS #{{ order.provisioning_vmid|default:order.pk }}</p>
@@ -24,7 +24,7 @@
 
     {% if order.status == 'PROVISIONING' %}
     <div class="server-progress">
-      <div class="provisioning-track">
+      <div class="provisioning-track" role="progressbar" aria-label="Provisioning progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ order.provisioning_progress }}">
         <div class="provisioning-bar" style="width:{{ order.provisioning_progress }}%"></div>
       </div>
       <small>{{ order.provisioning_progress }}% &mdash; {{ order.provisioning_step|default:"Preparing VPS..." }}</small>
