@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
 <title>{% block title %}Customer portal{% endblock %} | ICT Ventures Cloud Portal</title>
-<link rel="stylesheet" href="{% static 'portal/portal.css' %}?v=redesign-6">
-<link rel="stylesheet" href="{% static 'portal/portal-modern.css' %}?v=redesign-6">
-<link rel="stylesheet" href="{% static 'portal/storefront.css' %}?v=redesign-6">
+<link rel="stylesheet" href="{% static 'portal/portal.css' %}?v=redesign-7">
+<link rel="stylesheet" href="{% static 'portal/portal-modern.css' %}?v=redesign-7">
+<link rel="stylesheet" href="{% static 'portal/storefront.css' %}?v=redesign-7">
 <link rel="icon" type="image/svg+xml" href="{% static 'portal/favicon.svg' %}">
 <meta name="description" content="Explore ICT Ventures VPS and web hosting, and manage your services and invoices.">
 </head>
@@ -17,7 +17,8 @@
 <div class="nav-wrap">
 <a class="brand" href="{% url 'home' %}" aria-label="ICT Ventures Cloud Portal home">
 <span class="brand-icon" aria-hidden="true">+</span>
-<span class="brand-copy"><strong>ICT Ventures</strong><small>Cloud Portal</small></span>
+<span class="brand-copy"><strong>ICT Ventures</strong>
+<small>Cloud Portal</small></span>
 </a>
 <nav class="main-nav" aria-label="Main navigation">
 {% with current=request.resolver_match.url_name %}

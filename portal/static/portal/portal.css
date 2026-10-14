@@ -147,17 +147,6 @@ p {
   color:var(--muted);
   max-width:620px
 }
-.hero {
-  display:grid;
-  grid-template-columns:1.2fr 1fr;
-  align-items:center;
-  gap:70px;
-  padding:65px 0
-}
-.hero h1 {
-  font-size:3.7rem;
-  line-height:1.08
-}
 .actions {
   display:flex;
   align-items:center;
@@ -170,20 +159,6 @@ p {
   border-radius:var(--radius);
   padding:28px;
   box-shadow:none
-}
-.hero-card {
-  border-top:4px solid var(--primary)
-}
-.steps {
-  padding-left:24px
-}
-.steps li {
-  padding:8px 0 18px 8px
-}
-.steps span {
-  display:block;
-  color:var(--muted);
-  font-size:.92rem
 }
 .button,button {
   display:inline-block;
@@ -462,14 +437,6 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 }
 .container {
   padding:30px 20px
-}
-.hero {
-  grid-template-columns:1fr;
-  gap:35px;
-  padding:25px 0
-}
-.hero h1 {
-  font-size:2.8rem
 }
 .split {
   grid-template-columns:1fr

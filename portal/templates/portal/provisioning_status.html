@@ -33,7 +33,7 @@
   </div>
 
   {% if order.status != 'FAILED' %}
-  <div class="provisioning-track" aria-label="VPS provisioning progress">
+  <div class="provisioning-track" aria-hidden="true">
     <div class="provisioning-bar" id="provisioning-bar"
          style="width:{% if order.status == 'ACTIVE' %}100{% else %}{{ order.provisioning_progress }}{% endif %}%"></div>
   </div>

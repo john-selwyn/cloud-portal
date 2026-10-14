@@ -1,6 +1,6 @@
 # Frontend redesign status — ICT Ventures Cloud Portal
 
-Last updated: 2026-10-14 (Batch 5 approval, blue palette).
+Last updated: 2026-10-14 (final accessibility, layout and CSS cleanup pass).
 
 ## Branches and commits
 - Source branch: `codex/windows-rdp`, verified commit `738156c7c4246908d0f9756cb482ed3d5ca70289`.
@@ -86,6 +86,10 @@ Constraints honoured: #runtime-state, #setup-vps-state and #setup-access-state h
 - On 2026-10-14 the project owner reported approving the Batch 5 appearance "for the pages I reviewed".
 - Visual approval only, limited to the pages the owner looked at. It does not cover pages or states not reviewed, and no functional, keyboard, screen-reader or payment checks were reported. The approval was given on the teal colour scheme; the blue palette below has NOT been reviewed.
 
+### Colour palette visual approval
+- On 2026-10-14 the project owner approved the blue palette, including the three contrast adjustments (secondary text `#617187`, control borders `#7B8BA3`, derived colours for unspecified surfaces).
+- Visual approval only, limited to the pages the owner reviewed. Functional, keyboard and screen-reader behaviour on real pages were not reviewed by the owner.
+
 ## Completed - Colour palette change (teal to blue, requested 2026-10-14)
 Colour-only change. Layout, spacing, typography, markup, scripts and functionality untouched.
 Changed files:
@@ -107,6 +111,30 @@ Deviations from the requested palette (please confirm or reject):
 - Screenshots of all pages at 1280px and 390px: no horizontal overflow; the assistant looked at homepage, dashboard, a failed invoice and the earlier checkout/payment pages. Not every page was individually inspected after the colour change.
 - A search of all stylesheets and the favicon found no remaining teal colour values.
 - Not verified: the real preview site, real browsers other than headless Chromium, Windows high-contrast mode, any state not rendered above (for example live provisioning progress colours, the Windows password box), colour-blindness simulation, and keyboard order or screen-reader behaviour.
+
+## Completed - Final pass (keyboard, screen reader, tablet/phone, unused CSS; 2026-10-14)
+Changed files (all presentation or additive attributes; no script, Python, form or Django-logic change):
+- `portal/templates/portal/base.html`: stylesheet cache-bust `redesign-6` to `redesign-7`; a line break between the brand name and "Cloud Portal" inside the logo link so its visible text ("ICT Ventures Cloud Portal") is part of its accessible name (axe `label-content-name-mismatch`; layout unchanged because the two items are grid children).
+- `portal/templates/portal/provisioning_status.html`: the empty progress-bar track had `aria-label` but no role (axe `aria-prohibited-attr`); it is now `aria-hidden="true"` because the percentage, step text and stage pills next to it carry the same information. The `<script>` block, IDs and data attributes are untouched.
+- `portal/static/portal/portal-modern.css`: underline on the "Sign in" / "Create an account" link in the auth pages (axe `link-in-text-block`, links must not rely on colour alone); `white-space: nowrap` on the last two table columns (dates and invoice numbers) plus 8px horizontal cell padding at 900px and below so the invoice column fits at tablet width; clearer secondary text on the red failed provisioning card (already in the palette commit).
+- `portal/static/portal/storefront.css`: at tablet width the third web-hosting package now spans the row instead of sitting at half width with an empty half beside it.
+- `portal/static/portal/portal.css`: removed legacy rules that are verified unused (below).
+
+### Final pass checks (performed 2026-10-14, headless Chromium with mocked data; Django test client for rendering)
+- Keyboard: tabbed through 47 rendered pages (749 tab stops): no positive `tabindex`, skip link and `#main` target on every page, tab order follows reading order, no keyboard traps, tab stop count equals the number of tabbable elements (radio groups count once; login and register start after the username field because Django adds `autofocus` to it), every stop has a visible focus indicator (3px outline, offset 3px) and the ring contrast against the surrounding background is at least 3:1 (blue on light surfaces, light blue on navy sections).
+- Screen reader: axe-core 4.14.0 (WCAG 2.0/2.1/2.2 A and AA plus best-practice rules) on all 47 pages found 3 issue types (above); all fixed; re-run: 0 violations. Structure check on 47 pages: exactly one h1, no skipped heading levels, banner/navigation/main/contentinfo landmarks, page language and title present, every table has header cells (Chrome exposes them as column headers). Accessibility-tree dumps of the plan configuration, order detail and orders pages were read: logo, navigation (labelled), headings, form controls, buttons and the order table read sensibly.
+- Colour: the contrast audit was re-run after these changes: 0 failures on 47 pages.
+- Layout: 47 pages at 360, 390, 768 and 1024px (188 combinations): no horizontal page overflow, nothing outside the viewport except inside scrollable table wrappers, no button, input, select or navigation control smaller than 24x24px. Screenshots at 768px of VPS detail, web hosting, orders, invoices and dashboard were looked at; two tablet problems were found and fixed (half-width third hosting package, wrapped invoice numbers and dates). At 390px and below the orders and dashboard tables still scroll sideways inside their card.
+- Unused CSS: every class and id in the three stylesheets was compared with whole class tokens in all templates (all conditional branches are present in template source), inline script text, Python files (including form widget attributes) and the JavaScript test. Selectors that only look unused but are generated at run time were kept: `.helptext`, `.errorlist` and `#id_billing_cycle` (Django form output), `.overdue`, `.cancelled` (status badges built from `{{ status|lower }}`) and `.server-card-provisioning` / `.server-card-failed` (built from `server-card-{{ status|lower }}`). Only these were verified unused and removed from `portal.css`: `.hero`, `.hero h1` (also their 800px overrides), `.hero-card`, `.steps`, `.steps li`, `.steps span`. Pixel check: 47 pages at 390, 768 and 1280px (141 screenshots) were hashed before and after the removal; all identical (the register page's autofocus caret makes it flicker between runs and was confirmed to match). Not removed: the `--space-7` and `--space-8` tokens (unused but part of the documented spacing scale) and rules that are only overridden later (not unused).
+- Tests: full project suite `manage.py test portal` 146 of 146 passed (throwaway in-memory SQLite outside the repository), `manage.py check` clean; `node --test portal/test_provisioning_poll.cjs` 9 of 9 passed; script bodies byte-identical on 47 of 47 rendered pages compared with the pre-Batch-5 templates; the `select_plan` script behaves identically in Chromium (Windows hides and disables the SSH key field, Linux restores it). CSS brace balance OK.
+
+### Still unverified after the final pass
+- Not tested with a real screen reader (NVDA, JAWS, VoiceOver, TalkBack), real keyboard on the preview site, real iOS or Android devices, other browsers than headless Chromium, Windows high-contrast or forced-colours mode, zoom to 200 or 400 percent, or text-size changes. Automated checks cannot prove the page reads well aloud.
+- Dynamic states were only exercised with mocks or not at all: live provisioning updates and the waiting-for-access timers are not announced to screen readers (the script updates text without a live region; adding one needs a script or template change that was out of scope and could repeat announcements on every poll), VPS power controls, password reveal, copy buttons, clipboard prompts, the real Xendit redirect, real Hestia data. Contrast of those states was not separately measured.
+- The billing cycle radio buttons come from Django's `RadioSelect` without a group role or name, so some screen readers announce "Monthly, radio button" without the "Billing cycle" prompt. Fixing it means changing form output or adding script, both out of scope.
+- Login and register put focus in the username field on load (Django `autofocus`), so keyboard and screen-reader users begin inside the form rather than at the skip link; unchanged form behaviour.
+- The orders and dashboard order tables (7 columns) scroll sideways on phones; the scrolling region is not announced as scrollable.
+- Anything the owner did not review remains unreviewed: pages and states not looked at on the preview site, tablet widths (only reviewed by the assistant from screenshots), and everything functional.
 
 ## Completed - Batch 5 (plans, checkout, orders, invoices, payment, web hosting)
 Changed files:
@@ -183,9 +211,9 @@ Inline JS lives in three templates (not yet touched):
 - Batch 4: owner approved the appearance of what they reviewed (2026-10-14). Not reported as seen and not verified: the waiting-for-access box with live timers, a Windows server still waiting for RDP, the password box on phone width, tablet widths. The assistant's Batch 5 screenshots did show the provisioning card inside order detail, invoice and payment return (mocked data).
 - Batch 5: owner approved the appearance of the pages they reviewed (2026-10-14), on the teal scheme. Pages or states they did not review, and everything functional, remain unverified. The following list is what was never verified: everything above under Batch 5 checks used mocked or seeded test data in headless Chromium and the Django test client, not the real preview site. Not verified: the real Xendit redirect, the Pay Now / Continue Payment buttons submitting (never triggered; no real payment), the order confirmation POST creating an order (covered only by existing Django tests), the live provisioning card on the invoice and order pages, real web-hosting data from Hestia, tablet widths, keyboard order, focus visibility and screen-reader behaviour of the new checkout step markers, radio rows and hidden header text.
 - No real VPS power command, password reveal, clipboard permission prompt or live polling was exercised; all were mocked. Real-browser clipboard behaviour (HTTPS requirement, permission prompts) is unverified.
-- Keyboard tab order, focus visibility and a screen-reader pass are still to be run on all pages.
+- Keyboard order, focus visibility and an automated screen-reader pass were run on rendered test pages (see Final pass checks); real assistive technology and real-site checks are still open.
 - Batch 3 states not reported as reviewed by the owner (provisioning/failed servers, empty states, phone width) and validation-error styling on login/register/account remain unconfirmed.
-- Pages not yet restyled: none remain in the plan. Final pass items (keyboard, focus, screen reader, unused legacy CSS) are still open.
+- Pages not yet restyled: none remain in the plan. The final pass is done; its unverified items are listed under "Still unverified after the final pass".
 - The real site configuration (.env, PostgreSQL) has not been used by the assistant; tests ran on SQLite.
 
 ## Known problems / risks
@@ -207,11 +235,11 @@ Inline JS lives in three templates (not yet touched):
 - Batch 5: `payment-notice` is amber for every "Pending payment" state, including when online payments are unavailable.
 
 ## Current task and exact next step
-The blue colour palette is applied and pushed, pending the owner's visual review (NOT yet reported). Nothing is merged or deployed. Next:
-1. Owner: preview on VM200 with a hard refresh (stylesheet version `redesign-6`). Check a signed-out homepage and web hosting (navy hero and cards), the dashboard, a plan's select page and review page, an invoice with a pending payment box (do NOT press Pay Now or Continue Payment unless test payments are intentionally enabled), a VPS detail page, and the login page; desktop and phone width. Tab through a page to see the focus ring and hover buttons and links. Confirm or reject the three deviations listed under "Colour palette change".
-2. After the owner approves the colours: final pass (keyboard order and focus review, screen-reader spot check, remove unused legacy CSS in `portal.css`, tablet widths), then final owner sign-off.
-3. The owner decides about merging into `codex/windows-rdp`; deployment is separate. Do not merge or deploy until asked.
+All planned redesign batches, the blue palette and the final pass are complete and pushed to `design/portal-redesign`, pending the owner's review of the final pass (NOT yet reported). Nothing is merged or deployed. Next:
+1. Owner: preview on VM200 with a hard refresh (stylesheet version `redesign-7`). Press Tab through a few pages (the skip link, navigation, forms and buttons should show a blue ring), look at tablet width (about 768px) on web hosting, orders, invoices and the dashboard, and glance at the pages changed in this pass: the logo link, a provisioning card, login/register, and web hosting. Do not press Pay Now or Continue Payment unless test payments are intentionally enabled. Report anything off.
+2. If time allows, test with a real screen reader and on a real phone and tablet (see "Still unverified after the final pass").
+3. The owner decides about merging `design/portal-redesign` into `codex/windows-rdp` and about deployment; neither has been done and neither will be done without an explicit request.
 
 ## Save state
-- Earlier commits: Batch 1 `5d46b2c`, `d283cb0`; Batch 2 `e1b176a`; Batch 3 `e4f14e5`. Batch 4 `92b5bb6`; status/JS-test record update `fae6ef9`; Batch 5 `71dff2d`. Batch 5 and the blue palette change are committed on `design/portal-redesign` and pushed to `origin/design/portal-redesign`; get the latest hash with `git log -1 --format=%H origin/design/portal-redesign` (a commit cannot contain its own hash).
+- Earlier commits: Batch 1 `5d46b2c`, `d283cb0`; Batch 2 `e1b176a`; Batch 3 `e4f14e5`. Batch 4 `92b5bb6`; status/JS-test record update `fae6ef9`; Batch 5 `71dff2d`; blue palette `8722710`. The final pass is committed on `design/portal-redesign` and pushed to `origin/design/portal-redesign`; get the latest hash with `git log -1 --format=%H origin/design/portal-redesign` (a commit cannot contain its own hash).
 - `origin/codex/windows-rdp` is unchanged at `738156c`. Nothing is merged or deployed. No uncommitted work as of this update.

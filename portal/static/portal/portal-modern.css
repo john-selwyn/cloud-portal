@@ -127,6 +127,7 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 }
 .auth-form .errorlist, .account-form .errorlist { margin-bottom: var(--space-2); }
 button.wide { width: 100%; padding: var(--space-3) var(--space-5); }
+.auth-switch a { text-decoration: underline; }
 .auth-switch { margin: var(--space-5) 0 0; padding-top: var(--space-4); border-top: 1px solid var(--line); font-size: .92rem; }
 .account-layout { align-items: start; }
 .account-layout .card h2 { margin-bottom: var(--space-4); }
@@ -430,6 +431,8 @@ th { background: var(--surface-alt); }
 .data-table th { position: relative; }
 .data-table tbody tr:last-child td { border-bottom: 0; }
 .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+/* Keep dates and invoice numbers on one line; the table scrolls inside .table-wrap if it gets too wide */
+.data-table td:last-child, .data-table td:nth-last-child(2) { white-space: nowrap; }
 .table-wrap + .pagination { margin-top: var(--space-2); }
 .card > .empty .button { margin-top: var(--space-2); }
 .pagination { gap: var(--space-3); padding-top: var(--space-5); }
@@ -493,6 +496,9 @@ th { background: var(--surface-alt); }
   font-weight: 600;
 }
 
+@media (max-width: 900px) {
+  .data-table th, .data-table td { padding-left: var(--space-2); padding-right: var(--space-2); }
+}
 @media (max-width: 800px) {
   .invoice { padding: var(--space-4); }
   .invoice-parties { gap: var(--space-4); }
