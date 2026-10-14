@@ -3,7 +3,7 @@
    Presentation only: no selector used by page JavaScript is renamed or removed here. */
 
 html { scroll-padding-top: 5rem; }
-body { background: var(--bg); color: var(--ink); }
+body { background: var(--bg); color: var(--text); }
 
 /* ---------- Typography ---------- */
 h1, h2, h3 { letter-spacing: -.02em; }
@@ -74,7 +74,7 @@ h3 { font-size: 1.1rem; }
 /* ---------- Cards, buttons, notices ---------- */
 .card {
   border-radius: var(--radius);
-  box-shadow: 0 1px 2px rgba(26, 40, 53, .05);
+  box-shadow: 0 1px 2px rgba(20, 33, 61, .05);
 }
 .button, button {
   border-radius: var(--radius-sm);
@@ -96,7 +96,7 @@ h3 { font-size: 1.1rem; }
 .notice {
   background: var(--primary-soft);
   border-color: var(--primary-line);
-  color: var(--ink);
+  color: var(--text);
   border-radius: var(--radius-sm);
 }
 .flash-notice { box-shadow: none; }
@@ -176,7 +176,7 @@ th { background: var(--surface-alt); }
 .card.empty h2 { margin-bottom: var(--space-2); font-size: 1.2rem; }
 .card.empty p { max-width: 46ch; margin-left: auto; margin-right: auto; }
 
-.badge.cancelled, .badge.void { background: #edf0f5; color: #46566a; }
+.badge.cancelled, .badge.void { background: var(--neutral-bg); color: var(--neutral-text); }
 
 @media (max-width: 800px) {
   .stats { gap: var(--space-3); margin: var(--space-4) 0; }
@@ -216,7 +216,7 @@ th { background: var(--surface-alt); }
   border: 1px solid var(--line);
   border-left: 4px solid var(--primary);
   border-radius: var(--radius);
-  color: var(--ink);
+  color: var(--text);
 }
 .notice.provisioning-card.provisioning-failed {
   background: var(--danger-bg);
@@ -228,6 +228,8 @@ th { background: var(--surface-alt); }
 .provisioning-heading p { margin: var(--space-1) 0 0; }
 .provisioning-percent { font-size: 1.75rem; line-height: 1; font-variant-numeric: tabular-nums; }
 .provisioning-progress-label { color: var(--muted); font-size: .8rem; }
+.notice.provisioning-card.provisioning-failed .provisioning-progress-label,
+.notice.provisioning-card.provisioning-failed .provisioning-meta { color: var(--danger); }
 .notice.provisioning-card .provisioning-track { height: 10px; margin: var(--space-4) 0; }
 .provisioning-bar.complete { background: var(--success); }
 .setup-stages { gap: var(--space-2); margin: var(--space-4) 0; }
@@ -464,7 +466,7 @@ th { background: var(--surface-alt); }
   background: var(--warning-bg);
   border: 1px solid #e6cf94;
   border-left: 4px solid var(--warning);
-  color: var(--ink);
+  color: var(--text);
 }
 .payment-notice > strong { display: block; margin-bottom: var(--space-2); color: var(--warning); font-size: 1.05rem; }
 .payment-notice p { margin: 0 0 var(--space-3); }

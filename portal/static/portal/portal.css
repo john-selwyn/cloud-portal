@@ -1,23 +1,26 @@
 :root {
   /* ICT Ventures Cloud Portal design tokens */
-  --bg:#f5f8f8;
-  --surface:#fff;
-  --surface-alt:#f1f6f6;
-  --ink:#1a2835;
-  --muted:#56656f;
-  --line:#d9e3e2;
-  --control-border:#6c7d89;
-  --primary:#007b76;
-  --primary-hover:#00625e;
-  --primary-soft:#e1f3f0;
-  --primary-line:#a5c9c6;
-  --link:#006d69;
-  --focus:#007b76;
-  --navy:#19222b;
-  --navy-raised:#212d37;
-  --on-navy:#c9d6d8;
-  --on-navy-muted:#aebfc2;
-  --accent-on-navy:#8de2d8;
+  --bg:#F5F7FB;
+  --surface:#FFFFFF;
+  --surface-alt:#F8FAFC;
+  --ink:#14213D;
+  --text:#334155;
+  --muted:#617187;
+  --line:#E2E8F0;
+  --control-border:#7B8BA3;
+  --neutral-bg:#F1F5F9;
+  --neutral-text:#475569;
+  --primary:#2563EB;
+  --primary-hover:#1D4ED8;
+  --primary-soft:#EFF6FF;
+  --primary-line:#BFDBFE;
+  --link:#2563EB;
+  --focus:#2563EB;
+  --navy:#14213D;
+  --navy-raised:#1C2B4D;
+  --on-navy:#CBD5E1;
+  --on-navy-muted:#A9B7CB;
+  --accent-on-navy:#93C5FD;
   --success:#17603e;
   --success-bg:#e2f5ec;
   --warning:#77530a;
@@ -36,7 +39,7 @@
   --space-8:4.5rem;
   --content-width:1240px;
   font-family:Inter,"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
-  color:var(--ink);
+  color:var(--text);
   background:var(--bg);
   font-size:16px;
   line-height:1.6
@@ -115,6 +118,7 @@ main {
   min-height:calc(100vh - 180px)
 }
 h1,h2,h3 {
+  color:var(--heading-color,var(--ink));
   line-height:1.2;
   letter-spacing:-.035em;
   margin:0 0 18px
@@ -256,8 +260,8 @@ p {
 .resources {
   list-style:none;
   padding:18px 0;
-  border-top:1px solid #e5eaf1;
-  border-bottom:1px solid #e5eaf1;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
   margin:16px 0 26px
 }
 .resources li {
@@ -292,7 +296,7 @@ input,select,textarea {
   background:white;
   padding:11px;
   font:inherit;
-  color:var(--ink)
+  color:var(--text)
 }
 input[type=radio] {
   width:auto;
@@ -363,7 +367,7 @@ th {
 }
 th,td {
   padding:14px 16px;
-  border-bottom:1px solid #e7ecf3
+  border-bottom:1px solid var(--line)
 }
 td {
   vertical-align:middle
@@ -375,8 +379,8 @@ td {
   line-height:1.6;
   padding:4px 10px;
   border-radius:50px;
-  background:#edf0f5;
-  color:#46566a;
+  background:var(--neutral-bg);
+  color:var(--neutral-text);
   white-space:nowrap
 }
 .pending,.overdue {
@@ -589,7 +593,7 @@ code {
   margin:0
 }
 .server-facts div {
-  border:1px solid #e5eaf1;
+  border:1px solid var(--line);
   border-radius:10px;
   padding:12px
 }
@@ -722,20 +726,20 @@ code {
 }
 .secondary-power {
   background:#fff;
-  border-color:#aebbd0;
+  border-color:var(--control-border);
   color:var(--ink)
 }
 .secondary-power:hover {
-  background:#eef3f9;
+  background:var(--neutral-bg);
   color:var(--ink)
 }
 .power-button:disabled,
 .power-button:disabled:hover {
   cursor:not-allowed;
   opacity:.45;
-  background:#edf0f5;
-  border-color:#d6dde8;
-  color:#667684
+  background:var(--neutral-bg);
+  border-color:var(--line);
+  color:var(--muted)
 }
 .power-help {
   margin-bottom:0
@@ -745,7 +749,7 @@ code {
 .provisioning-progress-summary { display:flex; flex-direction:column; text-align:right; flex-shrink:0 }
 .provisioning-progress-label { font-size:.75rem; color:var(--muted) }
 .setup-stages { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 }
-.setup-stage { display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px; background:#edf1f6; color:var(--muted); font-size:.85rem }
+.setup-stage { display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px; background:var(--neutral-bg); color:var(--muted); font-size:.85rem }
 .setup-stage::before { content:""; width:8px; height:8px; border-radius:50%; background:currentColor }
 .setup-stage.complete { background:#e4f5ec; color:#176b45 }
 .setup-stage.complete::before { content:"✓"; width:auto; height:auto; background:none }

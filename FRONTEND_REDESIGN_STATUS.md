@@ -1,6 +1,6 @@
 # Frontend redesign status — ICT Ventures Cloud Portal
 
-Last updated: 2026-10-14 (Batch 5).
+Last updated: 2026-10-14 (Batch 5 approval, blue palette).
 
 ## Branches and commits
 - Source branch: `codex/windows-rdp`, verified commit `738156c7c4246908d0f9756cb482ed3d5ca70289`.
@@ -14,22 +14,22 @@ Last updated: 2026-10-14 (Batch 5).
 - Stay a Django-template site. No fake data, no do-nothing buttons, no staff/admin links for customers.
 
 ## Agreed design system (v1)
-Direction: calm, flat and readable. Keep the ICT Ventures navy + teal identity from the storefront. Remove gradients, blur, hover-lift and decorative shapes. Keep only functional motion (progress bar, spinner), and respect reduced motion.
+Direction: calm, flat and readable. Colour scheme is the blue palette below (changed from the original navy + teal on 2026-10-14; see "Colour palette change"). Remove gradients, blur, hover-lift and decorative shapes. Keep only functional motion (progress bar, spinner), and respect reduced motion.
 
 Tokens live at the top of `portal/static/portal/portal.css` (`:root`):
-- Surfaces: `--bg #f5f8f8`, `--surface #fff`, `--surface-alt #f1f6f6`, `--line #d9e3e2`.
-- Text: `--ink #1a2835`, `--muted #56656f` (about 5.6:1 on bg).
-- Primary: `--primary #007b76` (white on it 5.13:1), `--primary-hover #00625e`, `--primary-soft #e1f3f0`, `--primary-line #a5c9c6`, `--link #006d69`.
-- Dark sections: `--navy #19222b`, `--navy-raised #212d37`, `--on-navy #c9d6d8`, `--on-navy-muted #aebfc2`, `--accent-on-navy #8de2d8`.
-- Status: success/warning/danger text + background pairs (badge colours unchanged in value).
-- Form control border `--control-border #6c7d89` (4.3:1 on white, meets 3:1 for controls).
-- Focus ring `--focus #007b76`, 3px, offset 3px (light ring on navy sections).
+- Surfaces: `--bg #F5F7FB` (page), `--surface #FFFFFF` (cards), `--surface-alt #F8FAFC` (table headers, inset boxes), `--line #E2E8F0` (borders), `--neutral-bg #F1F5F9`.
+- Text: headings and strong text `--ink #14213D`, body `--text #334155`, secondary `--muted #617187` (see palette note), neutral badge text `--neutral-text #475569`.
+- Primary: `--primary #2563EB` (white on it 5.17:1), `--primary-hover #1D4ED8` (6.70:1), selected/active background `--primary-soft #EFF6FF`, primary-tinted borders `--primary-line #BFDBFE`, links `--link #2563EB`.
+- Dark sections: `--navy #14213D`, `--navy-raised #1C2B4D`, `--on-navy #CBD5E1`, `--on-navy-muted #A9B7CB`, `--accent-on-navy #93C5FD`.
+- Status (unchanged): success/warning/danger text + background pairs stay green, amber and red.
+- Form control border `--control-border #7B8BA3` (3.46:1 on white, meets 3:1 for controls). The requested border colour #E2E8F0 is only 1.2:1, so it is used for card/table/divider borders, not form controls.
+- Focus ring `--focus #2563EB`, 3px, offset 3px (light ring on navy sections).
 - Radius: `--radius 12px` (cards), `--radius-sm 8px` (controls). Hero 16px.
 - Spacing scale: `--space-1..8` = .25, .5, .75, 1, 1.5, 2, 3, 4.5 rem. Content width `--content-width 1240px` (header and page content now share it).
 - Type: Inter / Segoe UI / system-ui stack (no web font loaded), 16px base, 1.6 line height, heading tracking -.02em, h1 `clamp(1.85rem, 3vw, 2.3rem)`.
 - Components so far: header + nav (`.main-nav`), buttons (`.button`, `.button.secondary`, `.button.small`), cards, notices, form controls, tables, badges, footer, pagination, storefront hero/sections/FAQ/banner.
 
-CSS load order (unchanged): `portal.css` (tokens + page components + JS-state classes) → `portal-modern.css` (shared shell/controls) → `storefront.css` (public pages). All three links in `base.html` carry `?v=redesign-1` for cache busting.
+CSS load order (unchanged): `portal.css` (tokens + page components + JS-state classes) → `portal-modern.css` (shared shell/controls) → `storefront.css` (public pages). All three links in `base.html` carry a `?v=redesign-N` cache-busting query (currently `redesign-6`).
 
 ## Completed — Batch 1 (shared layout, homepage, CSS)
 Changed files:
@@ -81,6 +81,32 @@ Constraints honoured: #runtime-state, #setup-vps-state and #setup-access-state h
 ### Batch 4 visual approval
 - On 2026-10-14 the project owner reported approving the Batch 4 appearance "for the appearance I reviewed".
 - Visual approval only, limited to what the owner looked at. States the owner did not report seeing (for example live waiting-for-access timers, a Windows server still waiting for RDP, tablet widths) and all functional, keyboard and screen-reader checks stay unverified.
+
+### Batch 5 visual approval
+- On 2026-10-14 the project owner reported approving the Batch 5 appearance "for the pages I reviewed".
+- Visual approval only, limited to the pages the owner looked at. It does not cover pages or states not reviewed, and no functional, keyboard, screen-reader or payment checks were reported. The approval was given on the teal colour scheme; the blue palette below has NOT been reviewed.
+
+## Completed - Colour palette change (teal to blue, requested 2026-10-14)
+Colour-only change. Layout, spacing, typography, markup, scripts and functionality untouched.
+Changed files:
+- `portal/static/portal/portal.css`: `:root` tokens replaced (see Agreed design system), new tokens `--text`, `--neutral-bg`, `--neutral-text`; `h1,h2,h3` now use `color: var(--heading-color, var(--ink))` so headings are #14213D while body text is #334155 (dark sections set `--heading-color: #fff`, see storefront.css); hard-coded greys (`#e5eaf1`, `#e7ecf3`, `#edf0f5`, `#46566a`, `#edf1f6`, `#aebbd0`, `#eef3f9`, `#d6dde8`, `#667684`) replaced with tokens. Green success, amber warning and red error colours, the runtime-state dots and the provisioning "complete" green were left as they were.
+- `portal/static/portal/portal-modern.css`: body text colour, shadow tint, notice/provisioning/payment text use body colour, neutral badges use tokens, failed provisioning card secondary text uses the danger colour (it fell below 4.5:1 on the red tint with the new secondary colour).
+- `portal/static/portal/storefront.css`: dark-section accents, hero/banner button colours, hosting availability chip and the accent-card paragraph moved to blue equivalents (`#93C5FD` accent, `#BFDBFE` hover, `#DBEAFE` chip text, `#8DA2C0` outline button border); dark-section headings forced white through `--heading-color`.
+- `portal/static/portal/favicon.svg`: blue square with a white plus (was dark navy with a teal plus).
+- `portal/templates/portal/base.html`: stylesheet cache-bust query `redesign-5` to `redesign-6` only.
+
+Deviations from the requested palette (please confirm or reject):
+1. Secondary text uses `#617187`, not `#64748B`. `#64748B` measures 4.44:1 on the page background and 4.37:1 on the selected background (below the 4.5:1 AA minimum for normal text); `#617187` is 3% darker and measures 4.64:1 and 4.57:1. It is 4.76:1 on white with the requested value.
+2. Form control borders use `#7B8BA3` (3.46:1 on white) rather than `#E2E8F0` (1.2:1, fails the 3:1 non-text minimum for controls). `#E2E8F0` is used for card, table and divider borders.
+3. Colours the palette does not specify were derived from it: table header and inset backgrounds `#F8FAFC`, neutral badge `#F1F5F9`/`#475569`, primary-tinted border `#BFDBFE`, dark sections `#14213D`/`#1C2B4D` with light text `#CBD5E1`/`#A9B7CB` and accent `#93C5FD`. The dark hero, banner and VPS-hosting card on the homepage and web hosting page are now navy-blue instead of near-black.
+
+### Colour palette checks (performed 2026-10-14)
+- Full project suite `manage.py test portal` (146 tests, throwaway in-memory SQLite, outside the repository): 146 passed; `manage.py check` clean. `node --test portal/test_provisioning_poll.cjs`: 9 of 9 passed. CSS brace balance OK. Only CSS, the SVG favicon and the cache-bust query changed; no other template, Python or script file differs.
+- Automated text-contrast audit (headless Chromium, mocked data, desktop width) of 47 rendered pages (storefront home, web hosting, login, register, dashboard, My VPS, account, VPS detail, plans, checkout, orders, invoices, order detail, payments, errors, with seeded pending/overdue/provisioning/active/failed/cancelled states): every visible text element against its effective background, 4.5:1 normal text and 3:1 large text. After the fixes above: 0 failures. Elements with opacity below 1 (disabled controls) and hidden elements were not measured.
+- Hover, keyboard focus and disabled states measured in Chromium: primary button white on #2563EB 5.17:1, hover #1D4ED8 6.70:1; secondary button hover #1D4ED8 on #EFF6FF 6.16:1; hero button on navy 8.86:1, hover 11.24:1; active navigation #2563EB on #EFF6FF 4.75:1; inactive navigation 4.98:1, hover 15.27:1; links 5.17:1; pagination hover 4.75:1. Keyboard focus ring is a 3px solid #2563EB outline (light #93C5FD on navy sections) on buttons, links, inputs, selects and the skip link. Disabled power button: text 4.54:1 on #F1F5F9 before its 45% opacity (disabled controls are exempt).
+- Screenshots of all pages at 1280px and 390px: no horizontal overflow; the assistant looked at homepage, dashboard, a failed invoice and the earlier checkout/payment pages. Not every page was individually inspected after the colour change.
+- A search of all stylesheets and the favicon found no remaining teal colour values.
+- Not verified: the real preview site, real browsers other than headless Chromium, Windows high-contrast mode, any state not rendered above (for example live provisioning progress colours, the Windows password box), colour-blindness simulation, and keyboard order or screen-reader behaviour.
 
 ## Completed - Batch 5 (plans, checkout, orders, invoices, payment, web hosting)
 Changed files:
@@ -155,7 +181,7 @@ Inline JS lives in three templates (not yet touched):
 
 ## Not yet checked (needs a real browser or the running site)
 - Batch 4: owner approved the appearance of what they reviewed (2026-10-14). Not reported as seen and not verified: the waiting-for-access box with live timers, a Windows server still waiting for RDP, the password box on phone width, tablet widths. The assistant's Batch 5 screenshots did show the provisioning card inside order detail, invoice and payment return (mocked data).
-- Batch 5 has NOT been reviewed by the owner. Everything above under Batch 5 checks used mocked or seeded test data in headless Chromium and the Django test client, not the real preview site. Not verified: the real Xendit redirect, the Pay Now / Continue Payment buttons submitting (never triggered; no real payment), the order confirmation POST creating an order (covered only by existing Django tests), the live provisioning card on the invoice and order pages, real web-hosting data from Hestia, tablet widths, keyboard order, focus visibility and screen-reader behaviour of the new checkout step markers, radio rows and hidden header text.
+- Batch 5: owner approved the appearance of the pages they reviewed (2026-10-14), on the teal scheme. Pages or states they did not review, and everything functional, remain unverified. The following list is what was never verified: everything above under Batch 5 checks used mocked or seeded test data in headless Chromium and the Django test client, not the real preview site. Not verified: the real Xendit redirect, the Pay Now / Continue Payment buttons submitting (never triggered; no real payment), the order confirmation POST creating an order (covered only by existing Django tests), the live provisioning card on the invoice and order pages, real web-hosting data from Hestia, tablet widths, keyboard order, focus visibility and screen-reader behaviour of the new checkout step markers, radio rows and hidden header text.
 - No real VPS power command, password reveal, clipboard permission prompt or live polling was exercised; all were mocked. Real-browser clipboard behaviour (HTTPS requirement, permission prompts) is unverified.
 - Keyboard tab order, focus visibility and a screen-reader pass are still to be run on all pages.
 - Batch 3 states not reported as reviewed by the owner (provisioning/failed servers, empty states, phone width) and validation-error styling on login/register/account remain unconfirmed.
@@ -172,6 +198,8 @@ Inline JS lives in three templates (not yet touched):
 - The provisioning progress bar is not exposed as a progressbar to assistive technology; doing so needs the script to update ARIA values, which is out of scope.
 - The global `[hidden]{display:none!important}` rule affects any element using the `hidden` attribute across the site; this is intended.
 - Pages that include the provisioning partial (order, invoice, payment return) use the Batch 4 card style.
+- Colour change: the palette-driven choices listed under "Deviations from the requested palette" are awaiting the owner's confirmation. Status colours (green, amber, red) were not changed and were not re-tuned against the new blue backgrounds beyond the automated contrast audit.
+- Colour change: the cache-bust query is now `redesign-6`; a browser that ignores query strings could still show old teal CSS until a hard refresh.
 - Batch 5: on phones the orders table (7 columns, shared with the dashboard) still scrolls sideways inside its card; the page itself does not overflow. Stacking rows into cards would need extra attributes on every cell and was left out. The invoice table is compacted for phones instead.
 - Batch 5: the empty-state "Explore plans" links lost their trailing arrow (matches the approved dashboard empty state). Revert in `order_table.html` and `invoices.html` if the arrow is preferred.
 - Batch 5: the cache-bust query is now `redesign-5`; production would need the same stylesheet files collected if this is ever merged.
@@ -179,11 +207,11 @@ Inline JS lives in three templates (not yet touched):
 - Batch 5: `payment-notice` is amber for every "Pending payment" state, including when online payments are unavailable.
 
 ## Current task and exact next step
-Batch 5 is complete and pushed, pending the owner's visual review (NOT yet reported). All planned page batches are now done; nothing is merged or deployed. Next:
-1. Owner: preview on VM200 (hard refresh; stylesheet version is `redesign-5`): VPS plans, a plan's select page (switch the operating system between Linux and Windows if Windows ordering is enabled; submit only with test data), the review page, My orders (including page 2 if present and the empty state), an order detail page, My invoices, an invoice with a Pending payment box (do NOT press Pay Now or Continue Payment unless test payments are intentionally enabled), a paid invoice with the provisioning card, the payment-status page, and Web hosting; desktop and phone width. Report anything off.
-2. After Batch 5 approval: final pass. Keyboard and focus review, screen-reader spot check, remove unused legacy CSS in `portal.css`, recheck every page at tablet width, then final owner sign-off.
+The blue colour palette is applied and pushed, pending the owner's visual review (NOT yet reported). Nothing is merged or deployed. Next:
+1. Owner: preview on VM200 with a hard refresh (stylesheet version `redesign-6`). Check a signed-out homepage and web hosting (navy hero and cards), the dashboard, a plan's select page and review page, an invoice with a pending payment box (do NOT press Pay Now or Continue Payment unless test payments are intentionally enabled), a VPS detail page, and the login page; desktop and phone width. Tab through a page to see the focus ring and hover buttons and links. Confirm or reject the three deviations listed under "Colour palette change".
+2. After the owner approves the colours: final pass (keyboard order and focus review, screen-reader spot check, remove unused legacy CSS in `portal.css`, tablet widths), then final owner sign-off.
 3. The owner decides about merging into `codex/windows-rdp`; deployment is separate. Do not merge or deploy until asked.
 
 ## Save state
-- Earlier commits: Batch 1 `5d46b2c`, `d283cb0`; Batch 2 `e1b176a`; Batch 3 `e4f14e5`. Batch 4 `92b5bb6`; status/JS-test record update `fae6ef9`. Batch 5 is committed on `design/portal-redesign` and pushed to `origin/design/portal-redesign`; get the latest hash with `git log -1 --format=%H origin/design/portal-redesign` (a commit cannot contain its own hash).
+- Earlier commits: Batch 1 `5d46b2c`, `d283cb0`; Batch 2 `e1b176a`; Batch 3 `e4f14e5`. Batch 4 `92b5bb6`; status/JS-test record update `fae6ef9`; Batch 5 `71dff2d`. Batch 5 and the blue palette change are committed on `design/portal-redesign` and pushed to `origin/design/portal-redesign`; get the latest hash with `git log -1 --format=%H origin/design/portal-redesign` (a commit cannot contain its own hash).
 - `origin/codex/windows-rdp` is unchanged at `738156c`. Nothing is merged or deployed. No uncommitted work as of this update.
