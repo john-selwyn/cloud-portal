@@ -1,6 +1,6 @@
 # Frontend redesign status — ICT Ventures Cloud Portal
 
-Last updated: 2026-10-14.
+Last updated: 2026-10-14 (Batch 5).
 
 ## Branches and commits
 - Source branch: `codex/windows-rdp`, verified commit `738156c7c4246908d0f9756cb482ed3d5ca70289`.
@@ -78,6 +78,30 @@ Changed files:
 
 Constraints honoured: #runtime-state, #setup-vps-state and #setup-access-state have their `className` overwritten by the page scripts, so they are styled only through parent selectors and existing state classes; copy buttons stay text-only because the script stores and restores `textContent`; no ARIA values were added to the progress bar because the script does not update them (a static value would go stale).
 
+### Batch 4 visual approval
+- On 2026-10-14 the project owner reported approving the Batch 4 appearance "for the appearance I reviewed".
+- Visual approval only, limited to what the owner looked at. States the owner did not report seeing (for example live waiting-for-access timers, a Windows server still waiting for RDP, tablet widths) and all functional, keyboard and screen-reader checks stay unverified.
+
+## Completed - Batch 5 (plans, checkout, orders, invoices, payment, web hosting)
+Changed files:
+- `portal/templates/portal/base.html`: stylesheet cache-bust query changed from `redesign-1` to `redesign-5` (three links) so previews pick up the new CSS.
+- `plans.html`: `plan-description`, `plan-yearly`, `page-intro` classes only.
+- `select_plan.html`: checkout step line now has a `<span>` per step with the current step marked `aria-current="step"` (same text); section classes `checkout-layout`, `plan-summary`, `plan-config`, `plan-prices`; form gets `order-form`; submit button gets `type="submit"` and `class="wide"`; help paragraphs get `form-help` (the `#access-help` id, its `muted` class and text are untouched); back link gets `back-link`. The `<script>` block is byte-identical and `form.as_p` is untouched.
+- `review_order.html`: step line as above (step 2 current); `details ruled` on the summary list; confirm form gets `confirm-form`; confirm button gets `type="submit"` and `class="wide"`; "Change selection" paragraph gets `change-selection`. Hidden `checkout_token` field, CSRF token, `action` URL, amount and all conditions untouched.
+- `orders.html`, `invoices.html`, `order_table.html`: `page-intro`; `data-table` on the tables; `num` on the Amount header and cells (right-aligned figures); the empty header cell in the invoices table now contains visually hidden text "Actions" (screen-reader label); the empty-state "Explore plans" link is now a small button and its trailing arrow was dropped (same change as the approved Batch 3 dashboard empty state). `order_table.html` is also included by the dashboard, so the dashboard's recent-orders table picks up the new table styling.
+- `order_detail.html`: heading wrapped in the existing `page-heading` pattern (eyebrow, h1 and status badge, same as invoice); `back-link`; `details ruled`.
+- `invoice.html`: `back-link`, `invoice-parties`, `details ruled`, `data-table`, `num`.
+- `pay_button.html`: `payment-notice` added to the existing `notice` div. Forms, CSRF, button text and every condition untouched.
+- `payment_return.html`: `payment-result` on the card; `payment-message` plus `payment-confirmed` / `payment-unavailable` / `payment-pending` on the status paragraphs. No new conditions.
+- `checkout_error.html`: `error-message` on the existing `role="alert"` paragraph.
+- `portal/static/portal/portal-modern.css`: new "Plans, checkout, orders, invoices and payment" section (plan cards, checkout steps, form layout and radio rows for billing cycle, ruled key/value lists, table number alignment, pagination buttons, invoice layout, payment notice states, phone rules). `.visually-hidden` utility added.
+- `portal/static/portal/storefront.css`: FAQ summary marker moved inside the list margin; spacing before the paragraph that follows the "What happens next" list on web hosting. No other web-hosting change.
+- `web_hosting.html`, `pagination.html`, `provisioning_status.html`, `vps_detail.html`: no template change (hosting and pagination were already covered by the Batch 1 storefront styles and the new pagination rules).
+
+Design decisions: payment-pending notice uses the warning (amber) palette with a left accent like the provisioning card; confirmed/unavailable payment messages use success/danger tints; money figures are right-aligned with tabular numerals; no gradients, hover lift or new motion.
+
+Kept exactly as before: all Django tags and variables (sequence diffed per template), URL names, form actions, hidden fields, CSRF tokens, prices, conditions, `select_plan` script and its IDs, provisioning partial and its script, payment and provisioning behavior.
+
 ## Dependencies that must be preserved
 Inline JS lives in three templates (not yet touched):
 - `provisioning_status.html`: IDs `provisioning-status`, `provisioning-step`, `provisioning-percent`, `provisioning-bar`, `provisioning-vmid`, `provisioning-ip`, `setup-vps-state`, `setup-access-state`, `access-wait-status`, `access-wait-message`, `access-wait-elapsed`, `access-next-check`; `data-status-url`, `data-order-id`, `data-initial-status`, `data-operating-system`, `data-initial-ip`, `data-initial-access`. JS sets classes `setup-stage` + `complete`/`working`, `.provisioning-bar.complete`, `.provisioning-failed`, and uses the `hidden` attribute on `#access-wait-status`.
@@ -121,12 +145,21 @@ Inline JS lives in three templates (not yet touched):
 - VM200 (preview server) cannot run this command because Node.js is not installed there. The result above comes from this clone, not from VM200.
 - Test file and script bodies are unchanged by the redesign (Batch 4 left the `<script>` block byte-identical).
 
+### Batch 5 checks (performed 2026-10-14)
+- Full project suite `manage.py test portal` (146 tests) on a throwaway in-memory SQLite settings file and virtualenv kept outside the repository: 146 passed, before and after the changes; `manage.py check` clean. Other settings (.env, PostgreSQL) not used.
+- `node --test portal/test_provisioning_poll.cjs`: 9 of 9 passed after the changes.
+- Before/after render comparison with the Django test client on the same seeded database (alice with orders in PENDING, OVERDUE invoice, no invoice, PROVISIONING 42%, ACTIVE, FAILED, CANCELLED/VOID plus 24 extra paid orders; a second customer; an empty customer): 39 pages (plans signed out/in, web hosting, select plan GET/invalid POST/Windows-enabled, review order Linux and Windows, checkout error, orders pages 1-2 and empty, invoices pages 1-2 and empty, order detail and invoice for 7 states, invoice/order with Xendit enabled in the no-checkout, CREATING and ACTIVE states, overdue invoice, payments disabled, payment return for pending, paid-provisioning, paid-active and unavailable). Xendit was only simulated with fake setting values and database rows; no request to any payment or infrastructure service was made. Result: script bodies byte-identical on 39/39; Django tag/variable sequences identical in every template; ignoring `class` attributes and layout wrappers, the only differences are the intended ones: step-line spans (5 pages), `type="submit"` on 3 buttons (5 pages), "Explore plans" arrow removed (2 empty states), hidden "Actions" header text (2 invoice lists). Other customer's data did not appear.
+- Real-browser (headless Chromium, all network mocked, local CSS) check of the `select_plan` script on the Windows-enabled page, before and after: initial Linux state, switching to Windows 11 (SSH key field disabled, not required, its paragraph hidden, help text changed) and back to Ubuntu (restored) are identical, no script errors.
+- Screenshots of all 39 pages at 1280px and 390px reviewed by the assistant: no horizontal page overflow on any of the 78 after fixes. Issues found and fixed during review: hidden header text widening the page on phone invoices lists, help text touching the submit button, double rule under the plan summary, stagger in ruled lists on phone, cramped invoice table on phone, FAQ markers outside the margin and a paragraph touching the list on web hosting.
+- CSS brace balance OK for all three files. Colour pairs used for the new notices reuse the already-computed tokens (warning 6.34:1 on its tint, danger 6.17:1, white on teal 5.13:1); success text on its tint (#17603e on #e2f5ec) and the current-step link colour were not separately calculated.
+
 ## Not yet checked (needs a real browser or the running site)
-- Batch 4 pages have not been reviewed by the owner. The assistant's screenshots used mocked data in headless Chromium, not the real site, and did not cover: the waiting-for-access box with its timers on a live server, a Windows server still waiting for RDP, the password box on phone width (only partly seen), the `invoice`, `order_detail` and `payment_return` pages with the new provisioning card, or tablet widths.
+- Batch 4: owner approved the appearance of what they reviewed (2026-10-14). Not reported as seen and not verified: the waiting-for-access box with live timers, a Windows server still waiting for RDP, the password box on phone width, tablet widths. The assistant's Batch 5 screenshots did show the provisioning card inside order detail, invoice and payment return (mocked data).
+- Batch 5 has NOT been reviewed by the owner. Everything above under Batch 5 checks used mocked or seeded test data in headless Chromium and the Django test client, not the real preview site. Not verified: the real Xendit redirect, the Pay Now / Continue Payment buttons submitting (never triggered; no real payment), the order confirmation POST creating an order (covered only by existing Django tests), the live provisioning card on the invoice and order pages, real web-hosting data from Hestia, tablet widths, keyboard order, focus visibility and screen-reader behaviour of the new checkout step markers, radio rows and hidden header text.
 - No real VPS power command, password reveal, clipboard permission prompt or live polling was exercised; all were mocked. Real-browser clipboard behaviour (HTTPS requirement, permission prompts) is unverified.
 - Keyboard tab order, focus visibility and a screen-reader pass are still to be run on all pages.
 - Batch 3 states not reported as reviewed by the owner (provisioning/failed servers, empty states, phone width) and validation-error styling on login/register/account remain unconfirmed.
-- Pages not yet restyled: plans, select_plan, review_order, orders, order_detail, order_table partial, invoices, invoice, pay_button, payment_return, checkout_error, web_hosting, pagination (they inherit the Batch 1 look and, for the provisioning card, Batch 4).
+- Pages not yet restyled: none remain in the plan. Final pass items (keyboard, focus, screen reader, unused legacy CSS) are still open.
 - The real site configuration (.env, PostgreSQL) has not been used by the assistant; tests ran on SQLite.
 
 ## Known problems / risks
@@ -138,15 +171,19 @@ Inline JS lives in three templates (not yet touched):
 - On `vps_detail`, a FAILED server still shows the "Preparing remote access" spinner and message because the template only checks SSH/RDP fields (existing behaviour, left unchanged because it is a template condition).
 - The provisioning progress bar is not exposed as a progressbar to assistive technology; doing so needs the script to update ARIA values, which is out of scope.
 - The global `[hidden]{display:none!important}` rule affects any element using the `hidden` attribute across the site; this is intended.
-- Pages that include the provisioning partial (order, invoice, payment return) now use the Batch 4 card style before their own batch review.
+- Pages that include the provisioning partial (order, invoice, payment return) use the Batch 4 card style.
+- Batch 5: on phones the orders table (7 columns, shared with the dashboard) still scrolls sideways inside its card; the page itself does not overflow. Stacking rows into cards would need extra attributes on every cell and was left out. The invoice table is compacted for phones instead.
+- Batch 5: the empty-state "Explore plans" links lost their trailing arrow (matches the approved dashboard empty state). Revert in `order_table.html` and `invoices.html` if the arrow is preferred.
+- Batch 5: the cache-bust query is now `redesign-5`; production would need the same stylesheet files collected if this is ever merged.
+- Batch 5: `:has()` is used for the checked billing-cycle highlight and the review total label; browsers without it show the plain styles (still usable).
+- Batch 5: `payment-notice` is amber for every "Pending payment" state, including when online payments are unavailable.
 
 ## Current task and exact next step
-Batch 4 is complete and pushed, pending the owner's visual review (NOT yet reported). Batch 5 has NOT been started and will not start until the owner reports Batch 4 approval. Next:
-1. Owner: preview a VPS detail page for an active Linux server and, if available, a Windows server and one still provisioning (desktop and phone width). Do not trigger real power commands just to test styling. Also glance at order detail, invoice and payment-return pages, which share the provisioning card. Report anything off.
-2. Batch 5 (only after step 1 approval): plans, select_plan (JS: `id_operating_system`, `id_ssh_public_key`, `access-help`; keep `form.as_p` structure), review_order, orders, order_detail, `order_table.html` partial, invoices, invoice, pay_button, payment_return, checkout_error, web_hosting, pagination. Re-check payment buttons and checkout forms carefully.
-3. Final pass: keyboard/focus/screen-reader review, remove now-unused legacy CSS in `portal.css`, final owner sign-off, then the owner decides on merging. Nothing is deployed.
-Do not merge to the source branch or deploy until the owner asks.
+Batch 5 is complete and pushed, pending the owner's visual review (NOT yet reported). All planned page batches are now done; nothing is merged or deployed. Next:
+1. Owner: preview on VM200 (hard refresh; stylesheet version is `redesign-5`): VPS plans, a plan's select page (switch the operating system between Linux and Windows if Windows ordering is enabled; submit only with test data), the review page, My orders (including page 2 if present and the empty state), an order detail page, My invoices, an invoice with a Pending payment box (do NOT press Pay Now or Continue Payment unless test payments are intentionally enabled), a paid invoice with the provisioning card, the payment-status page, and Web hosting; desktop and phone width. Report anything off.
+2. After Batch 5 approval: final pass. Keyboard and focus review, screen-reader spot check, remove unused legacy CSS in `portal.css`, recheck every page at tablet width, then final owner sign-off.
+3. The owner decides about merging into `codex/windows-rdp`; deployment is separate. Do not merge or deploy until asked.
 
 ## Save state
-- Earlier commits: Batch 1 `5d46b2c`, `d283cb0`; Batch 2 `e1b176a`; Batch 3 `e4f14e5`. Batch 4 is committed on `design/portal-redesign` and pushed to `origin/design/portal-redesign`; get the latest hash with `git log -1 --format=%H origin/design/portal-redesign` (a commit cannot contain its own hash).
+- Earlier commits: Batch 1 `5d46b2c`, `d283cb0`; Batch 2 `e1b176a`; Batch 3 `e4f14e5`. Batch 4 `92b5bb6`; status/JS-test record update `fae6ef9`. Batch 5 is committed on `design/portal-redesign` and pushed to `origin/design/portal-redesign`; get the latest hash with `git log -1 --format=%H origin/design/portal-redesign` (a commit cannot contain its own hash).
 - `origin/codex/windows-rdp` is unchanged at `738156c`. Nothing is merged or deployed. No uncommitted work as of this update.

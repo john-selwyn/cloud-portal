@@ -339,6 +339,172 @@ th { background: var(--surface-alt); }
   .power-actions form, .power-button { width: 100%; }
 }
 
+/* ---------- Plans, checkout, orders, invoices and payment ----------
+   Presentation only. Script dependencies on select_plan: #id_operating_system, #id_ssh_public_key, #access-help
+   and the SSH key field's <p> (toggled with `hidden`), so none of those get layout rules that could override `hidden`. */
+.page-intro { margin-bottom: var(--space-5); }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* VPS plan cards */
+.plans { gap: var(--space-5); margin-top: var(--space-5); }
+.plan { padding: var(--space-5); }
+.plan h2 { margin-bottom: var(--space-2); }
+.plan-description { margin-bottom: var(--space-3); font-size: .95rem; }
+.plan .price { margin-top: var(--space-3); letter-spacing: -.02em; }
+.plan-yearly { margin: var(--space-1) 0 0; font-size: .9rem; }
+.plan .resources { margin: var(--space-4) 0 var(--space-5); padding: var(--space-3) 0; border-color: var(--line); }
+.plan .resources li { padding: .35rem 0; }
+.plan .resources strong { color: var(--ink); }
+.plans > .card.empty { grid-column: 1 / -1; }
+
+/* Checkout steps (select plan, review order) */
+.checkout-steps { margin-bottom: var(--space-4); letter-spacing: .1em; }
+.checkout-steps span { color: var(--muted); }
+.checkout-steps .current {
+  padding-bottom: 2px;
+  border-bottom: 2px solid var(--primary);
+  color: var(--link);
+  font-weight: 800;
+}
+.checkout-layout { gap: var(--space-5); align-items: start; margin-top: var(--space-4); }
+.plan-summary h2, .plan-config h2 { margin-bottom: var(--space-3); }
+.plan-summary .resources { margin: var(--space-4) 0 0; padding: var(--space-3) 0 0; border-color: var(--line); border-bottom: 0; }
+.plan-prices {
+  margin: 0 0 var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.order-form p { margin-bottom: var(--space-4); }
+.order-form label { margin-bottom: var(--space-1); font-size: .92rem; }
+.order-form .helptext { margin-top: var(--space-2); font-size: .85rem; line-height: 1.5; }
+.order-form textarea { min-height: 7.5rem; font-family: Consolas, Monaco, monospace; font-size: .85rem; }
+.order-form #id_billing_cycle { display: grid; gap: var(--space-2); }
+.order-form #id_billing_cycle > div > label {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+.order-form #id_billing_cycle > div > label:has(input:checked) { background: var(--primary-soft); border-color: var(--primary); }
+.order-form #id_billing_cycle input { flex: 0 0 auto; }
+.form-help { margin-bottom: var(--space-3); font-size: .88rem; line-height: 1.5; }
+.order-form + .form-help { margin-top: var(--space-4); }
+.plan-config .back-link { margin-top: var(--space-2); }
+
+/* Review order and key/value lists */
+.details.ruled { gap: 0; margin: var(--space-5) 0; }
+.details.ruled dt, .details.ruled dd { padding: var(--space-3) 0; border-bottom: 1px solid var(--line); }
+.details.ruled dd { padding-left: var(--space-4); }
+.details.ruled dt:nth-last-child(2), .details.ruled dd:last-child { border-bottom: 0; }
+.details.ruled dt:has(+ dd.total) { align-self: center; color: var(--ink); font-weight: 700; }
+.details.ruled dd.total { font-variant-numeric: tabular-nums; }
+.details.ruled code { padding: .1rem .4rem; background: var(--surface-alt); border-radius: 4px; }
+.confirm-form { margin-top: var(--space-5); }
+.change-selection { margin: var(--space-4) 0 0; text-align: center; font-size: .92rem; }
+.card.narrow > .page-heading { margin-bottom: var(--space-4); }
+.card.narrow > .page-heading .eyebrow { margin-bottom: var(--space-2); }
+.card.narrow > .page-heading h1 { margin-bottom: 0; }
+
+/* Orders and invoices tables */
+.data-table th, .data-table td { padding: var(--space-3) var(--space-4); }
+/* Containing block for the visually hidden header text, so it is clipped by .table-wrap rather than widening the page */
+.data-table th { position: relative; }
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.table-wrap + .pagination { margin-top: var(--space-2); }
+.card > .empty .button { margin-top: var(--space-2); }
+.pagination { gap: var(--space-3); padding-top: var(--space-5); }
+.pagination a {
+  padding: .4rem .9rem;
+  border: 1px solid var(--primary-line);
+  border-radius: var(--radius-sm);
+  font-weight: 650;
+}
+.pagination a:hover { background: var(--primary-soft); text-decoration: none; }
+.pagination span { padding: 0 var(--space-2); color: var(--muted); }
+
+/* Invoice */
+.invoice { padding: var(--space-6); }
+.invoice > .page-heading { margin-bottom: var(--space-5); padding-bottom: var(--space-4); border-bottom: 1px solid var(--line); }
+.invoice > .page-heading .eyebrow { margin-bottom: var(--space-1); }
+.invoice > .page-heading h1 { margin-bottom: 0; }
+.invoice-parties { gap: var(--space-6); align-items: start; margin-bottom: var(--space-5); }
+.invoice-parties h2 { margin-bottom: var(--space-1); font-size: 1.2rem; }
+.invoice-parties .details { margin: 0; }
+.invoice-parties section p:last-child { margin-bottom: 0; }
+.invoice-total {
+  margin: var(--space-4) 0 var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-alt);
+  border-radius: var(--radius-sm);
+}
+.invoice-total strong { margin-left: var(--space-5); font-variant-numeric: tabular-nums; }
+
+/* Payment notices and results */
+.payment-notice {
+  margin: var(--space-4) 0 var(--space-5);
+  padding: var(--space-5);
+  background: var(--warning-bg);
+  border: 1px solid #e6cf94;
+  border-left: 4px solid var(--warning);
+  color: var(--ink);
+}
+.payment-notice > strong { display: block; margin-bottom: var(--space-2); color: var(--warning); font-size: 1.05rem; }
+.payment-notice p { margin: 0 0 var(--space-3); }
+.payment-notice form { margin: var(--space-4) 0 var(--space-2); }
+.payment-notice button { min-width: 10rem; }
+.payment-notice p:last-child { margin-bottom: 0; }
+.payment-message {
+  margin: var(--space-4) 0;
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-alt);
+  border-left: 4px solid var(--primary-line);
+  border-radius: var(--radius-sm);
+}
+.payment-confirmed { background: var(--success-bg); border-left-color: var(--success); color: var(--success); font-weight: 700; }
+.payment-unavailable { background: var(--danger-bg); border-left-color: var(--danger); color: var(--danger); }
+.payment-pending { background: var(--warning-bg); border-left-color: var(--warning); }
+.payment-result > .button { margin-top: var(--space-3); }
+.error-message {
+  padding: var(--space-4) var(--space-5);
+  background: var(--danger-bg);
+  border-left: 4px solid var(--danger);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-weight: 600;
+}
+
+@media (max-width: 800px) {
+  .invoice { padding: var(--space-4); }
+  .invoice-parties { gap: var(--space-4); }
+  .invoice-total { padding: var(--space-3) var(--space-4); }
+  .payment-notice { padding: var(--space-4); }
+}
+@media (max-width: 520px) {
+  .plan { padding: var(--space-4); }
+  .invoice .data-table th, .invoice .data-table td { padding: var(--space-3) var(--space-2); }
+  .invoice .data-table th { white-space: normal; }
+  .payment-notice button, .payment-result > .button, .plan .button, .card > .empty .button { width: 100%; text-align: center; }
+  .pagination { flex-wrap: wrap; }
+}
+
 /* ---------- Footer ---------- */
 .site-footer {
   display: flex;

@@ -1,11 +1,11 @@
 {% if orders %}
 <div class="table-wrap">
-<table>
+<table class="data-table">
 <thead>
 <tr>
 <th>Order / plan</th>
 <th>Cycle</th>
-<th>Amount (PHP)</th>
+<th class="num">Amount (PHP)</th>
 <th>Status</th>
 <th>VPS</th>
 <th>Created</th>
@@ -19,7 +19,7 @@
 <strong>{{ order.plan.name }}</strong>
 </td>
 <td>{{ order.get_billing_cycle_display }}</td>
-<td>{{ order.amount }}</td>
+<td class="num">{{ order.amount }}</td>
 <td><span class="badge {{ order.status|lower }}">{{ order.get_status_display }}</span></td>
 <td>
 {% if order.provisioning_ip_address %}
@@ -40,5 +40,5 @@
 <div class="empty">
 <h2>No orders yet.</h2>
 <p>Choose a VPS plan to create your first order.</p>
-<a href="{% url 'plans' %}">Explore plans &rarr;</a>
+<a class="button small" href="{% url 'plans' %}">Explore plans</a>
 </div>{% endif %}
