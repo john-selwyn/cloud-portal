@@ -132,18 +132,108 @@ body.management-ui {
 .management-ui table td, .management-ui table th { font-family: inherit; font-size: 12px; line-height: 1.6; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
 .management-ui thead th { background: #f8fafc; color: #475569; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
 .management-ui .row1, .management-ui .row2 { background: #fff; }
-.management-ui #result_list tbody tr:hover { background: #f8faff; }
-.management-ui #changelist { display: flex; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; min-width: 0; }
-.management-ui #changelist .changelist-form-container { min-width: 0; }
-.management-ui #changelist .results { width: 100%; overflow-x: auto; }
-.management-ui #changelist-filter { border-left: 1px solid #e2e8f0; background: #fff; }
-.management-ui #changelist-filter h2 { background: #f8fafc; color: #14213d; }
-.management-ui #changelist-filter li.selected a { color: #1d4ed8; }
-.management-ui #toolbar { background: #fff; padding: 18px; border-bottom: 1px solid #e2e8f0; }
-.management-ui #changelist-search input[type=submit] { background: #2563eb; border: 0; color: #fff; padding: 8px 14px; border-radius: 6px; box-shadow: none; }
-.management-ui .paginator { padding: 16px; background: #fff; color: #617187; border-top: 1px solid #e2e8f0; }
-.management-ui .object-tools { margin: 0 0 18px; }
-.management-ui .object-tools a { border-radius: 7px; padding: 10px 14px; font-size: 11px; letter-spacing: 0; text-transform: none; }
+/* Lists: Django changelists and the VPS services page share one card, toolbar, table and footer. */
+.management-ui .titles-and-tools { align-items: flex-start; gap: 16px; }
+.management-ui .titles { min-width: 0; }
+.management-ui .titles h1 { margin-bottom: 14px; }
+.management-ui .management-lede { color: var(--m-muted); font-size: 13px; max-width: 78ch; margin: -6px 0 18px; }
+.management-ui .object-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 16px; padding: 0; }
+.management-ui .object-tools li, .management-ui .object-tools li + li { display: block; margin: 0; }
+.management-ui .object-tools a:link, .management-ui .object-tools a:visited { float: none; display: inline-flex; align-items: center; min-height: 38px; padding: 8px 16px; border: 1px solid var(--m-primary-line); border-radius: var(--m-radius-sm); background-color: #fff; color: var(--m-primary-hover); font-size: 12px; font-weight: 650; letter-spacing: 0; text-transform: none; text-decoration: none; white-space: nowrap; }
+.management-ui .object-tools a:hover, .management-ui .object-tools a:focus { background-color: var(--m-primary-soft); }
+.management-ui .object-tools a.addlink:link, .management-ui .object-tools a.addlink:visited { background-color: var(--m-primary); border-color: var(--m-primary); color: #fff; padding-right: 34px; background-position: right 12px center; }
+.management-ui .object-tools a.addlink:hover, .management-ui .object-tools a.addlink:focus { background-color: var(--m-primary-hover); }
+
+.management-ui #changelist, .management-ui .management-list { border: 1px solid var(--m-line); border-radius: var(--m-radius); background: var(--m-surface); overflow: hidden; min-width: 0; margin: 0 0 20px; }
+.management-ui #changelist .changelist-form-container { align-items: stretch; min-width: 0; }
+.management-ui #changelist .changelist-form-container:has(#changelist-filter) > div { min-width: 0; max-width: calc(100% - 260px); }
+.management-ui #changelist .results, .management-ui #changelist-form .results { width: 100%; overflow-x: auto; }
+.management-ui.change-list .filtered { min-height: 0; }
+.management-ui #changelist .changelist-form-container > div { display: flex; flex-direction: column; }
+.management-ui #changelist-form { flex: 1 1 auto; display: flex; flex-direction: column; }
+.management-ui #changelist-form .changelist-footer { margin-top: auto; }
+
+/* Toolbar: search and the services filter bar */
+.management-ui #toolbar { margin: 0; padding: 14px 20px; border: 0; border-bottom: 1px solid var(--m-line); background: var(--m-surface); }
+.management-ui #changelist-search > div { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; max-width: none; }
+.management-ui #changelist-search label { display: grid; place-items: center; width: 20px; height: 38px; margin: 0; line-height: 1; }
+.management-ui #changelist-search label img { width: 16px; height: 16px; opacity: .55; }
+.management-ui #toolbar form #searchbar { flex: 1 1 240px; width: auto; min-width: 0; max-width: 420px; height: 38px; margin: 0; }
+.management-ui #toolbar form input[type=submit] { flex: 0 0 auto; height: 38px; margin: 0; padding: 0 18px; border: 0; border-radius: 7px; background: var(--m-primary); color: #fff; font-weight: 600; box-shadow: none; }
+.management-ui #toolbar form input[type=submit]:hover { background: var(--m-primary-hover); }
+.management-ui #changelist-search .quiet { flex: 0 0 auto; width: auto; margin: 0 0 0 auto; color: var(--m-muted); font-size: 12px; }
+.management-ui #changelist-search br.clear { display: none; }
+.management-ui #changelist-search .help { flex-basis: 100%; margin: 8px 0 0; }
+.management-ui .management-search { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; padding: 16px 20px; border-bottom: 1px solid var(--m-line); }
+.management-ui .management-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.management-ui .management-field-grow { flex: 1 1 260px; max-width: 420px; }
+.management-ui .management-field label { font-weight: 600; font-size: 12px; color: #334155; }
+.management-ui .management-field input, .management-ui .management-field select { width: 100%; height: 38px; min-height: 38px; }
+.management-ui .management-search-actions { display: flex; align-items: center; gap: 14px; min-height: 38px; }
+.management-ui .management-search button { min-height: 38px; padding: 0 18px; font-weight: 600; }
+.management-ui a.management-clear { font-size: 12px; font-weight: 600; text-decoration: none; }
+.management-ui a.management-clear:hover { text-decoration: underline; }
+
+/* Tables */
+.management-ui #result_list, .management-ui .management-table-wrap table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.management-ui #result_list thead th, .management-ui .management-table-wrap thead th { padding: 11px 16px; background: var(--m-surface-alt); color: #475569; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--m-line); }
+.management-ui #result_list thead th .text, .management-ui #result_list thead th .text a { padding: 0; color: inherit; text-decoration: none; }
+.management-ui #result_list thead th.sorted { color: var(--m-primary-hover); }
+.management-ui #result_list thead th .sortoptions { display: flex; align-items: center; float: right; margin: 0 0 0 8px; line-height: 1; }
+.management-ui #result_list thead th .clear { display: none; }
+.management-ui #result_list thead th .sortoptions a { color: var(--m-primary-hover); }
+.management-ui #result_list tbody th, .management-ui #result_list tbody td, .management-ui .management-table-wrap tbody td { padding: 13px 16px; font-size: 13px; line-height: 1.5; font-weight: 400; color: #334155; text-align: left; border-bottom: 1px solid var(--m-line-soft); vertical-align: middle; }
+.management-ui #result_list tbody th a, .management-ui .management-cell-id a { font-weight: 650; }
+.management-ui #result_list tbody th, .management-ui .management-cell-id { white-space: nowrap; }
+.management-ui #result_list tbody tr:last-child > *, .management-ui .management-table-wrap tbody tr:last-child > * { border-bottom: 0; }
+.management-ui #result_list tbody tr, .management-ui .management-table-wrap tbody tr { background: #fff; }
+.management-ui #result_list tbody tr:hover, .management-ui .management-table-wrap tbody tr:hover { background: #f5f8ff; }
+.management-ui #result_list tbody th, .management-ui #result_list thead th:first-child, .management-ui .management-cell-id, .management-ui .management-table-wrap thead th:first-child { position: sticky; left: 0; z-index: 1; }
+.management-ui #result_list tbody th, .management-ui .management-cell-id { background: inherit; }
+.management-ui .management-table-wrap { overflow-x: auto; margin: 0; border: 0; border-radius: 0; background: #fff; }
+.management-ui .management-table-wrap table { min-width: 760px; }
+.management-ui .management-table-wrap caption { text-align: left; padding: 12px 16px; background: #fff; color: var(--m-muted); font-size: 12px; font-weight: 600; border-bottom: 1px solid var(--m-line); }
+.management-ui .management-table-empty { padding: 36px 16px !important; text-align: center !important; color: var(--m-muted) !important; }
+.management-ui .management-progress { color: var(--m-muted); font-size: 11px; margin-left: 4px; }
+.management-ui .management-status { display: inline-block; font-size: 10.5px; font-weight: 650; padding: 3px 9px; border-radius: 999px; background: #f1f5f9; color: #475569; }
+.management-ui .management-status-active { background: #e2f5ec; color: #17603e; }
+.management-ui .management-status-provisioning { background: #eff6ff; color: #1d4ed8; }
+.management-ui .management-status-paid { background: #e0f2fe; color: #0b5c80; }
+.management-ui .management-status-pending { background: #fff4d6; color: #7a5200; }
+.management-ui .management-status-failed { background: #feecec; color: #a32121; }
+.management-ui .management-status-cancelled { background: #f1f5f9; color: #475569; }
+
+/* Footer, pagination */
+.management-ui #changelist .changelist-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 20px; border: 0; border-top: 1px solid var(--m-line); background: var(--m-surface-alt); }
+.management-ui #changelist .paginator, .management-ui #changelist .changelist-footer .paginator { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 0; border: 0; background: transparent; color: var(--m-muted); font-size: 12px; }
+.management-ui #changelist .paginator ul { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.management-ui #changelist .paginator li { display: block; margin: 0; padding: 0; }
+.management-ui #changelist .paginator li a:link, .management-ui #changelist .paginator li a:visited, .management-ui #changelist .paginator li .this-page { display: inline-grid; place-items: center; min-width: 34px; height: 34px; padding: 0 9px; border: 1px solid var(--m-line); border-radius: 7px; background: #fff; color: #334155; font-size: 12px; font-weight: 600; text-decoration: none; vertical-align: baseline; }
+.management-ui #changelist .paginator li a:hover { background: var(--m-primary-soft); border-color: var(--m-primary-line); color: var(--m-primary-hover); }
+.management-ui #changelist .paginator li .this-page { background: var(--m-primary); border-color: var(--m-primary); color: #fff; }
+.management-ui #changelist .paginator a.showall { color: var(--m-primary-hover); font-weight: 600; }
+.management-ui #changelist .changelist-footer input[type=submit] { margin: 0; }
+.management-ui .management-pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 12px 20px; border-top: 1px solid var(--m-line); background: var(--m-surface-alt); color: var(--m-muted); font-size: 12px; }
+.management-ui .management-pager p { margin: 0; }
+.management-ui .management-pager-links { display: flex; gap: 8px; }
+.management-ui .management-pager-links a { display: inline-flex; align-items: center; min-height: 34px; padding: 0 14px; border: 1px solid var(--m-line); border-radius: 7px; background: #fff; color: #334155; font-weight: 600; text-decoration: none; }
+.management-ui .management-pager-links a:hover { background: var(--m-primary-soft); border-color: var(--m-primary-line); color: var(--m-primary-hover); }
+
+/* Filter column */
+.management-ui #changelist-filter { flex: 0 0 260px; width: 260px; order: 1; margin: 0; border-left: 1px solid var(--m-line); background: var(--m-surface-alt); }
+.management-ui #changelist-filter h2 { margin: 0; padding: 14px 18px; background: transparent; border-bottom: 1px solid var(--m-line); color: var(--m-muted); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.management-ui #changelist-filter #changelist-filter-extra-actions { margin: 0; padding: 8px 18px; border-bottom: 1px solid var(--m-line); }
+.management-ui #changelist-filter #changelist-filter-extra-actions h3 { margin: 4px 0; padding: 0; font-size: 12px; font-weight: 500; }
+.management-ui #changelist-filter details { margin: 0; padding: 12px 0 4px; border-bottom: 1px solid var(--m-line); }
+.management-ui #changelist-filter details:last-child { border-bottom: 0; }
+.management-ui #changelist-filter details > summary { margin: 0 0 8px; padding: 0 18px; color: var(--m-ink); font-size: 12px; font-weight: 650; cursor: pointer; }
+.management-ui #changelist-filter ul { margin: 0; padding: 0 10px 10px; border: 0; }
+.management-ui #changelist-filter li, .management-ui #changelist-filter li.selected { margin: 0; padding: 0; border: 0; }
+.management-ui #changelist-filter li a { padding: 6px 10px; border-radius: 6px; color: #334155; font-size: 13px; text-decoration: none; }
+.management-ui #changelist-filter li a:hover { background: #e8eefb; color: var(--m-primary-hover); }
+.management-ui #changelist-filter li.selected a { background: var(--m-primary-soft); color: var(--m-primary-hover); font-weight: 650; }
+
+/* Forms */
 .management-ui input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]), .management-ui select, .management-ui textarea { background: #fff; border: 1px solid #7b8ba3; border-radius: 6px; padding: 8px 10px; color: #334155; font: inherit; max-width: 100%; }
 .management-ui input[type=submit], .management-ui input[type=button], .management-ui button:not(.theme-toggle), .management-ui .button { font-family: inherit; border-radius: 6px; }
 .management-ui button[type=submit], .management-ui input[type=submit], .management-ui .button { background: #2563eb; border: 0; color: #fff; padding: 10px 16px; cursor: pointer; }
@@ -163,15 +253,6 @@ body.management-ui {
 .management-ui .submit-row a.closelink { height: auto; line-height: 1.4; padding: 10px 16px; display: inline-block; }
 .management-ui .errornote, .management-ui .errorlist { color: #a32121; }
 .management-ui .messagelist li { border-radius: 7px; margin: 12px 32px; color: #334155; }
-.management-ui .management-search { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin-top: 20px; }
-.management-ui .management-search label { font-weight: 600; font-size: 12px; }
-.management-ui .management-table-wrap { overflow-x: auto; margin-top: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
-.management-ui .management-table-wrap table { min-width: 760px; width: 100%; }
-.management-ui .management-table-wrap caption { text-align: left; padding: 16px; color: #14213d; font-weight: 600; }
-.management-ui .management-status { display: inline-block; font-size: 10px; font-weight: 650; padding: 3px 8px; border-radius: 5px; background: #f1f5f9; color: #475569; }
-.management-ui .management-status-active { background: #e2f5ec; color: #17603e; }
-.management-ui .management-status-provisioning { background: #eff6ff; color: #1d4ed8; }
-.management-ui .management-status-failed { background: #feecec; color: #a32121; }
 .management-ui #footer { padding: 18px 32px; background: #fff; border-top: 1px solid #e2e8f0; margin: 0; }
 .management-ui .management-footer { color: #617187; font-size: 11px; }
 .management-ui .management-footer span { padding: 0 10px; }
@@ -190,6 +271,8 @@ body.management-ui {
   .management-ui #content { padding: 24px 24px 36px; }
   .management-ui .breadcrumbs { padding: 10px 24px; }
   .management-ui .management-overview-grid { grid-template-columns: 1fr; }
+  .management-ui #changelist-filter { flex-basis: 220px; width: 220px; }
+  .management-ui #changelist .changelist-form-container:has(#changelist-filter) > div { max-width: calc(100% - 220px); }
 }
 /* Tablet and phone: the sidebar becomes a navigation strip above the page content. */
 @media (max-width: 900px) {
@@ -201,6 +284,20 @@ body.management-ui {
   .management-ui .management-nav-group + .management-nav-group { margin-top: 0; }
   .management-ui .management-nav-label, .management-ui .management-sidebar-note { display: none; }
   .management-ui .management-nav-link { min-height: 38px; margin: 0; padding: 6px 12px; font-size: 12px; }
+}
+/* Tablet and phone lists: filters sit above the list as wrapped chips; first column stays visible while scrolling. */
+@media (max-width: 900px) {
+  .management-ui #changelist .changelist-form-container { flex-direction: column; }
+  .management-ui #changelist .changelist-form-container:has(#changelist-filter) > div { max-width: 100%; width: 100%; }
+  .management-ui #changelist-filter { order: -1; flex: none; width: 100%; margin: 0; border-left: 0; border-bottom: 1px solid var(--m-line); }
+  .management-ui #changelist-filter h2 { padding: 10px 18px; }
+  .management-ui #changelist-filter #changelist-filter-extra-actions { padding: 4px 18px; }
+  .management-ui #changelist-filter details { padding: 8px 0 0; }
+  .management-ui #result_list tbody td { white-space: nowrap; }
+  .management-ui #changelist-filter ul { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 18px 10px; }
+  .management-ui #changelist-filter li a { padding: 6px 12px; border: 1px solid var(--m-line); border-radius: 999px; background: #fff; }
+  .management-ui #changelist-filter li.selected a { border-color: var(--m-primary-line); }
+  .management-ui #result_list tbody th, .management-ui .management-cell-id, .management-ui #result_list thead th:first-child, .management-ui .management-table-wrap thead th:first-child { box-shadow: 1px 0 0 var(--m-line); }
 }
 @media (max-width: 767px) {
   .management-ui #header { align-items: flex-start; flex-direction: column; gap: 14px; }
@@ -220,17 +317,21 @@ body.management-ui {
   .management-ui .management-work-row .management-add-link { margin: -4px 16px 12px 66px; }
   .management-ui .management-panel-heading { padding: 18px 16px 14px; }
   .management-ui .management-activity li { padding: 14px 16px; }
-  .management-ui #changelist { flex-direction: column; }
-  .management-ui #changelist-filter { border: 0; border-top: 1px solid #e2e8f0; width: 100%; }
-  .management-ui #changelist .changelist-form-container { width: 100%; }
-  .management-ui .management-search { align-items: stretch; flex-direction: column; }
-  .management-ui .management-search input, .management-ui .management-search select { width: 100%; }
   .management-ui .aligned label { float: none; width: auto; }
   .management-ui .aligned .form-row div { min-width: 0; }
   .management-ui .aligned .form-row .flex-container { flex-wrap: wrap; }
   .management-ui .aligned .form-row .help { width: auto; margin-left: 0; }
   .management-ui.model-order.change-form fieldset.module.aligned { grid-template-columns: 1fr; }
   .management-ui .aligned p.help, .management-ui .aligned div.help, .management-ui .aligned .readonly { margin-left: 0; }
+  .management-ui #toolbar { padding: 12px 16px; }
+  .management-ui #toolbar form #searchbar { flex: 1 1 0; max-width: none; }
+  .management-ui #changelist-search .quiet { margin-left: 0; flex-basis: 100%; }
+  .management-ui .management-search { flex-direction: column; align-items: stretch; padding: 14px 16px; }
+  .management-ui .management-field-grow { flex-basis: auto; max-width: none; }
+  .management-ui .management-search-actions { justify-content: flex-start; }
+  .management-ui .management-search button { flex: 1; }
+  .management-ui #changelist .changelist-footer, .management-ui .management-pager { padding: 12px 16px; }
+  .management-ui .titles-and-tools { flex-direction: column; gap: 0; }
   .management-ui .selector { width: 100%; max-width: 100%; }
   .management-ui .selector-available, .management-ui .selector-chosen { width: 100%; }
   .management-ui .selector select { width: 100%; }
@@ -239,6 +340,7 @@ body.management-ui {
 }
 /* Phones: one scrolling row of navigation links keeps the page content near the top. */
 @media (max-width: 600px) {
+  .management-ui #result_list tbody th, .management-ui .management-cell-id, .management-ui #result_list thead th:first-child, .management-ui .management-table-wrap thead th:first-child { position: static; box-shadow: none; }
   .management-ui .management-sidebar { padding: 8px 12px; }
   .management-ui .management-sidebar nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
   .management-ui .management-nav-link { flex: 0 0 auto; white-space: nowrap; }
