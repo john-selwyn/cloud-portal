@@ -182,3 +182,9 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+# Monitoring reads saved snapshots only. Collection is a separate read-only job.
+MONITORING_HOSTS_JSON = os.getenv("MONITORING_HOSTS_JSON", "")
+MONITORING_SNAPSHOT_PATH = os.getenv("MONITORING_SNAPSHOT_PATH", str(BASE_DIR / "var" / "monitoring.json"))
+MONITORING_STALE_SECONDS = 180
+MONITORING_BACKUP_MAX_AGE_HOURS = 36

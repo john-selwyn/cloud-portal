@@ -1,0 +1,48 @@
+{% extends "admin/base_site.html" %}
+{% load static tz %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'portal/monitoring.css' %}?v=20261015">{% endblock %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'management:index' %}">Overview</a> &rsaquo; Monitoring</div>{% endblock %}
+{% block content_title %}{% endblock %}
+{% block content %}
+{% timezone "Asia/Manila" %}
+<div class="monitoring">
+  <header class="mon-heading">
+    <div><span class="mon-eyebrow">Workspace / Infrastructure</span><h1>Infrastructure monitoring</h1><p>Host health, virtual machines and backup coverage in one place.</p></div>
+    <div class="mon-tools"><a class="mon-button" href="{% url 'management:monitoring' %}">Refresh view <span aria-hidden="true">↻</span></a><label><input type="checkbox" id="mon-auto" checked> Refresh every minute</label></div>
+  </header>
+  {% if preview_mode %}<div class="mon-banner">Design preview · Sample readings, not live infrastructure.</div>{% endif %}
+  <div class="mon-meta"><span class="mon-pill unknown">View only</span><span>Notifications off</span><span>Philippine time</span><span class="mon-updated">{% if monitor.observed_at %}Last collection: {{ monitor.observed_at|date:"M j, Y · H:i:s" }}{% else %}Waiting for the first collection{% endif %}</span></div>
+  {% if monitor.stale %}<div class="mon-banner warning"><strong>These readings are out of date.</strong> The last snapshot is shown below. Current health is not confirmed until collection resumes.</div>{% endif %}
+  {% if monitor.empty %}
+  <section class="mon-empty"><div class="mon-empty-icon" aria-hidden="true">◎</div><span class="mon-eyebrow">READY WHEN YOU ARE</span><h2>Connect your hosts to start monitoring.</h2><p>No live readings have been collected yet. Once connected, this page will show host resources, virtual machines and recent backup results.</p><div class="mon-empty-hosts"><span>vps01 · Customer infrastructure</span><span>test-1 · Management infrastructure</span></div><p class="mon-footnote">Unknown readings stay unknown. No sample values are used on this page.</p></section>
+  {% else %}
+  <section class="mon-stats" aria-label="Snapshot summary">
+    <div class="mon-stat"><span>Hosts reporting</span><strong>{{ monitor.connected }}<small> / {{ monitor.hosts|length }}</small></strong><p>Fresh, complete host checks</p></div>
+    <div class="mon-stat"><span>Running VMs</span><strong>{% if monitor.inventory_complete %}{{ monitor.running }}{% else %}—{% endif %}</strong><p>{% if monitor.inventory_complete %}{{ monitor.stopped }} stopped · Last snapshot{% else %}Inventory check incomplete{% endif %}</p></div>
+    <div class="mon-stat"><span>Recent VM archives</span><strong>{{ monitor.protected }}</strong><p>Scheduled, less than 36 hours old</p></div>
+    <div class="mon-stat{% if monitor.backup_attention %} attention{% endif %}"><span>Backup checks to review</span><strong>{{ monitor.backup_attention }}</strong><p>Missing or overdue archives</p></div>
+  </section>
+  <section aria-labelledby="mon-host-title"><div class="mon-section-title"><h2 id="mon-host-title">Hosts</h2><span>Readings from the last collection</span></div>
+  <div class="mon-host-grid">{% for host in monitor.hosts %}<article class="mon-host">
+    <div class="mon-host-title"><div><span class="mon-eyebrow">PROXMOX HOST</span><h3>{{ host.name }}</h3></div><span class="mon-pill {{ host.tone }}">{{ host.state_label }}</span></div>
+    <div class="mon-metric"><div><span>CPU usage</span><strong>{% if host.cpu != None %}{{ host.cpu }}%{% else %}Unavailable{% endif %}</strong></div><div class="mon-meter" aria-hidden="true"><span style="width:{{ host.cpu|default_if_none:'0' }}%"></span></div></div>
+    <div class="mon-metric"><div><span>Memory</span><strong>{% if host.memory_percent != None %}{{ host.memory_percent }}%{% else %}Unavailable{% endif %}</strong></div><div class="mon-meter" aria-hidden="true"><span style="width:{{ host.memory_percent|default_if_none:'0' }}%"></span></div><p>{{ host.memory_used }} / {{ host.memory_total }}</p></div>
+    <div class="mon-host-foot"><span>{% if host.uptime_days != None %}Uptime {{ host.uptime_days }} days{% else %}Uptime unavailable{% endif %}</span><span>{{ host.vms|length }} VM / template records</span></div>
+    {% if host.errors %}<p class="mon-check-note">Some checks could not be completed. Review host access and the collector.</p>{% endif %}
+  </article>{% endfor %}</div></section>
+  <section aria-labelledby="mon-storage-title"><div class="mon-section-title"><h2 id="mon-storage-title">Storage capacity</h2><span>Review usage at 80% and above</span></div>
+  <div class="mon-storage-grid">{% for host in monitor.hosts %}{% for disk in host.storage %}<article class="mon-storage{% if disk.warning %} attention{% endif %}"><div><span class="mon-eyebrow">{{ host.name }} / {{ disk.type }}</span><h3>{{ disk.name }}</h3></div><strong>{% if disk.percent != None %}{{ disk.percent }}%{% else %}—{% endif %}</strong><div class="mon-meter" aria-hidden="true"><span style="width:{{ disk.percent|default_if_none:'0' }}%"></span></div><p>{{ disk.used_label }} used / {{ disk.total_label }} total</p>{% if not disk.active %}<span class="mon-pill warning">Unavailable</span>{% endif %}</article>{% endfor %}{% endfor %}</div>
+  <p class="mon-footnote">Storage entries can share the same NAS capacity. Their totals are not added together.</p></section>
+  <section aria-labelledby="mon-vm-title"><div class="mon-section-title"><div><h2 id="mon-vm-title">Virtual machines &amp; backup coverage</h2><p>VM power state is separate from application service health.</p></div><input type="search" id="mon-search" aria-label="Filter virtual machines" placeholder="Find a VM or host…"></div>
+  <div class="mon-table-wrap"><table class="mon-table" id="mon-vms"><thead><tr><th>VM / template</th><th>Host</th><th>Power state</th><th>Backup check</th><th>Latest archive</th></tr></thead><tbody>
+  {% for vm in monitor.vms %}<tr><td><strong>{{ vm.vmid }}</strong><span class="mon-vm-name">{{ vm.name }}{% if vm.template %} · Template{% endif %}</span></td><td>{{ vm.host }}</td><td><span class="mon-pill {% if vm.status == 'running' and not vm.stale %}good{% else %}unknown{% endif %}">{% if vm.template %}Template{% else %}{{ vm.status|capfirst }}{% endif %}</span>{% if vm.stale %}<span class="mon-small">Last known</span>{% endif %}</td><td><span class="mon-pill {{ vm.backup_state }}">{{ vm.backup_label }}</span></td><td>{% if vm.backup_date %}{{ vm.backup_date|date:"M j · H:i" }}{% else %}Not available{% endif %}</td></tr>{% empty %}<tr><td colspan="5">VM inventory could not be read. Check host permissions.</td></tr>{% endfor %}
+  </tbody></table></div><p class="mon-footnote" id="mon-filter-empty" hidden>No virtual machines match your search.</p>
+  <p class="mon-footnote">A recent archive confirms backup presence, not successful restoration. “Outside schedule” may be intentional for test VMs; review retained guests before excluding them.</p></section>
+  <div class="mon-bottom-grid"><section class="mon-panel" aria-labelledby="mon-backup-title"><div class="mon-section-title"><h2 id="mon-backup-title">Recent backup tasks</h2></div><ul class="mon-task-list">{% for task in monitor.tasks %}<li><div><strong>{{ task.host }}</strong><span>{% if task.id %}VM {{ task.id }}{% else %}Backup job{% endif %} · {{ task.date|date:"M j · H:i" }}</span></div><span class="mon-pill {% if task.status == 'OK' %}good{% elif task.status == 'FAILED' %}warning{% else %}unknown{% endif %}">{% if task.status == 'OK' %}Successful{% elif task.status == 'FAILED' %}Failed{% else %}In progress{% endif %}</span></li>{% empty %}<li>Task results not available.</li>{% endfor %}</ul></section>
+  <section class="mon-panel" aria-labelledby="mon-review-title"><div class="mon-section-title"><h2 id="mon-review-title">Needs review</h2></div>{% for issue in monitor.issues %}<div class="mon-issue"><span class="mon-pill warning">{{ issue.host }}</span><strong>{{ issue.title }}</strong><p>{{ issue.detail }}</p></div>{% empty %}<div class="mon-clear"><span aria-hidden="true">✓</span><strong>No host or storage warnings in this snapshot.</strong><p>Review the backup column for each VM as well.</p></div>{% endfor %}</section></div>
+  {% endif %}
+  <footer class="mon-scope"><strong>What this page checks</strong><p>Proxmox host resources, VM power state, backup schedules and archives. Guest services, PostgreSQL native dumps, website availability and certificate expiry are not connected yet.</p></footer>
+</div>
+{% endtimezone %}
+<script src="{% static 'portal/monitoring.js' %}?v=20261015" defer></script>
+{% endblock %}

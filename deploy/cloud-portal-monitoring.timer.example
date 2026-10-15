@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh Cloud Portal infrastructure monitoring snapshots
+
+[Timer]
+OnBootSec=60
+OnUnitInactiveSec=60
+Unit=cloud-portal-monitoring.service
+AccuracySec=5
+
+[Install]
+WantedBy=timers.target

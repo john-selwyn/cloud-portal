@@ -37,14 +37,27 @@ class ManagementSite(admin.AdminSite):
         return app_list
 
     def get_urls(self):
-        return [path("services/", self.admin_view(self.services), name="services")] + super().get_urls()
+        return [path("services/", self.admin_view(self.services), name="services"),
+                path("monitoring/", self.admin_view(self.monitoring), name="monitoring")] + super().get_urls()
 
     def each_context(self, request):
         context = super().each_context(request)
         context["management_ui"] = True
         context["can_view_services"] = request.user.has_perm("portal.view_order")
         context["can_manage_staff"] = request.user.is_superuser
+        context["can_view_monitoring"] = request.user.is_superuser
         return context
+
+    @method_decorator(require_http_methods(["GET", "HEAD"]))
+    def monitoring(self, request):
+        # Infrastructure inventory is broader than ordinary billing-record access.
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        from .monitoring import dashboard
+        request.current_app = self.name
+        return TemplateResponse(request, "management/monitoring.html", {
+            **self.each_context(request), "title": "Infrastructure monitoring", "monitor": dashboard(),
+        })
 
     def index(self, request, extra_context=None):
         cards = []
