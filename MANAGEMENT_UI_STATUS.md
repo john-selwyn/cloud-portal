@@ -115,6 +115,6 @@ Same environment as earlier batches.
 - Filter groups on tablet/phone are always expanded (Django's `details` elements are fixed open), so on lists with many filters the table starts lower.
 
 ## Latest saved work and exact next step
-- Latest saved code commits on `design/management-refinement`: Batch 1 `dfb210a08633e609b050aa32d9cb7c2be1033794` (shell, sidebar, overview); Batch 2 `74996fe` (lists and services); Batch 3 `283e9d6` (forms, record details, reconcile page); Batch 4 see `git log` (login, final pass). Commits whose message starts "Record" only update this file.
+- Latest saved code commits on `design/management-refinement`: Batch 1 `dfb210a08633e609b050aa32d9cb7c2be1033794` (shell, sidebar, overview); Batch 2 `74996fe` (lists and services); Batch 3 `283e9d6` (forms, record details, reconcile page); Batch 4 `e065240` (login, final pass). Commits whose message starts "Record" only update this file.
 - Batches 1-3 were approved. All four planned batches are now saved. Next step: your visual review of Batch 4 (login and final pass) and a preview on the isolated test environment with integrations disabled, checking an administrator and restricted staff separately.
   After that, merge and deployment are separate decisions for you; neither has been done. Optional follow-ups if wanted: bump the `?v=management-1` stylesheet query in `templates/admin/base_site.html` (needs approval to touch that file), and update `deploy/MANAGEMENT_UI.md`.
