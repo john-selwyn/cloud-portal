@@ -74,5 +74,5 @@ Same environment as Batch 1 (throwaway venv, DEBUG SQLite, integrations empty, s
 - Filter groups on tablet/phone are always expanded (Django's `details` elements are fixed open), so on lists with many filters the table starts lower.
 
 ## Latest saved work and exact next step
-- Latest saved code commits on `design/management-refinement`: Batch 1 `dfb210a08633e609b050aa32d9cb7c2be1033794` (shell, sidebar, overview); Batch 2 see `git log` (lists and services). Commits whose message starts "Record" only update this file.
+- Latest saved code commits on `design/management-refinement`: Batch 1 `dfb210a08633e609b050aa32d9cb7c2be1033794` (shell, sidebar, overview); Batch 2 `74996fe` (lists and services). Commits whose message starts "Record" only update this file.
 - Batch 1 was approved. Next step: wait for the visual review of Batch 2. If approved, Batch 3: record details and forms (order detail with its read-only fields, plan add/change, staff add/edit with the permission selector, password change, reconcile page `sync.html`, `order.html`). Then Batch 4: staff login and final pass (axe, keyboard checks, `deploy/MANAGEMENT_UI.md` note).
