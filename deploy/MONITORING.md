@@ -2,6 +2,20 @@
 
 Status: integrated with the new admin UI for review, 15 October 2026; no production deployment or live collector verification yet.
 
+## Live verification update — 15 October 2026
+
+This supersedes the development status above: user terminal output confirms VM200 `/opt/cloud-portal` deployed `cfb3e3d`, Django checks passed, static files collected and cloud-portal.service active. Service User ict-tech, Group www-data. User explicitly approved direct rollout without preview.
+
+Explicit CA trust verified from VM200: vps01 `https://10.50.0.10:8006` with `/opt/cloud-portal/monitoring-ca/vps01-ca.pem`; test-1 `https://test-1.lab.local:8006` with `/opt/cloud-portal/monitoring-ca/test1-ca.pem`. Both unauthenticated version requests returned HTTP 401, TLS verification 0. Local hostname resolves to 10.50.0.11. Public CA fingerprints compared with trusted host console output.
+
+Dedicated `cloud-monitor@pve!portal` tokens created separately on both hosts with privilege separation and PVEAuditor on both user and token. Private token files transferred with mode 600 into mode-700 var/monitoring-setup; configuration script backed up existing .env there and added host metadata and token variables without printing secrets. .env mode 600. Token files and environment backups must never be committed or shared.
+
+First collection reported partial; exact cause remains unconfirmed. Later endpoint diagnostics all succeeded, and repeated collect_monitoring reported both hosts connected with empty errors arrays: vps01 24 VM/template records, test-1 20. Initial failure was not proven to be a permissions error. No privilege expansion was performed.
+
+Known limitation confirmed by live output and Proxmox source: storage content endpoints can return HTTP 200 and ACL-filtered empty backup lists under PVEAuditor. Both NAS listings returned zero visible entries despite independently verified archives. Missing visible records must display Not verified, never No archive found. This correction includes regression coverage for empty and partially filtered successful responses. Backup schedules and API task results are separate signals; a connected host is not proof of verified backup coverage. Do not grant Datastore.AllocateSpace, Datastore.Allocate or VM.Backup merely to expose monitoring metadata. A separate least-privilege metadata export remains future work if archive coverage is required.
+
+After this correction, 19 monitoring tests passed. Corrective commit deployment, browser owner access and scheduled collection still require live verification. Notifications remain off.
+
 ## What the page does
 
 Owner/superuser route: `/management/monitoring/`, linked from the Management overview. Ordinary staff and customers cannot access infrastructure inventory in this first version. It uses the existing separate Management session and does not alter staff accounts.

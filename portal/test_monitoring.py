@@ -88,12 +88,12 @@ class SnapshotTests(SimpleTestCase):
         self.assertEqual(result["connected"], 0)
         self.assertEqual(result["hosts"][0]["tone"], "unknown")
 
-    def test_missing_archive_and_disk_pressure_are_visible(self):
+    def test_absent_archive_is_unknown_and_disk_pressure_is_visible(self):
         data = snapshot()
         data["hosts"][0]["vms"][0]["backup_at"] = None
         result = dashboard(data)
-        self.assertEqual(result["backup_attention"], 1)
-        self.assertEqual(result["vms"][0]["backup_label"], "No archive found")
+        self.assertEqual(result["backup_attention"], 0)
+        self.assertEqual(result["vms"][0]["backup_label"], "Not verified")
         self.assertTrue(any(i["title"] == "Storage needs attention" for i in result["issues"]))
 
     def test_denied_archive_check_is_unknown_not_missing_or_healthy(self):
@@ -118,7 +118,7 @@ class SnapshotTests(SimpleTestCase):
             self.assertEqual(dashboard(data)["backup_attention"], 1)
         data = snapshot()
         data["hosts"][0]["vms"][0]["backup_at"] = 1e300
-        self.assertEqual(dashboard(data)["vms"][0]["backup_label"], "No archive found")
+        self.assertEqual(dashboard(data)["vms"][0]["backup_label"], "Not verified")
 
     def test_failure_after_success_is_not_hidden(self):
         data = snapshot()
@@ -187,8 +187,9 @@ class CollectorTests(SimpleTestCase):
         responses = {
             "/nodes/test-1/status": {"cpu": 0.2, "memory": {"used": 40, "total": 100}},
             "/nodes/test-1/storage": [{"storage": "nasbackup", "content": "backup", "active": 1}],
-            "/nodes/test-1/qemu": [{"vmid": 1006, "name": "customer", "status": "running", "raw": "secret"}],
-            "/cluster/backup": [{"node": "test-1", "vmid": "100,200,300,400,1006", "enabled": 1}],
+            "/nodes/test-1/qemu": [{"vmid": 1006, "name": "customer", "status": "running", "raw": "secret"},
+                                  {"vmid": 1007, "name": "filtered", "status": "running"}],
+            "/cluster/backup": [{"node": "test-1", "vmid": "100,200,300,400,1006,1007", "enabled": 1}],
             "/nodes/test-1/tasks": [{"status": "OK", "endtime": now, "starttime": now - 20}],
             "/nodes/test-1/storage/nasbackup/content": [{"vmid": 1006, "ctime": now}],
         }
@@ -198,6 +199,15 @@ class CollectorTests(SimpleTestCase):
         self.assertTrue(host["vms"][0]["selected"])
         self.assertEqual(host["vms"][0]["backup_at"], now)
         self.assertNotIn("secret", json.dumps(host))
+        result = dashboard({"collected_at": now, "hosts": [host]})
+        self.assertEqual(result["vms"][1]["backup_label"], "Not verified")
+        self.assertEqual(result["backup_attention"], 0)
+        responses["/nodes/test-1/storage/nasbackup/content"] = []
+        empty_host = collect_host(CONFIG)
+        empty_result = dashboard({"collected_at": now, "hosts": [empty_host]})
+        self.assertEqual(empty_host["state"], "connected")
+        self.assertTrue(all(vm["backup_label"] == "Not verified" for vm in empty_result["vms"]))
+        self.assertEqual(empty_result["backup_attention"], 0)
 
     @patch("portal.monitoring.ProxmoxReader")
     def test_partial_failure_keeps_reachable_host_but_inventory_unknown(self, reader):

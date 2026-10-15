@@ -333,7 +333,9 @@ def dashboard(snapshot=None):
             elif vm["selected"] is False:
                 vm["backup_state"], vm["backup_label"] = "excluded", "Outside schedule"
             elif backup_age is None:
-                vm["backup_state"], vm["backup_label"] = "warning", "No archive found"
+                # Proxmox can return HTTP 200 with an ACL-filtered empty list.
+                # Absence from that list does not establish a missing backup.
+                vm["backup_state"], vm["backup_label"] = "unknown", "Not verified"
             elif backup_age < -60 or backup_age > settings.MONITORING_BACKUP_MAX_AGE_HOURS * 3600:
                 vm["backup_state"], vm["backup_label"] = "warning", "Archive overdue"
             else:
