@@ -2,6 +2,16 @@ import uuid
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.utils.functional import cached_property
+
+
+class OrderQuerySet(models.QuerySet):
+    def with_initial_invoice(self):
+        return self.prefetch_related(models.Prefetch(
+            "invoices", queryset=Invoice.objects.filter(purpose="INITIAL"),
+            to_attr="_initial_invoices",
+        ))
 
 
 class VPSPlan(models.Model):
@@ -48,6 +58,22 @@ class Customer(models.Model):
 
 
 class Order(models.Model):
+
+    objects = OrderQuerySet.as_manager()
+
+    @cached_property
+    def invoice(self):
+        """Compatibility accessor: always the original purchase invoice."""
+        if hasattr(self, "_initial_invoices"):
+            if self._initial_invoices:
+                return self._initial_invoices[0]
+            raise Invoice.DoesNotExist("Initial invoice not found.")
+        return self.invoices.get(purpose=Invoice.Purpose.INITIAL)
+
+    def refresh_from_db(self, *args, **kwargs):
+        self.__dict__.pop("invoice", None)
+        self.__dict__.pop("_initial_invoices", None)
+        return super().refresh_from_db(*args, **kwargs)
 
     checkout_token = models.UUIDField(null=True, blank=True, unique=True, editable=False)
 
@@ -130,17 +156,53 @@ class Order(models.Model):
 
 class Invoice(models.Model):
 
+    class Purpose(models.TextChoices):
+        INITIAL = "INITIAL", "Initial purchase"
+        RENEWAL = "RENEWAL", "Renewal"
+
     class Status(models.TextChoices):
         PENDING = "PENDING", "Pending"
         PAID = "PAID", "Paid"
         VOID = "VOID", "Void"
         OVERDUE = "OVERDUE", "Overdue"
 
-    order = models.OneToOneField(
+    order = models.ForeignKey(
         Order,
         on_delete=models.PROTECT,
-        related_name="invoice"
+        related_name="invoices"
     )
+
+    purpose = models.CharField(max_length=10, choices=Purpose.choices, default=Purpose.INITIAL)
+    subscription = models.ForeignKey("Subscription", on_delete=models.PROTECT,
+                                     related_name="renewal_invoices", null=True, blank=True)
+    period_start = models.DateTimeField(null=True, blank=True)
+    period_end = models.DateTimeField(null=True, blank=True)
+    currency = models.CharField(max_length=3, default="PHP")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["order"], condition=models.Q(purpose="INITIAL"),
+                                    name="one_initial_invoice_per_order"),
+            models.UniqueConstraint(fields=["subscription", "period_start"],
+                                    condition=models.Q(purpose="RENEWAL"),
+                                    name="one_renewal_invoice_per_period"),
+            models.CheckConstraint(condition=(
+                models.Q(purpose="INITIAL", subscription__isnull=True,
+                         period_start__isnull=True, period_end__isnull=True)
+                | models.Q(purpose="RENEWAL", subscription__isnull=False,
+                           period_start__isnull=False, period_end__isnull=False,
+                           period_end__gt=models.F("period_start"))), name="invoice_period_shape"),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.subscription_id and self.subscription.order_id != self.order_id:
+            raise ValidationError("Invoice subscription must belong to the same order.")
+
+    @property
+    def is_overdue(self):
+        from django.utils import timezone
+        return self.status in (self.Status.PENDING, self.Status.OVERDUE) and self.due_date < timezone.now()
 
     invoice_number = models.CharField(
         max_length=50,
@@ -269,6 +331,10 @@ class Subscription(models.Model):
 
     start_date = models.DateTimeField()
     next_billing_date = models.DateTimeField()
+    # Agreement snapshot; next_billing_date remains the paid-through boundary.
+    renewal_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    renewal_cycle = models.CharField(max_length=20, choices=Order.BillingCycle.choices, blank=True)
+    renewal_currency = models.CharField(max_length=3, default="PHP")
 
     status = models.CharField(
         max_length=20,

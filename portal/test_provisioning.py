@@ -416,7 +416,7 @@ class ProvisioningTests(TransactionTestCase):
         self.respond('Running')
         self.sync()
         sub.refresh_from_db()
-        self.assertEqual(sub.status, 'ACTIVE')
+        self.assertEqual(sub.status, 'EXPIRED')
         self.assertEqual(sub.next_billing_date, due)
         self.assertEqual(Subscription.objects.count(), 1)
 

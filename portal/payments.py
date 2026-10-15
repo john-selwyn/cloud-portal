@@ -23,7 +23,7 @@ def record_verified_payment(*, order_id, provider, transaction_id, amount):
     if not provider or len(provider) > 50 or not transaction_id or len(transaction_id) > 200:
         raise ValidationError('Valid provider and transaction identifiers are required.')
     order = Order.objects.select_for_update().get(pk=order_id)
-    invoice = Invoice.objects.select_for_update().get(order=order)
+    invoice = Invoice.objects.select_for_update().get(order=order, purpose=Invoice.Purpose.INITIAL)
     try:
         amount = Decimal(str(amount))
     except (InvalidOperation, ValueError):

@@ -1,0 +1,16 @@
+{% extends "admin/base_site.html" %}{% load tz %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'management:index' %}">Overview</a> &rsaquo; <a href="{% url 'management:renewals' %}">Renewals</a> &rsaquo; Review invoice</div>{% endblock %}
+{% block content %}{% timezone "Asia/Manila" %}
+<section class="management-panel"><div class="management-panel-heading">
+<h2>{{ proposal.subscription.customer.full_name }} · Subscription #{{ proposal.subscription.pk }}</h2>
+<p>Order #{{ proposal.subscription.order_id }} · {{ proposal.currency }} {{ proposal.amount }} · {{ proposal.subscription.get_renewal_cycle_display }}</p>
+<p>Due: {{ proposal.due|date:"M j, Y H:i T" }}</p>
+{% if proposal.end %}<p>Renewal period: {{ proposal.due|date:"M j, Y H:i T" }} to {{ proposal.end|date:"M j, Y H:i T" }}.</p>{% endif %}
+<p>{{ proposal.reason }}</p>
+{% if proposal.invoice %}<a href="{% url 'management:portal_invoice_change' proposal.invoice.pk %}">View existing invoice</a>
+{% elif proposal.eligible and generation_enabled %}
+<p>Issuing this invoice records an unpaid renewal only. It does not charge the customer, extend the subscription, send a message or change the VPS.</p>
+<form method="post">{% csrf_token %}<input type="hidden" name="review_token" value="{{ review_token }}"><button type="submit">Issue renewal invoice</button></form>
+{% elif not generation_enabled %}<p>Invoice generation is disabled.</p>{% endif %}
+<p><a href="{% url 'management:renewals' %}">Back to renewals</a></p>
+</div></section>{% endtimezone %}{% endblock %}

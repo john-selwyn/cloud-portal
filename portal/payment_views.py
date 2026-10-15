@@ -20,7 +20,7 @@ from .models import Invoice, Order
 @require_POST
 def pay_now(request, order_id):
     order = get_object_or_404(Order, pk=order_id, customer__user=request.user)
-    get_object_or_404(Invoice, order=order)
+    get_object_or_404(Invoice, order=order, purpose=Invoice.Purpose.INITIAL)
     if order.status != 'PENDING':
         return redirect('invoice', order_id=order.pk)
     try:
@@ -38,7 +38,7 @@ def pay_now(request, order_id):
 @require_GET
 def payment_return(request, order_id):
     # No API request and no state change. A browser is never evidence of payment.
-    order = get_object_or_404(Order.objects.select_related('invoice'), pk=order_id, customer__user=request.user)
+    order = get_object_or_404(Order.objects.with_initial_invoice(), pk=order_id, customer__user=request.user)
     return render(request, 'portal/payment_return.html', {'order': order})
 
 

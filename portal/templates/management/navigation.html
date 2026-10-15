@@ -5,6 +5,7 @@
 {% if can_view_monitoring %}<a class="management-nav-link" data-area="services" href="{% url 'management:monitoring' %}"{% if request.resolver_match.url_name == 'monitoring' %} aria-current="page"{% endif %}>Monitoring</a>{% endif %}
 <a class="management-nav-link" data-area="overview" href="{% url 'management:index' %}"{% if request.resolver_match.url_name == 'index' %} aria-current="page"{% endif %}>Overview</a>
 {% if can_view_services %}<a class="management-nav-link" data-area="services" href="{% url 'management:services' %}"{% if request.resolver_match.url_name == 'services' %} aria-current="page"{% endif %}>VPS services</a>{% endif %}
+{% if can_view_renewals %}<a class="management-nav-link" data-area="invoice" href="{% url 'management:renewals' %}"{% if request.resolver_match.url_name == 'renewals' or request.resolver_match.url_name == 'renewal_invoice' %} aria-current="page"{% endif %}>Renewals</a>{% endif %}
 </div>
 {% for app in available_apps %}
 <div class="management-nav-group">

@@ -66,14 +66,14 @@ def register(request):
 @require_GET
 def dashboard(request):
     customer = customer_for(request.user)
-    records = customer.orders.select_related('plan', 'invoice').order_by('-created_at', '-pk')
+    records = customer.orders.select_related('plan').with_initial_invoice().order_by('-created_at', '-pk')
     return render(request, 'portal/dashboard.html', {
         'customer': customer, 'order_count': records.count(),
         'active_count': customer.subscriptions.filter(status=Subscription.Status.ACTIVE).count(),
         'pending_count': Invoice.objects.filter(order__customer=customer, status=Invoice.Status.PENDING).count(),
         'orders': records[:5],
         'services': records.filter(
-            invoice__status=Invoice.Status.PAID,
+            invoices__purpose=Invoice.Purpose.INITIAL, invoices__status=Invoice.Status.PAID,
             status__in=[Order.Status.PAID, Order.Status.PROVISIONING, Order.Status.ACTIVE, Order.Status.FAILED],
         )[:3],
     })
@@ -83,9 +83,9 @@ def dashboard(request):
 @require_GET
 def my_vps(request):
     services = (
-        Order.objects.filter(customer__user=request.user, invoice__status=Invoice.Status.PAID)
+        Order.objects.filter(customer__user=request.user, invoices__purpose=Invoice.Purpose.INITIAL, invoices__status=Invoice.Status.PAID)
         .filter(status__in=[Order.Status.PAID, Order.Status.PROVISIONING, Order.Status.ACTIVE, Order.Status.FAILED])
-        .select_related('plan', 'invoice')
+        .select_related('plan').with_initial_invoice()
         .order_by('-created_at', '-pk')
     )
     return render(request, 'portal/my_vps.html', {'services': services})
@@ -95,10 +95,10 @@ def my_vps(request):
 @require_GET
 def vps_detail(request, order_id):
     order = get_object_or_404(
-        Order.objects.select_related('plan', 'invoice', 'subscription'),
+        Order.objects.select_related('plan', 'subscription').with_initial_invoice(),
         pk=order_id,
         customer__user=request.user,
-        invoice__status=Invoice.Status.PAID,
+        invoices__purpose=Invoice.Purpose.INITIAL, invoices__status=Invoice.Status.PAID,
     )
     return render(request, 'portal/vps_detail.html', {'order': order})
 
@@ -107,10 +107,10 @@ def vps_detail(request, order_id):
 @require_GET
 def vps_runtime_status(request, order_id):
     order = get_object_or_404(
-        Order.objects.select_related('invoice'),
+        Order.objects.with_initial_invoice(),
         pk=order_id,
         customer__user=request.user,
-        invoice__status=Invoice.Status.PAID,
+        invoices__purpose=Invoice.Purpose.INITIAL, invoices__status=Invoice.Status.PAID,
     )
     if order.status != Order.Status.ACTIVE:
         return JsonResponse({
@@ -189,8 +189,8 @@ def vps_runtime_status(request, order_id):
 @sensitive_variables()
 def windows_credentials(request, order_id):
     order = get_object_or_404(
-        Order.objects.select_related('invoice'), pk=order_id,
-        customer__user=request.user, invoice__status=Invoice.Status.PAID,
+        Order.objects.with_initial_invoice(), pk=order_id,
+        customer__user=request.user, invoices__purpose=Invoice.Purpose.INITIAL, invoices__status=Invoice.Status.PAID,
         status=Order.Status.ACTIVE, operating_system=Order.OperatingSystem.WINDOWS_11,
     )
     try:
@@ -216,7 +216,7 @@ def vps_power(request, order_id, action):
                 Order.objects.select_for_update(),
                 pk=order_id,
                 customer__user=request.user,
-                invoice__status=Invoice.Status.PAID,
+                invoices__purpose=Invoice.Purpose.INITIAL, invoices__status=Invoice.Status.PAID,
                 status=Order.Status.ACTIVE,
             )
             existing = order.power_operations.filter(status__in=[
@@ -318,14 +318,14 @@ def order_confirm(request):
 @customer_required
 @require_GET
 def orders(request):
-    records = Order.objects.filter(customer__user=request.user).select_related('plan', 'invoice').order_by('-created_at', '-pk')
+    records = Order.objects.filter(customer__user=request.user).select_related('plan').with_initial_invoice().order_by('-created_at', '-pk')
     return render(request, 'portal/orders.html', {'page_obj': Paginator(records, 20).get_page(request.GET.get('page'))})
 
 
 @customer_required
 @require_GET
 def order_detail(request, order_id):
-    order = get_object_or_404(Order.objects.select_related('plan', 'invoice'), pk=order_id, customer__user=request.user)
+    order = get_object_or_404(Order.objects.select_related('plan').with_initial_invoice(), pk=order_id, customer__user=request.user)
     return render(request, 'portal/order_detail.html', {'order': order, **payment_context(order)})
 
 
@@ -333,7 +333,7 @@ def order_detail(request, order_id):
 @require_GET
 def provisioning_status(request, order_id):
     order = get_object_or_404(
-        Order.objects.select_related('invoice'),
+        Order.objects.with_initial_invoice(),
         pk=order_id,
         customer__user=request.user,
     )
@@ -370,8 +370,18 @@ def invoices(request):
 @require_GET
 def invoice(request, order_id):
     record = get_object_or_404(Invoice.objects.select_related('order__plan', 'order__customer'),
-                              order_id=order_id, order__customer__user=request.user)
+                              order_id=order_id, purpose=Invoice.Purpose.INITIAL, order__customer__user=request.user)
     return render(request, 'portal/invoice.html', {'invoice': record, 'order': record.order, **payment_context(record.order)})
+
+
+@customer_required
+@require_GET
+def invoice_detail(request, invoice_id):
+    record = get_object_or_404(Invoice.objects.select_related('order__plan', 'order__customer', 'subscription'),
+                              pk=invoice_id, order__customer__user=request.user)
+    return render(request, 'portal/invoice.html', {
+        'invoice': record, 'order': record.order, **payment_context(record.order),
+    })
 
 
 @customer_required

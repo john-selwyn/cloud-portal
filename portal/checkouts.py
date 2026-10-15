@@ -12,7 +12,7 @@ OPEN_STATES = ('CREATING', 'ACTIVE', 'UNKNOWN', 'VERIFYING')
 
 
 def _payable(order, invoice, checkout=None):
-    if (order.status != Order.Status.PENDING or invoice.status not in ('PENDING', 'OVERDUE') or
+    if (invoice.purpose != Invoice.Purpose.INITIAL or order.status != Order.Status.PENDING or invoice.status not in ('PENDING', 'OVERDUE') or
             order.amount != invoice.amount or order.amount <= 0 or
             (checkout and checkout.amount != order.amount)):
         raise xendit.XenditError('ORDER_NOT_PAYABLE')
@@ -25,7 +25,7 @@ def _session_state(checkout_id, data, *, session_id):
     link = xendit.checkout_url(data.get('payment_link_url')) if data['status'] == 'ACTIVE' else ''
     with transaction.atomic():
         order = Order.objects.select_for_update().get(pk=snapshot.order_id)
-        invoice = Invoice.objects.get(order=order)
+        invoice = Invoice.objects.get(order=order, purpose=Invoice.Purpose.INITIAL)
         checkout = XenditCheckout.objects.select_for_update().get(pk=checkout_id)
         if checkout.status == 'COMPLETED':
             return checkout
@@ -53,7 +53,7 @@ def start_checkout(order_id):
     # A conditional unique constraint is the second line of duplicate protection.
     with transaction.atomic():
         order = Order.objects.select_for_update().get(pk=order_id)
-        invoice = Invoice.objects.get(order=order)
+        invoice = Invoice.objects.get(order=order, purpose=Invoice.Purpose.INITIAL)
         _payable(order, invoice)
         checkout = order.checkouts.filter(status__in=OPEN_STATES).first()
         created = checkout is None
@@ -121,7 +121,7 @@ def process_event(event, data):
     try:
         with transaction.atomic():
             order = Order.objects.select_for_update().get(pk=checkout.order_id)
-            invoice = Invoice.objects.select_for_update().get(order=order)
+            invoice = Invoice.objects.select_for_update().get(order=order, purpose=Invoice.Purpose.INITIAL)
             locked = XenditCheckout.objects.select_for_update().get(pk=checkout.pk)
             if locked.status == 'COMPLETED':
                 return

@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}{% load tz %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'management:index' %}">Overview</a> &rsaquo; Renewals</div>{% endblock %}
+{% block content %}{% timezone "Asia/Manila" %}
+<p class="management-lede">Review upcoming billing dates and renewal invoices. Dates use Philippine time. This page does not change VPS access.</p>
+<section class="management-stat-grid" aria-label="Renewal summary">
+  <a class="management-stat" href="?status=upcoming"><span class="management-stat-label">Due within {{ lead_days }} days</span><strong>{{ counts.upcoming }}</strong></a>
+  <a class="management-stat" href="?status=overdue"><span class="management-stat-label">Due or overdue · needs review</span><strong>{{ counts.overdue }}</strong></a>
+  <a class="management-stat" href="?status=unpaid"><span class="management-stat-label">Unpaid renewal invoices</span><strong>{{ counts.unpaid }}</strong></a>
+</section>
+{% if not generation_enabled %}<p class="help">Invoice generation is currently disabled. You can review billing dates and existing invoices.</p>{% endif %}
+<div class="management-list">
+<form method="get" class="management-search">
+  <div class="management-field management-field-grow"><label for="q">Customer, subscription or order number</label><input id="q" name="q" value="{{ q }}" maxlength="200"></div>
+  <div class="management-field"><label for="status">View</label><select id="status" name="status">
+    <option value="">All subscriptions</option><option value="upcoming"{% if status == 'upcoming' %} selected{% endif %}>Due soon</option>
+    <option value="overdue"{% if status == 'overdue' %} selected{% endif %}>Due or overdue</option><option value="unpaid"{% if status == 'unpaid' %} selected{% endif %}>Unpaid renewal invoices</option>
+  </select></div><div class="management-search-actions"><button type="submit">Search</button><a class="management-clear" href="{% url 'management:renewals' %}">Clear</a></div>
+</form>
+<div class="management-table-wrap" role="region" aria-label="Renewal records" tabindex="0"><table>
+<thead><tr><th>Subscription / customer</th><th>Service</th><th>Next billing date · PH</th><th>Agreed renewal</th><th>Review</th><th>Invoice</th></tr></thead>
+<tbody>{% for item in proposals %}<tr>
+  <td><a href="{% url 'management:portal_subscription_change' item.subscription.pk %}">#{{ item.subscription.pk }}</a><br>{{ item.subscription.customer.full_name }}</td>
+  <td>Order #{{ item.subscription.order_id }} · {{ item.subscription.order.plan.name }}<br>{{ item.subscription.get_status_display }}</td>
+  <td>{{ item.due|date:"M j, Y H:i T" }}</td>
+  <td>{% if item.amount != None %}{{ item.currency }} {{ item.amount }}<br>{{ item.subscription.get_renewal_cycle_display }}{% else %}Needs review{% endif %}</td>
+  <td>{{ item.reason }}{% if can_issue and item.eligible %}<br><a href="{% url 'management:renewal_invoice' item.subscription.pk %}">Review invoice</a>{% endif %}</td>
+  <td>{% if item.invoice %}<a href="{% url 'management:portal_invoice_change' item.invoice.pk %}">{{ item.invoice.invoice_number }}</a><br>{{ item.invoice.get_status_display }}{% if item.invoice.is_overdue %} · Overdue{% endif %}{% else %}Not issued{% endif %}</td>
+</tr>{% empty %}<tr><td colspan="6" class="management-table-empty">No subscriptions match these filters.</td></tr>{% endfor %}</tbody></table></div>
+<nav class="management-pager" aria-label="Pagination"><p>Page {{ page.number }} of {{ page.paginator.num_pages }}.</p><div class="management-pager-links">
+{% if page.has_previous %}<a href="?q={{ q|urlencode }}&amp;status={{ status|urlencode }}&amp;page={{ page.previous_page_number }}">Previous</a>{% endif %}
+{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;status={{ status|urlencode }}&amp;page={{ page.next_page_number }}">Next</a>{% endif %}
+</div></nav></div>
+<p class="help">Renewals retain the original purchase price and billing cycle. Already-overdue services require individual review. Online renewal payment, automatic service changes and notifications are not enabled in this phase.</p>
+{% endtimezone %}{% endblock %}

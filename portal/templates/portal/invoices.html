@@ -16,17 +16,17 @@
 </tr>
 </thead>
 <tbody>{% for invoice in page_obj %}<tr>
-<td>{{ invoice.invoice_number }}</td>
+<td>{{ invoice.invoice_number }}<br><small>{{ invoice.get_purpose_display }}</small></td>
 <td>
 <a href="{% url 'order_detail' invoice.order_id %}">#{{ invoice.order_id }}</a>
 </td>
 <td class="num">{{ invoice.amount }}</td>
 <td>
-<span class="badge {{ invoice.status|lower }}">{{ invoice.get_status_display }}</span>
+<span class="badge {% if invoice.is_overdue %}overdue{% else %}{{ invoice.status|lower }}{% endif %}">{% if invoice.is_overdue %}Overdue{% else %}{{ invoice.get_status_display }}{% endif %}</span>
 </td>
 <td>{{ invoice.due_date|date:'M j, Y' }}</td>
 <td>
-<a href="{% url 'invoice' invoice.order_id %}" aria-label="View {{ invoice.invoice_number }}">View &rarr;</a>
+<a href="{% url 'invoice_detail' invoice.pk %}" aria-label="View {{ invoice.invoice_number }}">View &rarr;</a>
 </td>
 </tr>{% endfor %}</tbody>
 </table>
