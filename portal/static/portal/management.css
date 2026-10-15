@@ -332,15 +332,21 @@ body.management-ui {
 .management-ui #footer { padding: 18px 32px; background: #fff; border-top: 1px solid #e2e8f0; margin: 0; }
 .management-ui .management-footer { color: #617187; font-size: 11px; }
 .management-ui .management-footer span { padding: 0 10px; }
-.management-ui.login { background: #f5f7fb; }
-.management-ui.login #container { width: min(440px, calc(100% - 32px)); margin: 8vh auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: none; min-height: 0; }
-.management-ui.login #header { justify-content: center; padding: 28px; }
-.management-ui.login #content { padding: 28px; }
+/* Staff login: one centred card using Django's own form. */
+.management-ui.login { background: var(--body-bg); }
+.management-ui.login #container { width: min(440px, calc(100% - 32px)); min-height: 0; margin: 10vh auto 6vh; border: 1px solid var(--m-line); border-radius: var(--m-radius); background: var(--m-surface); box-shadow: 0 12px 32px rgba(20, 33, 61, .06); overflow: hidden; }
+.management-ui.login #header { position: static; justify-content: center; padding: 26px 28px 22px; border-bottom: 1px solid var(--m-line); }
+.management-ui.login #content { padding: 24px 28px 28px; }
 .management-ui.login #content-main { width: 100%; }
+.management-ui.login #content-main::before { content: "Staff sign in"; display: block; margin: 0 0 14px; color: var(--m-ink); font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
 .management-ui.login #login-form .form-row { padding: 8px 0; border: 0; }
-.management-ui.login #login-form .submit-row { padding: 16px 0 0; border: 0; }
-.management-ui.login #login-form input[type=submit] { width: 100%; }
-.management-ui.login #footer { text-align: center; }
+.management-ui.login #login-form .form-row label { display: block; margin: 0 0 6px; color: #334155; font-size: 13px; font-weight: 600; }
+.management-ui.login #login-form input[type=text], .management-ui.login #login-form input[type=password] { width: 100%; min-height: 42px; }
+.management-ui.login #login-form .submit-row { display: block; margin: 0; padding: 14px 0 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; position: static; }
+.management-ui.login #login-form input[type=submit] { width: 100%; min-height: 44px; border: 0; background: var(--m-primary); color: #fff; font-size: 14px; font-weight: 650; }
+.management-ui.login #login-form input[type=submit]:hover { background: var(--m-primary-hover); }
+.management-ui.login .errornote { margin: 0 0 12px; }
+.management-ui.login #footer { padding: 16px 28px; border-top: 1px solid var(--m-line); background: var(--m-surface-alt); text-align: center; }
 @media (min-width: 1600px) { .management-ui .management-stat-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 @media (max-width: 1100px) {
   body.management-ui { --m-sidebar-w: 216px; }

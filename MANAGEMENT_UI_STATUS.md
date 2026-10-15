@@ -1,6 +1,6 @@
 # Management UI refinement status — ICT Ventures Cloud Portal
 
-Last updated: 2026-10-15 (after Batch 3).
+Last updated: 2026-10-15 (after Batch 4 — all planned batches complete, pending your final review).
 
 ## Baseline and branch
 - Baseline branch: `design/management-ui`, exact commit `38283446b603dd91c66574ab13503da31c32ff5e`.
@@ -35,7 +35,8 @@ Last updated: 2026-10-15 (after Batch 3).
   Errors: red summary note, red label and outlined field, message above the control. Messages (success/warning/error) are tinted bars.
   The permission selector (Django SelectFilter2) keeps its markup and scripts; only headings, borders, list height and buttons are restyled.
   The reconcile page is a single confirmation card; wording, POST form and CSRF token are unchanged.
-- Rules for sections not yet reworked (staff login) are carried over unchanged from the baseline, apart from the shell.
+- Staff login (Batch 4): one centred card on the page background with the brand mark, a "Staff sign in" heading (CSS-generated text, because the login template cannot be overridden without Python changes),
+  labelled fields, a full-width filled "Log in" button, and the error note in the same red style as forms. Django's login form, field names, CSRF token and autofocus are untouched.
 
 ## Changed files (Batch 1)
 - `portal/templates/management/navigation.html`: group wrappers, `data-area` hook, "VPS plans" label. Links, URL names, `aria-label`s, `aria-current` logic and permission conditions kept.
@@ -53,6 +54,10 @@ Last updated: 2026-10-15 (after Batch 3).
 - `portal/templates/management/sync.html`: confirmation card markup only (same text, form method, CSRF token, URLs).
 - `MANAGEMENT_UI_STATUS.md`.
 - Provenance note: at the start of Batch 3 the working tree already held uncommitted edits to these two files that were not made in the Batch 2 conversation. They were reviewed line by line, found to be presentation-only and in scope, then verified and completed (phone width fix, error colours) before commit.
+
+## Changed files (Batch 4)
+- `portal/static/portal/management.css`: login rules rewritten. No template changed in this batch.
+- `MANAGEMENT_UI_STATUS.md`.
 
 ## Checks actually run (Batch 1)
 Environment: Django 6.1.1 from `requirements.txt` in a throwaway venv, DEBUG-mode SQLite (in-memory test database), placeholder SECRET_KEY,
@@ -83,17 +88,33 @@ Same environment as Batch 1 and 2 (throwaway venv, DEBUG SQLite, integrations em
 - Fixed during the batch: Django's phone rule `.aligned .form-row > div { width: calc(100vw - 30px) }` made fields overflow and clip on phones; overridden. Error list inherited a grey background and error colours lost a specificity tie; fixed.
 - Not exercised: a POST to the reconcile page (it contacts the provisioner path; existing tests cover it with the provisioner mocked), staff creation, or permission edits in the browser.
 
+## Checks actually run (Batch 4, final pass)
+Same environment as earlier batches.
+- `manage.py check` clean; `makemigrations --check` no changes; full Django suite **192 passed**; `node --test portal/test_provisioning_poll.cjs` **9 passed**.
+- Login page rendered at 1440/1024/768/390px, plus the wrong-password error state at 1440 and 390px. No overflow.
+- Final sweep: 18 Management pages x 4 widths as administrator (72 renders) and the overview for billing-only and operations-only staff: all HTTP 200, zero horizontal overflow, zero console or page errors.
+- Automated accessibility (axe-core 4.10.2, WCAG 2 A/AA and 2.1 A/AA tags) on login, 18 pages as administrator, and the overview for three restricted accounts, at 1440 and 390px:
+  no violations except one rule on the staff-edit page, `aria-prohibited-attr` (2 elements) from Django's own SelectFilter2 search tooltip icon.
+  This is the same finding already documented in `deploy/MANAGEMENT_UI.md`; it is not new markup and was left alone rather than changing Django's permission widget.
+  Automated checks are not a real screen-reader test and do not prove accessibility compliance.
+- Keyboard Tab walkthrough (Chromium) on overview, services, orders list, order detail, plan add and staff edit at 1440 and 390px: "Skip to main content" is the first stop, every stop showed a visible focus ring, focus reached the main content and left the page at the end (no trap).
+  Only Tab order and focus visibility were checked, not screen-reader announcements or switch/voice control.
+- Scope check against the baseline: only `portal/templates/management/*`, `portal/static/portal/management.css` and this file differ. No Python, settings, models, migrations, auth, permissions, sessions, payments or provisioning file changed, and `templates/admin/base_site.html` is unchanged.
+- Legacy admin (`/admin/`) and customer pages (`/`, `/accounts/login/`) load no `management.css` and no Management body class (browser check plus the existing boundary test).
+
 ## Known issues and unverified
-- Not run: axe/contrast checks, keyboard-only walkthrough, real screen reader, Safari/Firefox, real PostgreSQL. Automated checks are not a screen-reader test.
+- Not run: real screen reader or other assistive technology, Safari/Firefox, real PostgreSQL, live provisioning or payment behaviour. The reconcile POST was not submitted in the browser (existing tests cover it with the provisioner mocked).
+- `deploy/MANAGEMENT_UI.md` was not edited (outside the stated scope). It still describes the first Management design (192 tests, earlier checks); update it only if you want it to match this branch.
 - The stylesheet link in `templates/admin/base_site.html` still uses `?v=management-1`. That file is out of scope, so browsers that cached the old CSS may need a hard refresh until the query string is bumped (needs your OK to touch that file).
 - Sidebar and fade on phones were checked at 390px only; very narrow (<360px) widths are untested.
 - Dark mode is not supported by the Management theme (unchanged from baseline).
-- The staff login page is still in baseline styling (Batch 4).
+- The "Staff sign in" heading on the login page is CSS-generated text, so it is not in the page's accessibility tree; the page already has the brand link and labelled fields. Making it a real heading needs a login template (a Python change to point the site at it), which is out of scope.
 - Django generates some list wording from model names (page titles such as "Select vps plan to change", button "Add vps plan", "Add user" on Staff accounts). Changing it needs Python or model changes, so it is left as is. The overview and sidebar already say "VPS plans".
 - Status columns in Django changelists (orders, invoices, payments) are plain text, not pills, because badges would need Python or a changelist template override that would also affect the legacy admin. Pills exist on the services page.
 - The Django 403 page shown to staff who open a page outside their permissions is not themed (outside this scope).
 - Filter groups on tablet/phone are always expanded (Django's `details` elements are fixed open), so on lists with many filters the table starts lower.
 
 ## Latest saved work and exact next step
-- Latest saved code commits on `design/management-refinement`: Batch 1 `dfb210a08633e609b050aa32d9cb7c2be1033794` (shell, sidebar, overview); Batch 2 `74996fe` (lists and services); Batch 3 `283e9d6` (forms, record details, reconcile page). Commits whose message starts "Record" only update this file.
-- Batches 1 and 2 were approved. Next step: wait for the visual review of Batch 3. If approved, Batch 4: the staff login page (`management.css` login rules; Django's login template is used, so CSS only unless a Management login template already exists), then a final pass: keyboard walkthrough, axe check of every page at desktop and phone width, a re-check of the customer portal and legacy admin, and a short note in `deploy/MANAGEMENT_UI.md` only if you want it (that file is outside the stated scope).
+- Latest saved code commits on `design/management-refinement`: Batch 1 `dfb210a08633e609b050aa32d9cb7c2be1033794` (shell, sidebar, overview); Batch 2 `74996fe` (lists and services); Batch 3 `283e9d6` (forms, record details, reconcile page); Batch 4 see `git log` (login, final pass). Commits whose message starts "Record" only update this file.
+- Batches 1-3 were approved. All four planned batches are now saved. Next step: your visual review of Batch 4 (login and final pass) and a preview on the isolated test environment with integrations disabled, checking an administrator and restricted staff separately.
+  After that, merge and deployment are separate decisions for you; neither has been done. Optional follow-ups if wanted: bump the `?v=management-1` stylesheet query in `templates/admin/base_site.html` (needs approval to touch that file), and update `deploy/MANAGEMENT_UI.md`.
