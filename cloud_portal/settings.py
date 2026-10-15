@@ -188,3 +188,7 @@ MONITORING_HOSTS_JSON = os.getenv("MONITORING_HOSTS_JSON", "")
 MONITORING_SNAPSHOT_PATH = os.getenv("MONITORING_SNAPSHOT_PATH", str(BASE_DIR / "var" / "monitoring.json"))
 MONITORING_STALE_SECONDS = 180
 MONITORING_BACKUP_MAX_AGE_HOURS = 36
+
+# Invoice foundation only: no scheduled billing or entitlement changes.
+RENEWAL_INVOICING_ENABLED = os.getenv("RENEWAL_INVOICING_ENABLED", "False").lower() == "true"
+RENEWAL_INVOICE_LEAD_DAYS = int(os.getenv("RENEWAL_INVOICE_LEAD_DAYS", "7"))

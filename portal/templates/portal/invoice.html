@@ -2,10 +2,10 @@
 <article class="card invoice">
 <div class="page-heading">
 <div>
-<p class="eyebrow">INVOICE</p>
+<p class="eyebrow">{{ invoice.get_purpose_display|upper }} INVOICE</p>
 <h1>{{ invoice.invoice_number }}</h1>
 </div>
-<span class="badge {{ invoice.status|lower }}">{{ invoice.get_status_display }}</span>
+<span class="badge {% if invoice.is_overdue %}overdue{% else %}{{ invoice.status|lower }}{% endif %}">{% if invoice.is_overdue %}Overdue{% else %}{{ invoice.get_status_display }}{% endif %}</span>
 </div>
 <div class="split invoice-parties">
 <section>
@@ -22,6 +22,7 @@
 <dd>{{ invoice.created_at|date:'M j, Y H:i T' }}</dd>
 <dt>Due</dt>
 <dd>{{ invoice.due_date|date:'M j, Y H:i T' }}</dd>
+{% if invoice.purpose == 'RENEWAL' %}<dt>Renewal period</dt><dd>{{ invoice.period_start|date:'M j, Y' }} to {{ invoice.period_end|date:'M j, Y' }}</dd>{% endif %}
 </dl>
 </div>
 <div class="table-wrap">
@@ -42,5 +43,5 @@
 </tbody>
 </table>
 </div>
-<p class="invoice-total">Total <strong>PHP {{ invoice.amount }}</strong>
-</p>{% include "portal/pay_button.html" %}{% include "portal/provisioning_status.html" %}</article>{% endblock %}
+<p class="invoice-total">Total <strong>{{ invoice.currency }} {{ invoice.amount }}</strong>
+</p>{% if invoice.purpose == 'INITIAL' %}{% include "portal/pay_button.html" %}{% include "portal/provisioning_status.html" %}{% else %}<p>Online renewal payment is not available yet. This invoice does not change your service's billing date or access.</p>{% endif %}</article>{% endblock %}

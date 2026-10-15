@@ -19,7 +19,7 @@ TEST_PROVIDER = 'TEST_ONLY'
 
 def require_paid(order):
     """Statuses alone are insufficient: require consistent server-side payment evidence."""
-    invoice = Invoice.objects.filter(order=order, status=Invoice.Status.PAID,
+    invoice = Invoice.objects.filter(order=order, purpose=Invoice.Purpose.INITIAL, status=Invoice.Status.PAID,
                                      amount=order.amount, paid_at__isnull=False).first()
     payments = Payment.objects.filter(invoice=invoice, status=Payment.Status.SUCCESS,
                                       amount=order.amount, paid_at__isnull=False)
@@ -128,13 +128,14 @@ def _finish(order_id, lease, result=None, error=''):
                 subscription, created = Subscription.objects.get_or_create(order=order, defaults={
                     'customer': order.customer, 'start_date': now,
                     'next_billing_date': _next_billing_date(now, order.billing_cycle),
+                    'renewal_amount': order.amount, 'renewal_cycle': order.billing_cycle,
+                    'renewal_currency': 'PHP',
                     'status': Subscription.Status.ACTIVE,
                 })
                 if subscription.customer_id != order.customer_id:
                     raise ValidationError('Subscription ownership does not match the order.')
-                if not created and subscription.status != Subscription.Status.ACTIVE:
-                    subscription.status = Subscription.Status.ACTIVE
-                    subscription.save(update_fields=['status'])
+                # Runtime reconciliation cannot undo cancellation or expiry.
+                # Existing entitlement and renewal snapshots stay unchanged.
         order.save(update_fields=['status', 'provisioning_status', 'provisioning_error',
             'provisioning_vps_id', 'provisioning_vmid', 'provisioning_progress',
             'provisioning_step', 'provisioning_ip_address', 'provisioning_lease',

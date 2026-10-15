@@ -1,5 +1,7 @@
 """Staff operations surface; payment/provisioning state remains workflow-owned."""
 from django import forms
+from django.conf import settings
+from django.core import signing
 from django.contrib import admin, messages
 from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.admin.models import LogEntry
@@ -13,6 +15,9 @@ from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_http_methods
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from datetime import timedelta
 
 from . import provisioning
 from .admin import CustomerAdmin, InvoiceAdmin, OrderAdmin, PaymentAdmin, SubscriptionAdmin, VPSPlanAdmin
@@ -38,7 +43,10 @@ class ManagementSite(admin.AdminSite):
 
     def get_urls(self):
         return [path("services/", self.admin_view(self.services), name="services"),
-                path("monitoring/", self.admin_view(self.monitoring), name="monitoring")] + super().get_urls()
+                path("monitoring/", self.admin_view(self.monitoring), name="monitoring"),
+                path("renewals/", self.admin_view(self.renewals), name="renewals"),
+                path("renewals/<int:subscription_id>/invoice/", self.admin_view(self.renewal_invoice),
+                     name="renewal_invoice")] + super().get_urls()
 
     def each_context(self, request):
         context = super().each_context(request)
@@ -46,7 +54,74 @@ class ManagementSite(admin.AdminSite):
         context["can_view_services"] = request.user.has_perm("portal.view_order")
         context["can_manage_staff"] = request.user.is_superuser
         context["can_view_monitoring"] = request.user.is_superuser
+        context["can_view_renewals"] = request.user.has_perms(["portal.view_subscription", "portal.view_invoice"])
         return context
+
+    @method_decorator(require_http_methods(["GET", "HEAD"]))
+    def renewals(self, request):
+        if not request.user.has_perms(["portal.view_subscription", "portal.view_invoice"]):
+            raise PermissionDenied
+        from .renewals import lead_days, review
+        now = timezone.now()
+        limit = now + timedelta(days=lead_days())
+        records = Subscription.objects.select_related("order__plan", "customer").order_by("next_billing_date", "pk")
+        status = request.GET.get("status", "")
+        query = request.GET.get("q", "").strip()[:200]
+        counts = {"upcoming": records.filter(status="ACTIVE", next_billing_date__gt=now,
+                                             next_billing_date__lte=limit).count(),
+                  "overdue": records.filter(status="ACTIVE", next_billing_date__lte=now).count(),
+                  "unpaid": Invoice.objects.filter(purpose="RENEWAL", status__in=["PENDING", "OVERDUE"]).count()}
+        if status == "upcoming":
+            records = records.filter(status="ACTIVE", next_billing_date__gt=now, next_billing_date__lte=limit)
+        elif status == "overdue":
+            records = records.filter(status="ACTIVE", next_billing_date__lte=now)
+        elif status == "unpaid":
+            records = records.filter(renewal_invoices__status__in=["PENDING", "OVERDUE"]).distinct()
+        if query:
+            match = Q(customer__full_name__icontains=query)
+            if query.isdecimal() and len(query) < 19:
+                match |= Q(pk=int(query)) | Q(order_id=int(query))
+            records = records.filter(match)
+        page = Paginator(records, 30).get_page(request.GET.get("page"))
+        proposals = [review(sub, now=now) for sub in page]
+        request.current_app = self.name
+        return TemplateResponse(request, "management/renewals.html", {
+            **self.each_context(request), "title": "VPS renewals", "page": page,
+            "proposals": proposals, "q": query, "status": status, "counts": counts,
+            "lead_days": lead_days(), "can_issue": request.user.is_superuser,
+            "generation_enabled": settings.RENEWAL_INVOICING_ENABLED,
+        })
+
+    @method_decorator(require_http_methods(["GET", "POST"]))
+    def renewal_invoice(self, request, subscription_id):
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        from .renewals import agreement, generate_invoice, review
+        sub = get_object_or_404(Subscription.objects.select_related("order", "customer"), pk=subscription_id)
+        if request.method == "POST":
+            try:
+                data = signing.loads(request.POST.get("review_token", ""), salt="renewal-review", max_age=3600)
+                if data.get("subscription") != sub.pk:
+                    raise signing.BadSignature
+                due = parse_datetime(data["due"])
+                invoice, created = generate_invoice(sub.pk, actor=request.user, expected_due=due,
+                                                    expected_agreement=data["agreement"])
+            except (signing.BadSignature, KeyError, TypeError, ValueError):
+                messages.error(request, "This review expired or is invalid. Review the renewal again.")
+            except ValidationError as error:
+                messages.error(request, " ".join(error.messages))
+            else:
+                messages.success(request, "Renewal invoice issued." if created else "This renewal invoice already exists.")
+                return HttpResponseRedirect(reverse("management:portal_invoice_change", args=[invoice.pk]))
+            return HttpResponseRedirect(reverse("management:renewal_invoice", args=[sub.pk]))
+        request.current_app = self.name
+        return TemplateResponse(request, "management/renewal_invoice.html", {
+            **self.each_context(request), "title": "Review renewal invoice", "proposal": review(sub),
+            "review_token": signing.dumps({"subscription": sub.pk, "due": sub.next_billing_date.isoformat(),
+                                           "agreement": agreement(sub)},
+                                           salt="renewal-review"),
+            "generation_enabled": settings.RENEWAL_INVOICING_ENABLED,
+        })
 
     @method_decorator(require_http_methods(["GET", "HEAD"]))
     def monitoring(self, request):
@@ -244,7 +319,10 @@ class ManagedOrderAdmin(WorkflowRecordMixin, OrderAdmin):
 class ManagedInvoiceAdmin(WorkflowRecordMixin, InvoiceAdmin):
     search_fields = ("invoice_number", "order__customer__full_name")
     list_select_related = ("order",)
-    fields = ("invoice_number", "order", "amount", "status", "due_date", "paid_at", "created_at")
+    list_display = ("invoice_number", "purpose", "order", "amount", "currency", "status", "due_date", "paid_at")
+    list_filter = ("purpose", "status")
+    fields = ("invoice_number", "purpose", "order", "subscription", "period_start", "period_end",
+              "amount", "currency", "status", "due_date", "paid_at", "created_at")
 
 
 class ManagedPaymentAdmin(WorkflowRecordMixin, PaymentAdmin):
@@ -256,7 +334,8 @@ class ManagedPaymentAdmin(WorkflowRecordMixin, PaymentAdmin):
 class ManagedSubscriptionAdmin(WorkflowRecordMixin, SubscriptionAdmin):
     search_fields = ("customer__full_name", "=order__id")
     list_select_related = ("customer", "order")
-    fields = ("id", "customer", "order", "start_date", "next_billing_date", "status", "created_at")
+    fields = ("id", "customer", "order", "start_date", "next_billing_date", "renewal_amount",
+              "renewal_cycle", "renewal_currency", "status", "created_at")
 
 
 for model, model_admin in [(Customer, ManagedCustomerAdmin), (VPSPlan, ManagedPlanAdmin),
