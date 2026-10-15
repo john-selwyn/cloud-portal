@@ -52,6 +52,6 @@ all provisioning/payment/Hestia variables set empty. No `.env`, no credentials, 
 - Tables, filters, record details, forms and login are still in baseline styling. Batch 2 onward.
 
 ## Latest saved work and exact next step
-- Latest saved commit: see `git log -1` on `design/management-refinement` (Batch 1 shell, sidebar, overview).
+- Latest saved code commit: `dfb210a08633e609b050aa32d9cb7c2be1033794` on `design/management-refinement` (Batch 1: shell, sidebar, overview). Later commits on the branch only update this file.
 - Next step: wait for the visual review of Batch 1. If approved, Batch 2: changelist tables, search/filter panel, pagination and the VPS services page
   (`management.css`, `services.html`). Then Batch 3: record details and forms (including order detail and the reconcile page). Then Batch 4: staff login and final pass (axe, keyboard checks, docs update).
