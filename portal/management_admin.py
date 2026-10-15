@@ -41,6 +41,7 @@ class ManagementSite(admin.AdminSite):
 
     def each_context(self, request):
         context = super().each_context(request)
+        context["management_ui"] = True
         context["can_view_services"] = request.user.has_perm("portal.view_order")
         context["can_manage_staff"] = request.user.is_superuser
         return context

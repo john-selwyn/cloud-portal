@@ -1,0 +1,183 @@
+/* Management-only presentation. Keep Django's forms and admin scripts intact. */
+body.management-ui {
+  --body-bg: #f5f7fb; --body-fg: #334155; --body-quiet-color: #617187;
+  --body-loud-color: #14213d; --primary: #2563eb; --secondary: #14213d;
+  --accent: #fff; --header-bg: #fff; --header-color: #14213d;
+  --header-link-color: #14213d; --link-fg: #2563eb; --link-hover-color: #1d4ed8;
+  --link-selected-fg: #1d4ed8; --hairline-color: #e2e8f0; --border-color: #d5dce7;
+  --darkened-bg: #f8fafc; --selected-bg: #eff6ff; --selected-row: #eff6ff;
+  --breadcrumbs-bg: #fff; --breadcrumbs-fg: #617187; --breadcrumbs-link-fg: #334155;
+  --button-bg: #2563eb; --button-hover-bg: #1d4ed8;
+  --default-button-bg: #2563eb; --default-button-hover-bg: #1d4ed8;
+  --close-button-bg: #475569; --close-button-hover-bg: #334155;
+  --object-tools-bg: #2563eb; --object-tools-hover-bg: #1d4ed8;
+  --message-success-bg: #e2f5ec; --message-warning-bg: #fff4d6; --message-error-bg: #feecec;
+  font: 14px/1.6 Inter, 'Segoe UI', system-ui, sans-serif; color-scheme: light;
+  background: var(--body-bg); color: var(--body-fg);
+}
+.management-ui *, .management-ui *::before, .management-ui *::after { box-sizing: border-box; }
+.management-ui a, .management-ui button, .management-ui input, .management-ui select { transition: background-color .12s; }
+.management-ui :where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+.management-ui #container { min-width: 0; height: auto; min-height: 100vh; }
+.management-ui #header { flex-shrink: 0; height: auto; min-height: 92px; padding: 20px 32px; border-bottom: 1px solid #e2e8f0; gap: 20px; }
+.management-ui #container a.management-brand, .management-ui #container a.management-nav-link, .management-ui #container a.management-stat, .management-ui #container a.management-work-link { text-decoration: none; }
+.management-ui .management-brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.management-ui .management-brand-mark { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 10px; background: #2563eb; color: #fff; font-size: 28px; font-weight: 700; }
+.management-ui .management-brand strong { font-size: 18px; letter-spacing: -.025em; color: #14213d; display: block; line-height: 1.3; }
+.management-ui .management-brand small { font-size: 11px; text-transform: uppercase; letter-spacing: .14em; color: #617187; }
+.management-ui #user-tools { display: flex; align-items: center; gap: 20px; font-size: 12px; letter-spacing: 0; text-transform: none; }
+.management-ui #user-tools a { color: #334155; border: 0; text-decoration: underline; text-underline-offset: 3px; }
+.management-ui .management-identity { display: flex; flex-direction: column; text-align: right; }
+.management-ui .management-identity strong { color: #14213d; font-size: 13px; }
+.management-ui .management-identity small { color: #617187; }
+.management-ui #logout-form { margin: 0; }
+.management-ui #logout-form button { border: 1px solid #cbd5e1; color: #334155; padding: 8px 14px; border-radius: 7px; font: inherit; background: #fff; }
+.management-ui #logout-form button:hover { background: #eff6ff; color: #1d4ed8; }
+.management-ui .breadcrumbs { background: #fff; color: #617187; padding: 12px 32px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
+.management-ui .main { display: flex; align-items: stretch; min-width: 0; }
+.management-ui .management-sidebar { flex: 0 0 238px; padding: 24px 18px; background: #14213d; color: #cbd5e1; min-height: calc(100vh - 140px); }
+.management-ui .management-nav-label { color: #a9b7cb; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; margin: 8px 12px 10px; font-weight: 700; }
+.management-ui .management-nav-label:not(:first-child) { margin-top: 28px; }
+.management-ui .management-nav-link { color: #cbd5e1; display: block; padding: 10px 13px; margin: 3px 0; border-radius: 7px; text-decoration: none; font-weight: 500; }
+.management-ui .management-nav-link:hover { background: #223456; color: #fff; }
+.management-ui .management-nav-link[aria-current] { background: #2563eb; color: #fff; font-weight: 650; }
+.management-ui .management-sidebar :focus-visible { outline-color: #93c5fd; }
+.management-ui .management-sidebar-note { border-top: 1px solid #34415b; padding: 20px 12px 0; margin-top: 36px; font-size: 11px; line-height: 1.6; }
+.management-ui .management-sidebar-note strong { color: #e2e8f0; font-size: 12px; }
+.management-ui .management-sidebar-note p { font-size: inherit; margin: 6px 0; }
+.management-ui main.content { min-width: 0; flex: 1; }
+.management-ui #content { padding: 32px; width: auto; min-width: 0; }
+.management-ui #content h1 { font-size: 28px; font-weight: 700; color: #14213d; letter-spacing: -.035em; margin: 0 0 18px; }
+.management-ui h2, .management-ui h3 { color: #14213d; }
+.management-ui .management-page-heading { margin-bottom: 26px; }
+.management-ui .management-page-heading h1 { margin: 4px 0 8px !important; }
+.management-ui .management-page-heading > p:last-child { font-size: 14px; color: #617187; margin: 0; }
+.management-ui .management-eyebrow { color: #617187; font-weight: 700; font-size: 10px; letter-spacing: .14em; margin: 0 0 7px; }
+.management-ui .management-stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 26px; }
+.management-ui .management-stat { border: 1px solid #e2e8f0; border-radius: 11px; padding: 20px 22px; background: #fff; color: #334155; display: flex; flex-direction: column; text-decoration: none; }
+.management-ui .management-stat:hover { border-color: #93b4f7; background: #fafdff; }
+.management-ui .management-stat > span:first-child { font-size: 12px; font-weight: 600; }
+.management-ui .management-stat > strong { font-size: 34px; line-height: 1.5; font-weight: 650; letter-spacing: -.04em; color: #14213d; }
+.management-ui .management-stat-link { color: #2563eb; font-size: 11px; margin-top: 6px; display: flex; justify-content: space-between; }
+.management-ui .management-overview-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; gap: 24px; }
+.management-ui .management-panel { border: 1px solid #e2e8f0; border-radius: 11px; background: #fff; overflow: hidden; min-width: 0; }
+.management-ui .management-panel-heading { padding: 22px 24px 18px; border-bottom: 1px solid #e2e8f0; }
+.management-ui .management-panel-heading h2 { font-size: 18px; font-weight: 650; margin: 0 0 5px; }
+.management-ui .management-panel-heading p:last-child { color: #617187; font-size: 12px; margin: 0; }
+.management-ui .management-work-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 24px; text-decoration: none; color: #14213d; border-bottom: 1px solid #eef1f6; }
+.management-ui .management-work-link:hover { background: #f5f8ff; color: #1d4ed8; }
+.management-ui .management-work-link strong { font-size: 13px; font-weight: 650; }
+.management-ui .management-work-link small { display: block; color: #617187; font-size: 11px; margin-top: 3px; }
+.management-ui .management-work-row { position: relative; }
+.management-ui .management-add-link { display: inline-block; margin: 0 24px 12px; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+.management-ui .management-panel-copy { padding: 4px 24px 14px; font-size: 12px; color: #617187; }
+.management-ui .management-empty { padding: 28px; background: #fff; border-radius: 10px; border: 1px dashed #cbd5e1; grid-column: 1 / -1; }
+.management-ui .management-empty h2, .management-ui .management-empty h3 { font-size: 17px; margin: 0 0 8px; }
+.management-ui .management-empty p { color: #617187; font-size: 12px; margin: 0; }
+.management-ui .management-activity-empty { border: 0; text-align: center; padding: 40px 24px; }
+.management-ui .management-empty-symbol { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; margin: 0 auto 18px; background: #eff6ff; color: #2563eb; font-size: 22px; }
+.management-ui .management-activity { list-style: none; padding: 0; margin: 0; }
+.management-ui .management-activity li { display: flex; gap: 14px; list-style: none; padding: 18px 24px; border-bottom: 1px solid #eef1f6; overflow-wrap: anywhere; }
+.management-ui .management-activity-dot { background: #2563eb; width: 7px; height: 7px; flex: 0 0 7px; margin-top: 8px; border-radius: 50%; }
+.management-ui .management-activity a { font-weight: 600; font-size: 12px; }
+.management-ui .management-activity p { color: #617187; font-size: 11px; margin: 4px 0; }
+.management-ui .management-activity small { color: #617187; font-size: 10px; }
+.management-ui .module { border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+.management-ui .module h2, .management-ui .module caption, .management-ui .inline-group h2 { background: #f8fafc; color: #14213d; font-size: 12px; font-weight: 650; padding: 13px 16px; }
+.management-ui .module caption a { color: #14213d; }
+.management-ui table { border-collapse: collapse; }
+.management-ui table td, .management-ui table th { font-family: inherit; font-size: 12px; line-height: 1.6; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+.management-ui thead th { background: #f8fafc; color: #475569; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
+.management-ui .row1, .management-ui .row2 { background: #fff; }
+.management-ui #result_list tbody tr:hover { background: #f8faff; }
+.management-ui #changelist { display: flex; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; min-width: 0; }
+.management-ui #changelist .changelist-form-container { min-width: 0; }
+.management-ui #changelist .results { width: 100%; overflow-x: auto; }
+.management-ui #changelist-filter { border-left: 1px solid #e2e8f0; background: #fff; }
+.management-ui #changelist-filter h2 { background: #f8fafc; color: #14213d; }
+.management-ui #changelist-filter li.selected a { color: #1d4ed8; }
+.management-ui #toolbar { background: #fff; padding: 18px; border-bottom: 1px solid #e2e8f0; }
+.management-ui #changelist-search input[type=submit] { background: #2563eb; border: 0; color: #fff; padding: 8px 14px; border-radius: 6px; box-shadow: none; }
+.management-ui .paginator { padding: 16px; background: #fff; color: #617187; border-top: 1px solid #e2e8f0; }
+.management-ui .object-tools { margin: 0 0 18px; }
+.management-ui .object-tools a { border-radius: 7px; padding: 10px 14px; font-size: 11px; letter-spacing: 0; text-transform: none; }
+.management-ui input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]), .management-ui select, .management-ui textarea { background: #fff; border: 1px solid #7b8ba3; border-radius: 6px; padding: 8px 10px; color: #334155; font: inherit; max-width: 100%; }
+.management-ui input[type=submit], .management-ui input[type=button], .management-ui button:not(.theme-toggle), .management-ui .button { font-family: inherit; border-radius: 6px; }
+.management-ui button[type=submit], .management-ui input[type=submit], .management-ui .button { background: #2563eb; border: 0; color: #fff; padding: 10px 16px; cursor: pointer; }
+.management-ui button[type=submit]:hover, .management-ui input[type=submit]:hover { background: #1d4ed8; }
+.management-ui .form-row { padding: 16px 20px; border-bottom: 1px solid #eef1f6; overflow-wrap: anywhere; }
+.management-ui .form-row label { font-size: 12px; font-weight: 600; }
+.management-ui .form-row .readonly { font-size: 12px; padding-top: 2px; }
+.management-ui .help { color: #617187; font-size: 11px; line-height: 1.6; }
+.management-ui .help, .management-ui .helptext { white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
+.management-ui .selector-chosen h2 { background: #eff6ff; color: #14213d; }
+.management-ui .selector-available h2 { background: #f8fafc; color: #14213d; }
+.management-ui .selector .selector-filter { background: #fff; }
+.management-ui.model-order.change-form fieldset.module.aligned { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.management-ui.model-order.change-form fieldset.module.aligned > h2 { grid-column: 1 / -1; }
+.management-ui.model-order.change-form fieldset.module.aligned > .form-row { min-width: 0; margin: 0; }
+.management-ui .submit-row { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; padding: 16px; }
+.management-ui .submit-row a.closelink { height: auto; line-height: 1.4; padding: 10px 16px; display: inline-block; }
+.management-ui .errornote, .management-ui .errorlist { color: #a32121; }
+.management-ui .messagelist li { border-radius: 7px; margin: 12px 32px; color: #334155; }
+.management-ui .management-search { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin-top: 20px; }
+.management-ui .management-search label { font-weight: 600; font-size: 12px; }
+.management-ui .management-table-wrap { overflow-x: auto; margin-top: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
+.management-ui .management-table-wrap table { min-width: 760px; width: 100%; }
+.management-ui .management-table-wrap caption { text-align: left; padding: 16px; color: #14213d; font-weight: 600; }
+.management-ui .management-status { display: inline-block; font-size: 10px; font-weight: 650; padding: 3px 8px; border-radius: 5px; background: #f1f5f9; color: #475569; }
+.management-ui .management-status-active { background: #e2f5ec; color: #17603e; }
+.management-ui .management-status-provisioning { background: #eff6ff; color: #1d4ed8; }
+.management-ui .management-status-failed { background: #feecec; color: #a32121; }
+.management-ui #footer { padding: 18px 32px; background: #fff; border-top: 1px solid #e2e8f0; margin: 0; }
+.management-ui .management-footer { color: #617187; font-size: 11px; }
+.management-ui .management-footer span { padding: 0 10px; }
+.management-ui.login { background: #f5f7fb; }
+.management-ui.login #container { width: min(440px, calc(100% - 32px)); margin: 8vh auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: none; min-height: 0; }
+.management-ui.login #header { justify-content: center; padding: 28px; }
+.management-ui.login #content { padding: 28px; }
+.management-ui.login #content-main { width: 100%; }
+.management-ui.login #login-form .form-row { padding: 8px 0; border: 0; }
+.management-ui.login #login-form .submit-row { padding: 16px 0 0; border: 0; }
+.management-ui.login #login-form input[type=submit] { width: 100%; }
+.management-ui.login #footer { text-align: center; }
+@media (min-width: 1450px) { .management-ui .management-stat-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (max-width: 1100px) {
+  .management-ui .management-sidebar { flex-basis: 205px; padding: 20px 12px; }
+  .management-ui #content { padding: 24px; }
+  .management-ui .management-overview-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 767px) {
+  .management-ui #header { padding: 16px 20px; align-items: flex-start; flex-direction: column; gap: 16px; }
+  .management-ui #user-tools { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 12px; }
+  .management-ui .management-identity { text-align: left; margin-right: auto; }
+  .management-ui .main { flex-direction: column; }
+  .management-ui .management-sidebar { flex: none; width: 100%; min-height: 0; padding: 10px 12px; }
+  .management-ui .management-sidebar nav { display: flex; flex-wrap: wrap; gap: 4px; }
+  .management-ui .management-nav-label, .management-ui .management-sidebar-note { display: none; }
+  .management-ui .management-nav-link { padding: 8px 10px; margin: 0; font-size: 12px; }
+  .management-ui #content { padding: 22px 16px; }
+  .management-ui #content h1 { font-size: 24px; }
+  .management-ui .breadcrumbs { padding: 10px 16px; }
+  .management-ui .management-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .management-ui .management-stat { padding: 16px; }
+  .management-ui .management-stat > strong { font-size: 29px; }
+  .management-ui .management-stat-link { font-size: 10px; }
+  .management-ui #changelist { flex-direction: column; }
+  .management-ui #changelist-filter { border: 0; border-top: 1px solid #e2e8f0; width: 100%; }
+  .management-ui #changelist .changelist-form-container { width: 100%; }
+  .management-ui .management-search { align-items: stretch; flex-direction: column; }
+  .management-ui .management-search input, .management-ui .management-search select { width: 100%; }
+  .management-ui .aligned label { float: none; width: auto; }
+  .management-ui .aligned .form-row div { min-width: 0; }
+  .management-ui .aligned .form-row .flex-container { flex-wrap: wrap; }
+  .management-ui .aligned .form-row .help { width: auto; margin-left: 0; }
+  .management-ui.model-order.change-form fieldset.module.aligned { grid-template-columns: 1fr; }
+  .management-ui .aligned p.help, .management-ui .aligned div.help, .management-ui .aligned .readonly { margin-left: 0; }
+  .management-ui .selector { width: 100%; max-width: 100%; }
+  .management-ui .selector-available, .management-ui .selector-chosen { width: 100%; }
+  .management-ui .selector select { width: 100%; }
+  .management-ui #footer { padding: 16px; }
+  .management-ui.login #header { align-items: center; }
+}
+@media (prefers-reduced-motion: reduce) { .management-ui * { transition: none !important; scroll-behavior: auto !important; } }

@@ -1,25 +1,33 @@
-{% extends "admin/index.html" %}
+{% extends "admin/base_site.html" %}
+{% block bodyclass %}{{ block.super }} management-overview{% endblock %}
+{% block content_title %}
+<div class="management-page-heading">
+<p class="management-eyebrow">WORKSPACE OVERVIEW</p>
+<h1>Operations overview</h1>
+<p>Customer records, services and billing. One place to keep things moving.</p>
+</div>
+{% endblock %}
 {% block content %}
 <section aria-label="Operations summary">
-  <p>Manage customer profiles and plans, and inspect billing and service records.</p>
-  {% if can_view_services %}<p><a class="button" href="{% url 'management:services' %}">View VPS services</a></p>{% endif %}
-  {% if can_manage_staff %}<p><a class="button" href="{% url 'management:auth_user_changelist' %}">Staff accounts</a> <a href="{% url 'management:auth_user_add' %}">Add staff account</a></p>{% endif %}
-  <div class="module">
-    <table><caption>Record totals</caption><tbody>
-      {% for card in cards %}<tr><th scope="row"><a href="{{ card.url }}">{{ card.label }}</a></th><td>{{ card.count }}</td></tr>{% empty %}
-      <tr><td>No record permissions assigned. Ask an administrator for the access needed for your role.</td></tr>{% endfor %}
-    </tbody></table>
-  </div>
+<div class="management-stat-grid">
+{% for card in cards %}<a class="management-stat" href="{{ card.url }}"><span>{{ card.label }}</span><strong>{{ card.count }}</strong><span class="management-stat-link">View records <span aria-hidden="true">&rarr;</span></span></a>{% empty %}
+<div class="management-empty"><h2>Welcome to your workspace</h2><p>No record permissions assigned. Ask an administrator for the access needed for your role.</p></div>
+{% endfor %}
+</div>
 </section>
-{{ block.super }}
-{% endblock %}
-{% block sidebar %}
-<div id="content-related"><div class="module" id="recent-actions-module">
-  <h2>Recent actions</h2><h3>My actions</h3>
-  {% if recent_actions %}<ul class="actionlist">
-  {% for action in recent_actions %}<li>
-    {% if action.url %}<a href="{{ action.url }}">{{ action.entry.object_repr }}</a>{% else %}{{ action.entry.object_repr }}{% endif %}
-    <br><span class="mini quiet">{{ action.entry.action_time }} · {{ action.entry.get_change_message }}</span>
-  </li>{% endfor %}</ul>{% else %}<p>None available.</p>{% endif %}
-</div></div>
+<div class="management-overview-grid">
+<section class="management-panel" aria-labelledby="workspace-heading">
+<div class="management-panel-heading"><p class="management-eyebrow">YOUR WORKSPACE</p><h2 id="workspace-heading">Get to work</h2><p>Open a record area to search, filter and review details.</p></div>
+{% if can_view_services %}<a class="management-work-link" href="{% url 'management:services' %}"><span><strong>VPS services</strong><small>Review recorded service and provisioning status</small></span><span aria-hidden="true">&rarr;</span></a>{% endif %}
+{% for app in app_list %}{% for model in app.models %}
+{% if model.admin_url %}<div class="management-work-row"><a class="management-work-link" href="{{ model.admin_url }}"><span><strong>{{ model.name }}</strong><small>{% if model.object_name == 'Customer' %}Customer profiles and contact details{% elif model.object_name == 'Order' %}Orders and provisioning records{% elif model.object_name == 'VPSPlan' %}Resources, pricing and availability{% elif model.object_name == 'Invoice' %}Invoice amounts, due dates and settlement{% elif model.object_name == 'Payment' %}Recorded payment evidence{% elif model.object_name == 'Subscription' %}Subscriptions and billing dates{% elif model.object_name == 'User' %}Staff identities and assigned permissions{% else %}Browse available records{% endif %}</small></span><span aria-hidden="true">&rarr;</span></a>{% if model.add_url %}<a class="management-add-link" href="{{ model.add_url }}">{% if model.object_name == 'User' %}Add staff account{% elif model.object_name == 'VPSPlan' %}Add plan{% else %}Add {{ model.name|lower }}{% endif %}</a>{% endif %}</div>{% endif %}
+{% endfor %}{% empty %}<p class="management-panel-copy">Record areas appear here when access is assigned.</p>{% endfor %}
+</section>
+<section class="management-panel" aria-labelledby="activity-heading">
+<div class="management-panel-heading"><p class="management-eyebrow">ACTIVITY</p><h2 id="activity-heading">Your recent actions</h2><p>Your latest recorded changes in this workspace.</p></div>
+{% if recent_actions %}<ul class="management-activity">
+{% for action in recent_actions %}<li><span class="management-activity-dot" aria-hidden="true"></span><div>{% if action.url %}<a href="{{ action.url }}">{{ action.entry.object_repr }}</a>{% else %}<strong>{{ action.entry.object_repr }}</strong>{% endif %}<p>{{ action.entry.get_change_message }}</p><small>{{ action.entry.action_time }}</small></div></li>{% endfor %}
+</ul>{% else %}<div class="management-empty management-activity-empty"><span class="management-empty-symbol" aria-hidden="true">&mdash;</span><h3>No recent actions</h3><p>Your recorded changes will appear here.</p></div>{% endif %}
+</section>
+</div>
 {% endblock %}
