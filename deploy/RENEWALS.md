@@ -31,6 +31,21 @@ Provisioning reconciliation no longer turns an existing CANCELLED or EXPIRED sub
 
 ## Checks and rollout
 
+### Guarded restored-database helper
+
+`deploy/rehearse_renewals.py` reads the existing portal environment privately but overrides the database to an explicitly named restored copy. Only `cloud_portal_renewal_rehearsal_YYYYMMDD` names are accepted; the original configured database name and unexpected migration plans are refused. External integrations, test payments and renewal generation are disabled. It verifies the actual database identity, saves original column names/counts/SHA256 fingerprints (no row contents) in a mode-600 baseline under the isolated checkout's var directory, and checks all original fields in seven financial/customer/plan tables before and after migration and dry run. Existing baselines are retained rather than overwritten.
+
+From an isolated checkout, using the existing portal venv (commands are rollout guidance until live verification):
+
+```bash
+/opt/cloud-portal/venv/bin/python deploy/rehearse_renewals.py --env /opt/cloud-portal/.env --database cloud_portal_renewal_rehearsal_20261015
+/opt/cloud-portal/venv/bin/python deploy/rehearse_renewals.py --env /opt/cloud-portal/.env --database cloud_portal_renewal_rehearsal_20261015 --apply
+```
+
+The first command performs database preflight and creates the private fingerprint file only. The second migrates the explicitly named restored copy, validates preserved originals/agreement snapshots and runs invoice generation in dry-run mode only. It never invokes a provider or creates renewal rows. Expected completion: REHEARSAL PASSED. Do not reuse it as a production migration command; production names are deliberately blocked. If the copied database is recreated, preserve/investigate its existing baseline rather than overwriting it to hide differences.
+
+Helper integration checks passed against a separate disposable PostgreSQL 17.11 cluster on loopback port 55435: production-name refusal before connection, baseline-only preflight, preserving migration, repeated execution with zero further migrations, and refusal after an original amount was deliberately changed in synthetic data. The cluster was stopped. Live restored-copy verification remains pending.
+
 Before production rollout, take and verify a fresh recoverable database backup, record HEAD/clean tracked changes and stop conflicting billing/web processes during the schema transition. Rehearse against an isolated restored copy of the actual production database with external integrations disabled. The local synthetic PostgreSQL rehearsal is not a production-data rehearsal. Compare original invoice IDs/amounts/order links, payment/checkout identities, subscription dates and row counts before/after; investigate any backfill refusal. Preserve the production .env and monitor units.
 
 Read-only development/rehearsal checks, from the repository as its service account:
