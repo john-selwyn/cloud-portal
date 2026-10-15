@@ -6,82 +6,125 @@ body.management-ui {
   --header-link-color: #14213d; --link-fg: #2563eb; --link-hover-color: #1d4ed8;
   --link-selected-fg: #1d4ed8; --hairline-color: #e2e8f0; --border-color: #d5dce7;
   --darkened-bg: #f8fafc; --selected-bg: #eff6ff; --selected-row: #eff6ff;
-  --breadcrumbs-bg: #fff; --breadcrumbs-fg: #617187; --breadcrumbs-link-fg: #334155;
+  --breadcrumbs-bg: transparent; --breadcrumbs-fg: #617187; --breadcrumbs-link-fg: #334155;
   --button-bg: #2563eb; --button-hover-bg: #1d4ed8;
   --default-button-bg: #2563eb; --default-button-hover-bg: #1d4ed8;
   --close-button-bg: #475569; --close-button-hover-bg: #334155;
   --object-tools-bg: #2563eb; --object-tools-hover-bg: #1d4ed8;
   --message-success-bg: #e2f5ec; --message-warning-bg: #fff4d6; --message-error-bg: #feecec;
+  /* Management tokens (same palette as the customer portal). */
+  --m-navy: #14213d; --m-navy-raised: #1c2b4d; --m-on-navy: #cbd5e1; --m-on-navy-muted: #a9b7cb;
+  --m-line: #e2e8f0; --m-line-soft: #eef1f6; --m-surface: #fff; --m-surface-alt: #f8fafc;
+  --m-ink: #14213d; --m-muted: #617187; --m-primary: #2563eb; --m-primary-hover: #1d4ed8;
+  --m-primary-soft: #eff6ff; --m-primary-line: #bfdbfe; --m-radius: 12px; --m-radius-sm: 8px;
+  --m-header-h: 64px; --m-sidebar-w: 248px;
   font: 14px/1.6 Inter, 'Segoe UI', system-ui, sans-serif; color-scheme: light;
   background: var(--body-bg); color: var(--body-fg);
 }
 .management-ui *, .management-ui *::before, .management-ui *::after { box-sizing: border-box; }
-.management-ui a, .management-ui button, .management-ui input, .management-ui select { transition: background-color .12s; }
+.management-ui a, .management-ui button, .management-ui input, .management-ui select { transition: background-color .12s, border-color .12s, color .12s; }
 .management-ui :where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+
+/* Shell: header, breadcrumbs, content frame */
 .management-ui #container { min-width: 0; height: auto; min-height: 100vh; }
-.management-ui #header { flex-shrink: 0; height: auto; min-height: 92px; padding: 20px 32px; border-bottom: 1px solid #e2e8f0; gap: 20px; }
-.management-ui #container a.management-brand, .management-ui #container a.management-nav-link, .management-ui #container a.management-stat, .management-ui #container a.management-work-link { text-decoration: none; }
+.management-ui #header { flex-shrink: 0; height: auto; min-height: var(--m-header-h); padding: 10px 28px; border-bottom: 1px solid var(--m-line); gap: 20px; position: sticky; top: 0; z-index: 30; flex-direction: row; justify-content: space-between; align-items: center; }
+.management-ui #container a.management-brand, .management-ui #container a.management-nav-link, .management-ui #container a.management-stat, .management-ui #container a.management-work-link, .management-ui #container a.management-add-link { text-decoration: none; }
 .management-ui .management-brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
-.management-ui .management-brand-mark { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 10px; background: #2563eb; color: #fff; font-size: 28px; font-weight: 700; }
-.management-ui .management-brand strong { font-size: 18px; letter-spacing: -.025em; color: #14213d; display: block; line-height: 1.3; }
-.management-ui .management-brand small { font-size: 11px; text-transform: uppercase; letter-spacing: .14em; color: #617187; }
-.management-ui #user-tools { display: flex; align-items: center; gap: 20px; font-size: 12px; letter-spacing: 0; text-transform: none; }
+.management-ui .management-brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; background: var(--m-primary); color: #fff; font-size: 26px; font-weight: 700; line-height: 1; }
+.management-ui .management-brand > span:last-child { display: flex; flex-direction: column; line-height: 1.25; }
+.management-ui .management-brand strong { font-size: 17px; letter-spacing: -.025em; color: var(--m-ink); display: block; }
+.management-ui .management-brand small { font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--m-muted); }
+.management-ui #user-tools { display: flex; align-items: center; gap: 18px; font-size: 12px; letter-spacing: 0; text-transform: none; }
 .management-ui #user-tools a { color: #334155; border: 0; text-decoration: underline; text-underline-offset: 3px; }
-.management-ui .management-identity { display: flex; flex-direction: column; text-align: right; }
-.management-ui .management-identity strong { color: #14213d; font-size: 13px; }
-.management-ui .management-identity small { color: #617187; }
+.management-ui #user-tools a:hover { color: var(--m-primary-hover); }
+.management-ui .management-identity { display: flex; flex-direction: column; text-align: right; line-height: 1.35; }
+.management-ui .management-identity strong { color: var(--m-ink); font-size: 13px; }
+.management-ui .management-identity small { color: var(--m-muted); }
 .management-ui #logout-form { margin: 0; }
-.management-ui #logout-form button { border: 1px solid #cbd5e1; color: #334155; padding: 8px 14px; border-radius: 7px; font: inherit; background: #fff; }
-.management-ui #logout-form button:hover { background: #eff6ff; color: #1d4ed8; }
-.management-ui .breadcrumbs { background: #fff; color: #617187; padding: 12px 32px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
+.management-ui #logout-form button { text-transform: none; letter-spacing: 0; border: 1px solid #cbd5e1; color: #334155; padding: 7px 14px; border-radius: 7px; font: inherit; background: #fff; cursor: pointer; }
+.management-ui #logout-form button:hover { background: var(--m-primary-soft); color: var(--m-primary-hover); border-color: var(--m-primary-line); }
+.management-ui .breadcrumbs { background: var(--m-surface); color: var(--m-muted); padding: 10px 32px; border: 0; border-bottom: 1px solid var(--m-line); font-size: 12px; }
+.management-ui ol.breadcrumbs { margin: 0; }
+.management-ui .breadcrumbs li { font-size: 12px; }
+.management-ui .breadcrumbs a { text-decoration: none; }
+.management-ui .breadcrumbs a:hover { text-decoration: underline; }
+.management-ui .breadcrumbs a { color: #334155; }
 .management-ui .main { display: flex; align-items: stretch; min-width: 0; }
-.management-ui .management-sidebar { flex: 0 0 238px; padding: 24px 18px; background: #14213d; color: #cbd5e1; min-height: calc(100vh - 140px); }
-.management-ui .management-nav-label { color: #a9b7cb; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; margin: 8px 12px 10px; font-weight: 700; }
-.management-ui .management-nav-label:not(:first-child) { margin-top: 28px; }
-.management-ui .management-nav-link { color: #cbd5e1; display: block; padding: 10px 13px; margin: 3px 0; border-radius: 7px; text-decoration: none; font-weight: 500; }
-.management-ui .management-nav-link:hover { background: #223456; color: #fff; }
-.management-ui .management-nav-link[aria-current] { background: #2563eb; color: #fff; font-weight: 650; }
-.management-ui .management-sidebar :focus-visible { outline-color: #93c5fd; }
-.management-ui .management-sidebar-note { border-top: 1px solid #34415b; padding: 20px 12px 0; margin-top: 36px; font-size: 11px; line-height: 1.6; }
-.management-ui .management-sidebar-note strong { color: #e2e8f0; font-size: 12px; }
-.management-ui .management-sidebar-note p { font-size: inherit; margin: 6px 0; }
 .management-ui main.content { min-width: 0; flex: 1; }
-.management-ui #content { padding: 32px; width: auto; min-width: 0; }
-.management-ui #content h1 { font-size: 28px; font-weight: 700; color: #14213d; letter-spacing: -.035em; margin: 0 0 18px; }
-.management-ui h2, .management-ui h3 { color: #14213d; }
-.management-ui .management-page-heading { margin-bottom: 26px; }
-.management-ui .management-page-heading h1 { margin: 4px 0 8px !important; }
-.management-ui .management-page-heading > p:last-child { font-size: 14px; color: #617187; margin: 0; }
-.management-ui .management-eyebrow { color: #617187; font-weight: 700; font-size: 10px; letter-spacing: .14em; margin: 0 0 7px; }
-.management-ui .management-stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 26px; }
-.management-ui .management-stat { border: 1px solid #e2e8f0; border-radius: 11px; padding: 20px 22px; background: #fff; color: #334155; display: flex; flex-direction: column; text-decoration: none; }
+.management-ui #content { padding: 28px 32px 40px; width: auto; min-width: 0; }
+.management-ui #content h1 { font-size: 28px; font-weight: 700; color: var(--m-ink); letter-spacing: -.035em; margin: 0 0 18px; }
+.management-ui h2, .management-ui h3 { color: var(--m-ink); }
+.management-ui .management-page-heading { margin-bottom: 24px; }
+.management-ui .management-page-heading h1 { margin: 2px 0 6px !important; }
+.management-ui .management-page-heading > p:last-child { font-size: 14px; color: var(--m-muted); margin: 0; }
+.management-ui .management-eyebrow { color: var(--m-muted); font-weight: 700; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 6px; }
+
+/* Sidebar */
+.management-ui .management-sidebar { flex: 0 0 var(--m-sidebar-w); width: var(--m-sidebar-w); display: flex; flex-direction: column; padding: 20px 14px 18px; background: var(--m-navy); color: var(--m-on-navy); position: sticky; top: var(--m-header-h); align-self: flex-start; height: calc(100vh - var(--m-header-h)); overflow-y: auto; }
+.management-ui .management-sidebar nav { display: block; }
+.management-ui .management-nav-group + .management-nav-group { margin-top: 22px; }
+.management-ui .management-nav-label { color: var(--m-on-navy-muted); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; margin: 0 10px 8px; font-weight: 700; }
+.management-ui .management-nav-link { position: relative; color: var(--m-on-navy); display: flex; align-items: center; gap: 11px; min-height: 40px; padding: 8px 12px; margin: 2px 0; border-radius: var(--m-radius-sm); text-decoration: none; font-weight: 500; font-size: 13px; }
+.management-ui .management-nav-link:hover { background: var(--m-navy-raised); color: #fff; }
+.management-ui .management-nav-link[aria-current] { background: var(--m-primary); color: #fff; font-weight: 650; }
+.management-ui .management-sidebar :focus-visible { outline-color: #93c5fd; }
+.management-ui .management-sidebar-note { margin-top: auto; flex: none; border-top: 1px solid #34415b; padding: 16px 10px 0; font-size: 11px; line-height: 1.6; }
+.management-ui .management-sidebar-note strong { color: #e2e8f0; font-size: 12px; }
+.management-ui .management-sidebar-note p { font-size: inherit; margin: 4px 0 0; color: var(--m-on-navy-muted); }
+
+/* Icons: decorative line icons drawn with a CSS mask in the surrounding text colour. */
+.management-ui .management-nav-link[data-area]::before, .management-ui .management-icon::before { content: ""; display: block; width: 18px; height: 18px; flex: 0 0 18px; background: currentColor; -webkit-mask: var(--m-icon) center / contain no-repeat; mask: var(--m-icon) center / contain no-repeat; }
+.management-ui .management-nav-link:not([data-area])::before { display: none; }
+.management-ui .management-icon { display: grid; place-items: center; flex: 0 0 36px; width: 36px; height: 36px; border-radius: 9px; background: var(--m-primary-soft); color: var(--m-primary); }
+.management-ui [data-area="overview"] { --m-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7' rx='1'/%3E%3Crect x='14' y='3' width='7' height='7' rx='1'/%3E%3Crect x='3' y='14' width='7' height='7' rx='1'/%3E%3Crect x='14' y='14' width='7' height='7' rx='1'/%3E%3C/svg%3E"); }
+.management-ui [data-area="services"] { --m-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='6' rx='1.5'/%3E%3Crect x='3' y='14' width='18' height='6' rx='1.5'/%3E%3Cpath d='M7 7h.01M7 17h.01'/%3E%3C/svg%3E"); }
+.management-ui [data-area="customer"], .management-ui [data-area="customers"] { --m-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21c0-4 3.6-7 8-7s8 3 8 7'/%3E%3C/svg%3E"); }
+.management-ui [data-area="order"], .management-ui [data-area="orders"] { --m-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='3' width='14' height='18' rx='2'/%3E%3Cpath d='M9 8h6M9 12h6M9 16h4'/%3E%3C/svg%3E"); }
+.management-ui [data-area="vpsplan"], .management-ui [data-area="plans"] { --m-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3 3 8l9 5 9-5-9-5z'/%3E%3Cpath d='M3 13l9 5 9-5'/%3E%3C/svg%3E"); }
+.management-ui [data-area="invoice"], .management-ui [data-area="invoices"] { --m-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3h8l4 4v14H6z'/%3E%3Cpath d='M14 3v4h4M9 13h6M9 17h6'/%3E%3C/svg%3E"); }
+.management-ui [data-area="payment"], .management-ui [data-area="payments"] { --m-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Cpath d='M3 10h18M7 15h3'/%3E%3C/svg%3E"); }
+.management-ui [data-area="subscription"], .management-ui [data-area="subscriptions"] { --m-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2'/%3E%3Cpath d='M20 4v5h-5M4 20v-5h5'/%3E%3C/svg%3E"); }
+.management-ui [data-area="user"] { --m-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6z'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E"); }
+
+/* Overview */
+.management-ui .management-stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+.management-ui .management-stat { border: 1px solid var(--m-line); border-radius: var(--m-radius); padding: 18px 20px; background: var(--m-surface); color: #334155; display: flex; flex-direction: column; text-decoration: none; min-width: 0; }
 .management-ui .management-stat:hover { border-color: #93b4f7; background: #fafdff; }
-.management-ui .management-stat > span:first-child { font-size: 12px; font-weight: 600; }
-.management-ui .management-stat > strong { font-size: 34px; line-height: 1.5; font-weight: 650; letter-spacing: -.04em; color: #14213d; }
-.management-ui .management-stat-link { color: #2563eb; font-size: 11px; margin-top: 6px; display: flex; justify-content: space-between; }
+.management-ui .management-stat-head { display: flex; align-items: center; gap: 12px; }
+.management-ui .management-stat-label { font-size: 13px; font-weight: 650; color: #334155; }
+.management-ui .management-stat > strong { font-size: 34px; line-height: 1.2; font-weight: 650; letter-spacing: -.04em; color: var(--m-ink); margin: 14px 0 8px; }
+.management-ui .management-stat-link { color: var(--m-primary); font-size: 12px; font-weight: 600; display: flex; justify-content: space-between; margin-top: auto; }
 .management-ui .management-overview-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; gap: 24px; }
-.management-ui .management-panel { border: 1px solid #e2e8f0; border-radius: 11px; background: #fff; overflow: hidden; min-width: 0; }
-.management-ui .management-panel-heading { padding: 22px 24px 18px; border-bottom: 1px solid #e2e8f0; }
-.management-ui .management-panel-heading h2 { font-size: 18px; font-weight: 650; margin: 0 0 5px; }
-.management-ui .management-panel-heading p:last-child { color: #617187; font-size: 12px; margin: 0; }
-.management-ui .management-work-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 24px; text-decoration: none; color: #14213d; border-bottom: 1px solid #eef1f6; }
-.management-ui .management-work-link:hover { background: #f5f8ff; color: #1d4ed8; }
+.management-ui .management-panel { border: 1px solid var(--m-line); border-radius: var(--m-radius); background: var(--m-surface); overflow: hidden; min-width: 0; }
+.management-ui .management-panel-heading { padding: 20px 24px 16px; border-bottom: 1px solid var(--m-line); }
+.management-ui .management-panel-heading h2 { font-size: 18px; font-weight: 650; margin: 0 0 4px; }
+.management-ui .management-panel-heading p:last-child { color: var(--m-muted); font-size: 12px; margin: 0; }
+.management-ui .management-work-row { display: flex; align-items: center; gap: 12px; padding-right: 20px; border-bottom: 1px solid var(--m-line-soft); }
+.management-ui .management-work-row:last-child { border-bottom: 0; }
+.management-ui .management-work-link { flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; padding: 14px 0 14px 24px; text-decoration: none; color: var(--m-ink); }
+.management-ui .management-work-row:hover { background: #f5f8ff; }
+.management-ui .management-work-link:hover { color: var(--m-primary-hover); }
+.management-ui .management-work-text { flex: 1; min-width: 0; }
 .management-ui .management-work-link strong { font-size: 13px; font-weight: 650; }
-.management-ui .management-work-link small { display: block; color: #617187; font-size: 11px; margin-top: 3px; }
-.management-ui .management-work-row { position: relative; }
-.management-ui .management-add-link { display: inline-block; margin: 0 24px 12px; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
-.management-ui .management-panel-copy { padding: 4px 24px 14px; font-size: 12px; color: #617187; }
+.management-ui .management-work-link small { display: block; color: var(--m-muted); font-size: 11px; margin-top: 2px; }
+.management-ui .management-work-arrow { color: #94a3b8; }
+.management-ui .management-work-link:hover .management-work-arrow { color: var(--m-primary-hover); }
+.management-ui .management-add-link { flex: 0 0 auto; display: inline-flex; align-items: center; min-height: 32px; padding: 4px 12px; border: 1px solid var(--m-primary-line); border-radius: 7px; background: #fff; color: var(--m-primary-hover); font-size: 11px; font-weight: 600; text-decoration: none; }
+.management-ui .management-add-link:hover { background: var(--m-primary-soft); }
+.management-ui .management-panel-copy { padding: 16px 24px; font-size: 12px; color: var(--m-muted); margin: 0; }
 .management-ui .management-empty { padding: 28px; background: #fff; border-radius: 10px; border: 1px dashed #cbd5e1; grid-column: 1 / -1; }
 .management-ui .management-empty h2, .management-ui .management-empty h3 { font-size: 17px; margin: 0 0 8px; }
-.management-ui .management-empty p { color: #617187; font-size: 12px; margin: 0; }
+.management-ui .management-empty p { color: var(--m-muted); font-size: 12px; margin: 0; }
 .management-ui .management-activity-empty { border: 0; text-align: center; padding: 40px 24px; }
-.management-ui .management-empty-symbol { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; margin: 0 auto 18px; background: #eff6ff; color: #2563eb; font-size: 22px; }
+.management-ui .management-empty-symbol { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; margin: 0 auto 18px; background: var(--m-primary-soft); color: var(--m-primary); font-size: 22px; }
 .management-ui .management-activity { list-style: none; padding: 0; margin: 0; }
-.management-ui .management-activity li { display: flex; gap: 14px; list-style: none; padding: 18px 24px; border-bottom: 1px solid #eef1f6; overflow-wrap: anywhere; }
-.management-ui .management-activity-dot { background: #2563eb; width: 7px; height: 7px; flex: 0 0 7px; margin-top: 8px; border-radius: 50%; }
-.management-ui .management-activity a { font-weight: 600; font-size: 12px; }
-.management-ui .management-activity p { color: #617187; font-size: 11px; margin: 4px 0; }
-.management-ui .management-activity small { color: #617187; font-size: 10px; }
+.management-ui .management-activity li { display: flex; gap: 14px; list-style: none; padding: 16px 24px; border-bottom: 1px solid var(--m-line-soft); overflow-wrap: anywhere; }
+.management-ui .management-activity li:last-child { border-bottom: 0; }
+.management-ui .management-activity-dot { background: var(--m-primary); width: 8px; height: 8px; flex: 0 0 8px; margin-top: 7px; border-radius: 50%; }
+.management-ui .management-activity a, .management-ui .management-activity strong { font-weight: 650; font-size: 13px; }
+.management-ui .management-activity p { color: var(--m-muted); font-size: 12px; margin: 2px 0; }
+.management-ui .management-activity p.management-activity-kind { color: #475569; font-size: 11px; font-weight: 600; margin: 3px 0 0; }
+.management-ui .management-activity small { color: var(--m-muted); font-size: 11px; }
 .management-ui .module { border: 1px solid #e2e8f0; background: #fff; border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
 .management-ui .module h2, .management-ui .module caption, .management-ui .inline-group h2 { background: #f8fafc; color: #14213d; font-size: 12px; font-weight: 650; padding: 13px 16px; }
 .management-ui .module caption a { color: #14213d; }
@@ -141,28 +184,42 @@ body.management-ui {
 .management-ui.login #login-form .submit-row { padding: 16px 0 0; border: 0; }
 .management-ui.login #login-form input[type=submit] { width: 100%; }
 .management-ui.login #footer { text-align: center; }
-@media (min-width: 1450px) { .management-ui .management-stat-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (min-width: 1600px) { .management-ui .management-stat-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 @media (max-width: 1100px) {
-  .management-ui .management-sidebar { flex-basis: 205px; padding: 20px 12px; }
-  .management-ui #content { padding: 24px; }
+  body.management-ui { --m-sidebar-w: 216px; }
+  .management-ui #content { padding: 24px 24px 36px; }
+  .management-ui .breadcrumbs { padding: 10px 24px; }
   .management-ui .management-overview-grid { grid-template-columns: 1fr; }
 }
-@media (max-width: 767px) {
-  .management-ui #header { padding: 16px 20px; align-items: flex-start; flex-direction: column; gap: 16px; }
-  .management-ui #user-tools { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 12px; }
-  .management-ui .management-identity { text-align: left; margin-right: auto; }
+/* Tablet and phone: the sidebar becomes a navigation strip above the page content. */
+@media (max-width: 900px) {
+  .management-ui #header { position: static; padding: 12px 20px; }
   .management-ui .main { flex-direction: column; }
-  .management-ui .management-sidebar { flex: none; width: 100%; min-height: 0; padding: 10px 12px; }
-  .management-ui .management-sidebar nav { display: flex; flex-wrap: wrap; gap: 4px; }
+  .management-ui .management-sidebar { position: static; flex: none; width: 100%; height: auto; overflow: visible; padding: 10px 16px; flex-direction: row; align-items: center; }
+  .management-ui .management-sidebar nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+  .management-ui .management-nav-group { display: contents; }
+  .management-ui .management-nav-group + .management-nav-group { margin-top: 0; }
   .management-ui .management-nav-label, .management-ui .management-sidebar-note { display: none; }
-  .management-ui .management-nav-link { padding: 8px 10px; margin: 0; font-size: 12px; }
-  .management-ui #content { padding: 22px 16px; }
+  .management-ui .management-nav-link { min-height: 38px; margin: 0; padding: 6px 12px; font-size: 12px; }
+}
+@media (max-width: 767px) {
+  .management-ui #header { align-items: flex-start; flex-direction: column; gap: 14px; }
+  .management-ui #user-tools { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px 14px; }
+  .management-ui .management-identity { text-align: left; flex-basis: 100%; }
+  .management-ui #content { padding: 18px 16px 32px; }
   .management-ui #content h1 { font-size: 24px; }
   .management-ui .breadcrumbs { padding: 10px 16px; }
   .management-ui .management-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .management-ui .management-stat { padding: 16px; }
-  .management-ui .management-stat > strong { font-size: 29px; }
-  .management-ui .management-stat-link { font-size: 10px; }
+  .management-ui .management-stat { padding: 14px; }
+  .management-ui .management-stat > strong { font-size: 28px; margin: 10px 0 6px; }
+  .management-ui .management-stat-head { gap: 9px; }
+  .management-ui .management-stat-label { font-size: 12px; }
+  .management-ui .management-stat-link { font-size: 11px; }
+  .management-ui .management-work-row { flex-wrap: wrap; padding-right: 0; }
+  .management-ui .management-work-link { padding: 12px 16px; flex-basis: 100%; }
+  .management-ui .management-work-row .management-add-link { margin: -4px 16px 12px 66px; }
+  .management-ui .management-panel-heading { padding: 18px 16px 14px; }
+  .management-ui .management-activity li { padding: 14px 16px; }
   .management-ui #changelist { flex-direction: column; }
   .management-ui #changelist-filter { border: 0; border-top: 1px solid #e2e8f0; width: 100%; }
   .management-ui #changelist .changelist-form-container { width: 100%; }
@@ -179,5 +236,12 @@ body.management-ui {
   .management-ui .selector select { width: 100%; }
   .management-ui #footer { padding: 16px; }
   .management-ui.login #header { align-items: center; }
+}
+/* Phones: one scrolling row of navigation links keeps the page content near the top. */
+@media (max-width: 600px) {
+  .management-ui .management-sidebar { padding: 8px 12px; }
+  .management-ui .management-sidebar nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
+  .management-ui .management-nav-link { flex: 0 0 auto; white-space: nowrap; }
+  .management-ui .management-nav-link:last-child { margin-right: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { .management-ui * { transition: none !important; scroll-behavior: auto !important; } }
