@@ -3,8 +3,7 @@
 <p class="eyebrow">WELCOME ABOARD</p>
 <h1>Create your account</h1>
 <p class="muted">Manage your services, orders and invoices with ICT Ventures Cloud Portal.</p>
-<form method="post">{% csrf_token %}{{ form.as_p }}<button>Create account</button>
+<form method="post" class="auth-form">{% csrf_token %}{{ form.as_p }}<button type="submit" class="wide">Create account</button>
 </form>
-<p>Already registered? <a href="{% url 'login' %}">Sign in</a>
-</p>
+<p class="auth-switch">Already registered? <a href="{% url 'login' %}">Sign in</a></p>
 </section>{% endblock %}

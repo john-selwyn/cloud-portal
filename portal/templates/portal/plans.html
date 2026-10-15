@@ -1,15 +1,15 @@
 {% extends 'portal/base.html' %}{% block title %}VPS plans{% endblock %}{% block content %}
 <p class="eyebrow">FIND YOUR FIT</p>
 <h1>Resources for your next project.</h1>
-<p class="lead">Choose a VPS plan, then select monthly or yearly billing. All prices in PHP.</p>
+<p class="lead page-intro">Choose a VPS plan, then select monthly or yearly billing. All prices in PHP.</p>
 {% if not user.is_authenticated %}<p class="notice">Browse freely. Sign in when you are ready to choose a billing cycle and place your order.</p>{% endif %}
 <div class="grid plans">{% for plan in plans %}
 <article class="card plan">
 <h2>{{ plan.name }}</h2>
-<p class="muted">{{ plan.description }}</p>
+<p class="muted plan-description">{{ plan.description }}</p>
 <p class="price">&#8369;{{ plan.monthly_price }}<small> / month</small>
 </p>
-<p class="muted">&#8369;{{ plan.yearly_price }} / year</p>
+<p class="muted plan-yearly">&#8369;{{ plan.yearly_price }} / year</p>
 <ul class="resources">
 <li>
 <strong>{{ plan.cpu }}</strong> vCPU</li>

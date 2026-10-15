@@ -1,6 +1,6 @@
 {% if order.status == 'PENDING' %}
   {% if order.invoice.status == 'PENDING' or order.invoice.status == 'OVERDUE' %}
-    <div class="notice">
+    <div class="notice payment-notice">
       <strong>Pending payment</strong>
       {% if xendit_enabled %}
         {% if checkout.status == 'CREATING' or checkout.status == 'UNKNOWN' or checkout.status == 'VERIFYING' %}
