@@ -1,6 +1,6 @@
 # Management UI refinement status — ICT Ventures Cloud Portal
 
-Last updated: 2026-10-15 (after Batch 4 — all planned batches complete, pending your final review).
+Last updated: 2026-10-16 (release preparation after the owner's visual approval; all design batches complete).
 
 ## Baseline and branch
 - Baseline branch: `design/management-ui`, exact commit `38283446b603dd91c66574ab13503da31c32ff5e`.
@@ -8,7 +8,7 @@ Last updated: 2026-10-15 (after Batch 4 — all planned batches complete, pendin
 - Nothing merged or deployed. Only the working branch is pushed.
 
 ## Scope rules (from the brief)
-- Allowed: `portal/templates/management/`, `portal/static/portal/management.css`, this file.
+- Allowed: `portal/templates/management/`, `portal/static/portal/management.css`, this file. From 2026-10-16 the owner also put `templates/admin/base_site.html` (cache-version bump only, inside the `management_ui` condition) and `deploy/MANAGEMENT_UI.md` explicitly in scope.
 - Not allowed: Python, settings, models, migrations, auth, permissions, sessions, payments, provisioning, `templates/admin/base_site.html`, frameworks, deployment.
 - Real data only: no invented revenue charts or server-health metrics. Financial/service lifecycle records stay read-only. The confirmed reconciliation workflow is unchanged and no operational actions are added.
 - No AI branding or co-author trailers in commits.
@@ -30,7 +30,8 @@ Last updated: 2026-10-15 (after Batch 4 — all planned batches complete, pendin
 - "Add ..." is the one filled button on a list page. Other object tools (History, Reconcile provisioning status) are outlined so the remote workflow is not emphasised.
 - Services page: visible labels for the existing `q` and `status` fields, Search and Clear, status pills (Active, Provisioning, Paid, Pending, Failed, Cancelled), Previous/Next as buttons with the same filter-preserving URLs.
 - Forms and record details (Batch 3): fieldsets are cards with a quiet heading; each row is label on the left, control and help on the right (stacked on tablet/phone).
-  Read-only records (orders, invoices, payments, subscriptions, customers) show as label/value pairs; the order record uses two columns from 1200px.
+  Read-only records (orders, invoices, payments, subscriptions) show as label/value pairs; the order record uses two columns from 1200px.
+  Customer records are not read-only: staff with the customer change permission can edit full name, company and phone, while the linked login account, account type and created date stay read-only (ownership fixed) and customers can be neither added nor deleted. Staff with view permission only see every field read-only. This is existing behaviour (unchanged by the redesign) and was re-verified on a disposable database on 2026-10-16.
   The save bar is one row of buttons (Save filled, others outlined, Delete red where Django offers it) and is sticky at the bottom of the window on tablet/desktop forms that can be saved.
   Errors: red summary note, red label and outlined field, message above the control. Messages (success/warning/error) are tinted bars.
   The permission selector (Django SelectFilter2) keeps its markup and scripts; only headings, borders, list height and buttons are restyled.
@@ -58,6 +59,16 @@ Last updated: 2026-10-15 (after Batch 4 — all planned batches complete, pendin
 ## Changed files (Batch 4)
 - `portal/static/portal/management.css`: login rules rewritten. No template changed in this batch.
 - `MANAGEMENT_UI_STATUS.md`.
+
+## Release preparation (2026-10-16)
+Requested by the owner after approving the final preview appearance.
+- `templates/admin/base_site.html`: stylesheet cache query raised from `?v=management-1` to `?v=management-2`. The `{% if management_ui %}` condition is unchanged, so the legacy admin and customer pages still load no Management stylesheet.
+- `deploy/MANAGEMENT_UI.md`: rewritten to describe the completed refinement, the actual validation results and what was not verified, a corrected preview checklist, and the limited visual approval.
+- Customer wording corrected (see Forms and record details above; the deployment document's checklist item also states that customer contact details are editable by authorised staff with ownership fixed).
+- No functionality changed. The only code-path file touched is the one-token version string in `base_site.html`.
+
+### Owner approval record
+On 2026-10-16 the repository owner stated: "I checked the final preview and approve its appearance." This is recorded as a **visual approval limited to what the owner reviewed**. It is not an approval of functionality, security, permissions, accessibility, other browsers, database behaviour or deployment, and it does not authorise a merge, deployment or restart. Which pages the owner reviewed was not recorded page by page.
 
 ## Checks actually run (Batch 1)
 Environment: Django 6.1.1 from `requirements.txt` in a throwaway venv, DEBUG-mode SQLite (in-memory test database), placeholder SECRET_KEY,
@@ -102,10 +113,16 @@ Same environment as earlier batches.
 - Scope check against the baseline: only `portal/templates/management/*`, `portal/static/portal/management.css` and this file differ. No Python, settings, models, migrations, auth, permissions, sessions, payments or provisioning file changed, and `templates/admin/base_site.html` is unchanged.
 - Legacy admin (`/admin/`) and customer pages (`/`, `/accounts/login/`) load no `management.css` and no Management body class (browser check plus the existing boundary test).
 
+## Checks actually run (release preparation)
+- Customer editing re-verified with Django's test client against a disposable SQLite database (no browser): a view-only account saw `full_name`, `company`, `phone`, `user`, `account_kind`, `created_at` all read-only and had no save button; an account with view+change permission got editable `full_name`, `company`, `phone` with `user`, `account_kind`, `created_at` read-only and a save button; its POST saved the three contact fields and ignored a posted attempt to change the owner; the view-only account's POST was refused (403); adding and deleting a customer were refused (403).
+- After all edits: `manage.py check` clean; `makemigrations --check` no changes; full Django suite **192 passed**; `node --test portal/test_provisioning_poll.cjs` **9 passed** (same isolated DB, integrations empty).
+- Stylesheet version, checked with Django's test client: the Management overview and the signed-out Management login page render `portal/management.css?v=management-2` (and no `management-1`); the legacy admin login page and the customer dashboard render no Management stylesheet.
+  The signed-in legacy admin index returned a redirect in that client check, so it is not confirmed by it; it was checked in a real browser during Batch 4 (no Management stylesheet or body class) and its condition is unchanged in this commit.
+- Not repeated after the version bump: the browser rendering, axe and keyboard checks (the bump changes only the stylesheet's query string, not its content).
+
 ## Known issues and unverified
 - Not run: real screen reader or other assistive technology, Safari/Firefox, real PostgreSQL, live provisioning or payment behaviour. The reconcile POST was not submitted in the browser (existing tests cover it with the provisioner mocked).
-- `deploy/MANAGEMENT_UI.md` was not edited (outside the stated scope). It still describes the first Management design (192 tests, earlier checks); update it only if you want it to match this branch.
-- The stylesheet link in `templates/admin/base_site.html` still uses `?v=management-1`. That file is out of scope, so browsers that cached the old CSS may need a hard refresh until the query string is bumped (needs your OK to touch that file).
+- Browsers that cached the stylesheet before deployment are handled by the `?v=management-2` query; no hard refresh should be needed after a deployment that includes this branch's `base_site.html`. Not tested against a real deployment or CDN cache.
 - Sidebar and fade on phones were checked at 390px only; very narrow (<360px) widths are untested.
 - Dark mode is not supported by the Management theme (unchanged from baseline).
 - The "Staff sign in" heading on the login page is CSS-generated text, so it is not in the page's accessibility tree; the page already has the brand link and labelled fields. Making it a real heading needs a login template (a Python change to point the site at it), which is out of scope.
@@ -116,5 +133,5 @@ Same environment as earlier batches.
 
 ## Latest saved work and exact next step
 - Latest saved code commits on `design/management-refinement`: Batch 1 `dfb210a08633e609b050aa32d9cb7c2be1033794` (shell, sidebar, overview); Batch 2 `74996fe` (lists and services); Batch 3 `283e9d6` (forms, record details, reconcile page); Batch 4 `e065240` (login, final pass). Commits whose message starts "Record" only update this file.
-- Batches 1-3 were approved. All four planned batches are now saved. Next step: your visual review of Batch 4 (login and final pass) and a preview on the isolated test environment with integrations disabled, checking an administrator and restricted staff separately.
-  After that, merge and deployment are separate decisions for you; neither has been done. Optional follow-ups if wanted: bump the `?v=management-1` stylesheet query in `templates/admin/base_site.html` (needs approval to touch that file), and update `deploy/MANAGEMENT_UI.md`.
+- All four design batches were approved and the owner approved the final preview's appearance (limited visual approval, see above). The cache-version bump and the deployment document update are done.
+  Next step: none required from this branch. Merge, deployment and restart are separate decisions for the owner; none has been done. The latest saved work is the head of `design/management-refinement` (`git log -1`).
