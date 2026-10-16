@@ -1,0 +1,23 @@
+{% extends 'portal/base.html' %}{% block title %}Account{% endblock %}{% block content %}
+<div class="page-heading">
+<div>
+<p class="eyebrow">YOUR DETAILS</p>
+<h1>Account</h1>
+</div>
+</div>
+<div class="split account-layout">
+<section class="card">
+<h2>Customer profile</h2>
+<form method="post" class="account-form">{% csrf_token %}{{ form.as_p }}<button type="submit">Save changes</button>
+</form>
+</section>
+<aside class="card" aria-labelledby="signin-details">
+<h2 id="signin-details">Sign-in details</h2>
+<dl class="details">
+<dt>Username</dt>
+<dd>{{ user.username }}</dd>
+<dt>Email</dt>
+<dd>{{ user.email|default:'Not provided' }}</dd>
+</dl>
+</aside>
+</div>{% endblock %}

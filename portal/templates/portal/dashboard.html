@@ -1,0 +1,81 @@
+{% extends 'portal/base.html' %}{% block title %}Dashboard{% endblock %}{% block content %}
+<div class="page-heading">
+<div>
+<p class="eyebrow">OVERVIEW</p>
+<h1>Welcome, {{ customer.full_name }}.</h1>
+<p class="muted">Your servers, provisioning and billing at a glance.</p>
+</div>
+<a class="button" href="{% url 'plans' %}">Create VPS &rarr;</a>
+</div>
+
+<div class="grid stats" role="list" aria-label="Account summary">
+<div class="card stat-card" role="listitem">
+<span class="stat-label">Total orders</span>
+<strong class="stat-value">{{ order_count }}</strong>
+</div>
+<div class="card stat-card" role="listitem">
+<span class="stat-label">Active VPS</span>
+<strong class="stat-value">{{ active_count }}</strong>
+<a class="stat-link" href="{% url 'my_vps' %}">Manage servers &rarr;</a>
+</div>
+<div class="card stat-card" role="listitem">
+<span class="stat-label">Pending invoices</span>
+<strong class="stat-value">{{ pending_count }}</strong>
+<a class="stat-link" href="{% url 'invoices' %}">View invoices &rarr;</a>
+</div>
+</div>
+
+<section class="dashboard-section">
+<div class="page-heading compact-heading">
+<div>
+<p class="eyebrow">INFRASTRUCTURE</p>
+<h2>Your VPS servers</h2>
+</div>
+<a href="{% url 'my_vps' %}">View all VPS &rarr;</a>
+</div>
+
+{% if services %}
+<div class="server-grid dashboard-servers">
+{% for order in services %}
+<article class="card server-card server-card-{{ order.status|lower }}">
+<div class="server-card-head">
+<div>
+<p class="eyebrow">VMID {{ order.provisioning_vmid|default:"—" }}</p>
+<h2>{{ order.plan.name }}</h2>
+</div>
+<span class="badge {{ order.status|lower }}">{{ order.get_status_display }}</span>
+</div>
+
+{% if order.status == 'PROVISIONING' %}
+<div class="server-progress">
+<div class="provisioning-track" role="progressbar" aria-label="Provisioning progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ order.provisioning_progress }}"><div class="provisioning-bar" style="width:{{ order.provisioning_progress }}%"></div></div>
+<small>{{ order.provisioning_progress }}% &mdash; {{ order.provisioning_step|default:"Preparing VPS..." }}</small>
+</div>
+{% endif %}
+
+<dl class="server-facts">
+<div><dt>IP</dt><dd>{% if order.provisioning_ip_address %}<code>{{ order.provisioning_ip_address }}</code>{% else %}<span class="muted">Assigning...</span>{% endif %}</dd></div>
+<div><dt>CPU</dt><dd>{{ order.plan.cpu }} vCPU</dd></div>
+<div><dt>RAM</dt><dd>{{ order.plan.ram }} GB</dd></div>
+<div><dt>Disk</dt><dd>{{ order.plan.storage }} GB</dd></div>
+</dl>
+<div class="server-card-actions">
+<a class="button small" href="{% url 'vps_detail' order.pk %}">Manage VPS</a>
+</div>
+</article>
+{% endfor %}
+</div>
+{% else %}
+<div class="card empty compact-empty">
+<h2>No VPS servers yet.</h2>
+<p>Your paid VPS services will appear here.</p>
+<a class="button small" href="{% url 'plans' %}">Browse VPS plans</a>
+</div>
+{% endif %}
+</section>
+
+<section class="card dashboard-section">
+<div class="page-heading compact-heading">
+<h2>Recent orders</h2>
+<a href="{% url 'orders' %}">View all orders &rarr;</a>
+</div>{% include 'portal/order_table.html' %}</section>{% endblock %}

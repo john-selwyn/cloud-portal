@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}{% if management_ui %}<link rel="stylesheet" href="{% static 'portal/management.css' %}?v=management-2">{% endif %}{% endblock %}
+{% block bodyclass %}{{ block.super }}{% if management_ui %} management-ui{% endif %}{% endblock %}
+{% block branding %}
+{% if management_ui %}
+<a class="management-brand" href="{% url 'management:index' %}"><span class="management-brand-mark" aria-hidden="true">+</span><span><strong>ICT Ventures</strong><small>Management</small></span></a>
+{% else %}{{ block.super }}{% endif %}
+{% endblock %}
+{% block usertools %}
+{% if management_ui %}
+{% if has_permission %}<div id="user-tools" class="management-user-tools">
+<span class="management-identity"><strong>{% firstof user.get_full_name user.get_username %}</strong><small>{% if user.is_superuser %}Administrator{% else %}Staff account{% endif %}</small></span>
+{% if user.has_usable_password %}<a href="{% url 'management:password_change' %}">Change password</a>{% endif %}
+<form id="logout-form" method="post" action="{% url 'management:logout' %}">{% csrf_token %}<button type="submit">Sign out</button></form>
+</div>{% endif %}
+{% else %}{{ block.super }}{% endif %}
+{% endblock %}
+{% block nav-sidebar %}{% if management_ui %}{% if has_permission %}{% include "management/navigation.html" %}{% endif %}{% else %}{{ block.super }}{% endif %}{% endblock %}
+{% block footer %}{% if management_ui %}<span class="management-footer">ICT Ventures <span aria-hidden="true">/</span> Staff workspace</span>{% else %}{{ block.super }}{% endif %}{% endblock %}

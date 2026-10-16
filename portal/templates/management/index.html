@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}
+{% block bodyclass %}{{ block.super }} management-overview{% endblock %}
+{% block content_title %}
+<div class="management-page-heading">
+<p class="management-eyebrow">Workspace overview</p>
+<h1>Operations overview</h1>
+<p>Record counts and shortcuts for the areas your account can open.</p>
+</div>
+{% endblock %}
+{% block content %}
+<section aria-label="Operations summary">
+<div class="management-stat-grid">
+{% for card in cards %}<a class="management-stat" href="{{ card.url }}"><span class="management-stat-head"><span class="management-icon" data-area="{{ card.label|lower }}" aria-hidden="true"></span><span class="management-stat-label">{{ card.label }}</span></span><strong>{{ card.count }}</strong><span class="management-stat-link">View records <span aria-hidden="true">&rarr;</span></span></a>{% empty %}
+<div class="management-empty"><h2>Welcome to your workspace</h2><p>No record permissions assigned. Ask an administrator for the access needed for your role.</p></div>
+{% endfor %}
+</div>
+</section>
+<div class="management-overview-grid">
+<section class="management-panel" aria-labelledby="workspace-heading">
+<div class="management-panel-heading"><p class="management-eyebrow">Your workspace</p><h2 id="workspace-heading">Record areas</h2><p>Open an area to search, filter and review details.</p></div>
+{% if can_view_monitoring %}<div class="management-work-row"><a class="management-work-link" href="{% url 'management:monitoring' %}"><span class="management-icon" data-area="services" aria-hidden="true"></span><span class="management-work-text"><strong>Infrastructure monitoring</strong><small>Hosts, virtual machines, storage and backup coverage</small></span><span class="management-work-arrow" aria-hidden="true">&rarr;</span></a></div>{% endif %}
+{% if can_view_services %}<div class="management-work-row"><a class="management-work-link" href="{% url 'management:services' %}"><span class="management-icon" data-area="services" aria-hidden="true"></span><span class="management-work-text"><strong>VPS services</strong><small>Review recorded service and provisioning status</small></span><span class="management-work-arrow" aria-hidden="true">&rarr;</span></a></div>{% endif %}
+{% for app in app_list %}{% for model in app.models %}
+{% if model.admin_url %}<div class="management-work-row"><a class="management-work-link" href="{{ model.admin_url }}"><span class="management-icon" data-area="{{ model.object_name|lower }}" aria-hidden="true"></span><span class="management-work-text"><strong>{% if model.object_name == 'VPSPlan' %}VPS plans{% else %}{{ model.name }}{% endif %}</strong><small>{% if model.object_name == 'Customer' %}Customer profiles and contact details{% elif model.object_name == 'Order' %}Orders and provisioning records{% elif model.object_name == 'VPSPlan' %}Resources, pricing and availability{% elif model.object_name == 'Invoice' %}Invoice amounts, due dates and settlement{% elif model.object_name == 'Payment' %}Recorded payment evidence{% elif model.object_name == 'Subscription' %}Subscriptions and billing dates{% elif model.object_name == 'User' %}Staff identities and assigned permissions{% else %}Browse available records{% endif %}</small></span><span class="management-work-arrow" aria-hidden="true">&rarr;</span></a>{% if model.add_url %}<a class="management-add-link" href="{{ model.add_url }}">{% if model.object_name == 'User' %}Add staff account{% elif model.object_name == 'VPSPlan' %}Add plan{% else %}Add {{ model.name|lower }}{% endif %}</a>{% endif %}</div>{% endif %}
+{% endfor %}{% empty %}<p class="management-panel-copy">Record areas appear here when access is assigned.</p>{% endfor %}
+</section>
+<section class="management-panel" aria-labelledby="activity-heading">
+<div class="management-panel-heading"><p class="management-eyebrow">Activity</p><h2 id="activity-heading">Your recent actions</h2><p>Your latest recorded changes in this workspace.</p></div>
+{% if recent_actions %}<ul class="management-activity">
+{% for action in recent_actions %}<li><span class="management-activity-dot" aria-hidden="true"></span><div>{% if action.url %}<a href="{{ action.url }}">{{ action.entry.object_repr }}</a>{% else %}<strong>{{ action.entry.object_repr }}</strong>{% endif %}<p class="management-activity-kind">{% if action.entry.is_addition %}Added{% elif action.entry.is_deletion %}Deleted{% else %}Changed{% endif %}{% if action.entry.content_type %} &middot; {% if action.entry.content_type.model == 'user' %}Staff account{% elif action.entry.content_type.model == 'vpsplan' %}VPS plan{% else %}{{ action.entry.content_type.name|capfirst }}{% endif %}{% endif %}</p><p>{{ action.entry.get_change_message }}</p><small><time datetime="{{ action.entry.action_time|date:'c' }}">{{ action.entry.action_time|date:"j M Y, H:i" }}</time></small></div></li>{% endfor %}
+</ul>{% else %}<div class="management-empty management-activity-empty"><span class="management-empty-symbol" aria-hidden="true">&mdash;</span><h3>No recent actions</h3><p>Your recorded changes will appear here.</p></div>{% endif %}
+</section>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>{% block title %}Customer portal{% endblock %} | ICT Ventures Cloud Portal</title>
+<link rel="stylesheet" href="{% static 'portal/portal.css' %}?v=redesign-8">
+<link rel="stylesheet" href="{% static 'portal/portal-modern.css' %}?v=redesign-8">
+<link rel="stylesheet" href="{% static 'portal/storefront.css' %}?v=redesign-8">
+<link rel="icon" type="image/svg+xml" href="{% static 'portal/favicon.svg' %}">
+<meta name="description" content="Explore ICT Ventures VPS and web hosting, and manage your services and invoices.">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-server" viewBox="0 0 24 24"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+<symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M14 8H8"/><path d="M16 12H8"/><path d="M13 16H8"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol>
+</defs>
+</svg>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+<div class="nav-wrap">
+<a class="brand" href="{% if user.is_authenticated and not user.is_staff and not user.is_superuser %}{% url 'dashboard' %}{% elif user.is_authenticated %}{% url 'management:index' %}{% else %}{% url 'home' %}{% endif %}" aria-label="ICT Ventures Cloud Portal home">
+<span class="brand-icon" aria-hidden="true">+</span>
+<span class="brand-copy"><strong>ICT Ventures</strong>
+<small>Cloud Portal</small></span>
+</a>
+<nav class="main-nav" aria-label="Main navigation">
+{% with current=request.resolver_match.url_name %}
+{% if user.is_authenticated and not user.is_staff and not user.is_superuser %}
+<a class="{% if current == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"{% if current == 'dashboard' %} aria-current="page"{% endif %}><svg class="nav-icon" aria-hidden="true" focusable="false"><use href="#i-home"/></svg>Dashboard</a>
+<a class="{% if current == 'my_vps' or current == 'vps_detail' %}active{% endif %}" href="{% url 'my_vps' %}"{% if current == 'my_vps' or current == 'vps_detail' %} aria-current="page"{% endif %}><svg class="nav-icon" aria-hidden="true" focusable="false"><use href="#i-server"/></svg>My VPS</a>
+<a class="{% if current == 'orders' or current == 'order_detail' %}active{% endif %}" href="{% url 'orders' %}"{% if current == 'orders' or current == 'order_detail' %} aria-current="page"{% endif %}><svg class="nav-icon" aria-hidden="true" focusable="false"><use href="#i-file"/></svg>Orders</a>
+<a class="{% if current == 'invoices' or current == 'invoice' %}active{% endif %}" href="{% url 'invoices' %}"{% if current == 'invoices' or current == 'invoice' %} aria-current="page"{% endif %}><svg class="nav-icon" aria-hidden="true" focusable="false"><use href="#i-receipt"/></svg>Invoices</a>
+<a class="{% if current == 'account' %}active{% endif %}" href="{% url 'account' %}"{% if current == 'account' %} aria-current="page"{% endif %}><svg class="nav-icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg>Account</a>
+<form class="nav-logout" method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-button" type="submit"><svg class="nav-icon" aria-hidden="true" focusable="false"><use href="#i-logout"/></svg>Logout</button></form>
+{% elif user.is_authenticated %}
+<a href="{% url 'management:index' %}">Management</a>
+<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-button" type="submit">Sign out</button></form>
+{% else %}
+<a class="{% if current == 'web_hosting' %}active{% endif %}" href="{% url 'web_hosting' %}"{% if current == 'web_hosting' %} aria-current="page"{% endif %}>Web hosting</a>
+<a class="{% if current == 'plans' %}active{% endif %}" href="{% url 'plans' %}"{% if current == 'plans' %} aria-current="page"{% endif %}>VPS Plans</a>
+<a class="{% if current == 'login' %}active{% endif %}" href="{% url 'login' %}"{% if current == 'login' %} aria-current="page"{% endif %}>Login</a>
+<a class="button small" href="{% url 'register' %}">Create account</a>
+{% endif %}
+{% endwith %}
+</nav>
+</div>
+</header>
+<main id="main" class="container">
+{% for message in messages %}<div class="notice flash-notice" role="status">{{ message }}</div>{% endfor %}
+{% block content %}{% endblock %}
+</main>
+<footer class="container site-footer">
+<div><strong>ICT Ventures</strong><span>Cloud Portal — services, orders &amp; account management</span></div>
+<span>Secure customer access &middot; SSH key authentication</span>
+{% if not user.is_authenticated %}<a href="{% url 'management:login' %}">Staff sign in</a>{% endif %}
+</footer>
+</body>
+</html>
