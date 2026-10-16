@@ -233,38 +233,120 @@ body.management-ui {
 .management-ui #changelist-filter li a:hover { background: #e8eefb; color: var(--m-primary-hover); }
 .management-ui #changelist-filter li.selected a { background: var(--m-primary-soft); color: var(--m-primary-hover); font-weight: 650; }
 
-/* Forms */
-.management-ui input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]), .management-ui select, .management-ui textarea { background: #fff; border: 1px solid #7b8ba3; border-radius: 6px; padding: 8px 10px; color: #334155; font: inherit; max-width: 100%; }
-.management-ui input[type=submit], .management-ui input[type=button], .management-ui button:not(.theme-toggle), .management-ui .button { font-family: inherit; border-radius: 6px; }
-.management-ui button[type=submit], .management-ui input[type=submit], .management-ui .button { background: #2563eb; border: 0; color: #fff; padding: 10px 16px; cursor: pointer; }
-.management-ui button[type=submit]:hover, .management-ui input[type=submit]:hover { background: #1d4ed8; }
-.management-ui .form-row { padding: 16px 20px; border-bottom: 1px solid #eef1f6; overflow-wrap: anywhere; }
-.management-ui .form-row label { font-size: 12px; font-weight: 600; }
-.management-ui .form-row .readonly { font-size: 12px; padding-top: 2px; }
-.management-ui .help { color: #617187; font-size: 11px; line-height: 1.6; }
-.management-ui .help, .management-ui .helptext { white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
-.management-ui .selector-chosen h2 { background: #eff6ff; color: #14213d; }
-.management-ui .selector-available h2 { background: #f8fafc; color: #14213d; }
-.management-ui .selector .selector-filter { background: #fff; }
-.management-ui.model-order.change-form fieldset.module.aligned { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* Forms and record details. Django's field markup, widgets and scripts are untouched; only layout and colour change. */
+.management-ui .module { border-radius: var(--m-radius); }
+.management-ui .titles h2 { margin: -8px 0 18px; color: var(--m-muted); font-size: 15px; font-weight: 500; }
+.management-ui fieldset.module { margin: 0 0 20px; border: 1px solid var(--m-line); background: var(--m-surface); overflow: hidden; }
+.management-ui fieldset.module > h2, .management-ui .inline-group h2 { margin: 0; padding: 13px 20px; background: var(--m-surface-alt); border-bottom: 1px solid var(--m-line); color: var(--m-ink); font-size: 13px; font-weight: 650; text-transform: none; letter-spacing: 0; }
+.management-ui fieldset .description { margin: 0; padding: 12px 20px; border-bottom: 1px solid var(--m-line-soft); color: var(--m-muted); font-size: 12px; }
+
+/* Rows: label on the left, control and help on the right. */
+.management-ui .form-row { padding: 14px 20px; border-bottom: 1px solid var(--m-line-soft); overflow: visible; font-size: 13px; }
+.management-ui fieldset .form-row:last-child { border-bottom: 0; }
+.management-ui .form-row:not(.form-multiline) > .flex-container { --m-label-w: 200px; display: grid; grid-template-columns: var(--m-label-w) minmax(0, 1fr); column-gap: 24px; row-gap: 0; align-items: start; }
+.management-ui .form-row:not(.form-multiline) > .flex-container > label { grid-column: 1; grid-row: 1 / span 4; padding: 9px 0 0; color: #334155; font-size: 13px; font-weight: 600; line-height: 1.3; }
+.management-ui .form-row:not(.form-multiline) > .flex-container > :not(label) { grid-column: 2; min-width: 0; order: 1; }
+.management-ui .form-row:not(.form-multiline) > .flex-container > ul.errorlist { order: 0; margin-bottom: 6px; }
+.management-ui .form-row:not(.form-multiline) > .flex-container > .help { order: 2; margin-top: 6px; }
+.management-ui .form-row .help { margin: 0; padding: 0; color: var(--m-muted); font-size: 12px; line-height: 1.5; }
+.management-ui .aligned label + div.readonly, .management-ui .aligned label + p, .management-ui .form-row div.readonly { padding: 9px 0; margin: 0; color: var(--m-ink); font-size: 13px; line-height: 1.5; }
+.management-ui .form-row .checkbox { display: flex; align-items: center; gap: 8px; padding-top: 9px; }
+.management-ui .form-row .checkbox label { color: var(--m-ink); font-size: 13px; font-weight: 600; }
+.management-ui input[type=checkbox], .management-ui input[type=radio] { accent-color: var(--m-primary); width: 16px; height: 16px; }
+.management-ui .aligned .related-widget-wrapper { min-width: 0; }
+
+/* Controls */
+.management-ui input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]):not([type=file]), .management-ui select, .management-ui textarea { min-height: 38px; background: #fff; border: 1px solid #7b8ba3; border-radius: var(--m-radius-sm); padding: 8px 12px; color: #1e293b; font: inherit; max-width: 100%; }
+.management-ui input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]):not([type=file]):hover, .management-ui select:hover, .management-ui textarea:hover { border-color: #5b6b85; }
+.management-ui input:focus, .management-ui select:focus, .management-ui textarea:focus { border-color: var(--m-primary); }
+.management-ui .aligned .form-row input[type=text], .management-ui .aligned .form-row input[type=email], .management-ui .aligned .form-row input[type=password], .management-ui .aligned .form-row input[type=url], .management-ui .aligned .form-row .vTextField { width: min(100%, 440px); }
+.management-ui .aligned .form-row input[type=number], .management-ui .aligned .form-row .vIntegerField, .management-ui .aligned .form-row .vDecimalField { width: min(100%, 220px); }
+.management-ui .aligned .form-row textarea { width: min(100%, 680px); height: 140px; resize: vertical; }
+.management-ui .form-row select:not([multiple]) { min-width: 200px; }
+.management-ui input[type=submit], .management-ui input[type=button], .management-ui button:not(.theme-toggle), .management-ui .button { font-family: inherit; border-radius: var(--m-radius-sm); }
+.management-ui button[type=submit], .management-ui input[type=submit], .management-ui .button { background: var(--m-primary); border: 0; color: #fff; padding: 10px 16px; font-weight: 600; cursor: pointer; }
+.management-ui button[type=submit]:hover, .management-ui input[type=submit]:hover, .management-ui .button:hover { background: var(--m-primary-hover); }
+.management-ui .form-row a.button { display: inline-block; text-decoration: none; }
+
+/* Errors */
+.management-ui .errornote { margin: 0 0 18px; padding: 12px 16px; border: 1px solid #f3b9b9; border-radius: var(--m-radius-sm); background: #feecec; color: #8a1c1c; font-size: 13px; font-weight: 600; }
+.management-ui ul.errorlist { margin: 0 0 2px; padding: 0; list-style: none; background: none; }
+.management-ui ul.errorlist li { margin: 0; padding: 0; background: none; color: #a32121; font-size: 12px; font-weight: 600; }
+.management-ui .form-row:not(.form-multiline) > .flex-container.errors > label { color: #a32121; }
+.management-ui .form-row .flex-container.errors :is(input, select, textarea):not([type=checkbox]):not([type=radio]) { border-color: #a32121; box-shadow: 0 0 0 1px #a32121; }
+
+/* Save bar */
+.management-ui .submit-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0 0 20px; padding: 14px 20px; border: 1px solid var(--m-line); border-radius: var(--m-radius); background: var(--m-surface); overflow: visible; }
+.management-ui .submit-row input[type=submit], .management-ui .submit-row a.closelink, .management-ui .submit-row a.deletelink { float: none; height: auto; min-height: 40px; margin: 0; padding: 0 18px; display: inline-flex; align-items: center; border-radius: var(--m-radius-sm); font-size: 13px; font-weight: 650; line-height: 1.2; letter-spacing: 0; text-transform: none; text-decoration: none; }
+.management-ui .submit-row input[type=submit]:not(.default) { border: 1px solid var(--m-primary-line); background: #fff; color: var(--m-primary-hover); }
+.management-ui .submit-row input[type=submit]:not(.default):hover { background: var(--m-primary-soft); }
+.management-ui .submit-row input.default { background: var(--m-primary); color: #fff; }
+.management-ui .submit-row a.closelink { border: 1px solid #cbd5e1; background: #fff; color: #334155; }
+.management-ui .submit-row a.closelink:hover { background: #f1f5f9; }
+.management-ui .submit-row a.deletelink { border: 1px solid #f3b9b9; background: #fff; color: #a32121; }
+.management-ui .submit-row p.deletelink-box { margin: 0 0 0 auto; }
+
+/* Permission selector (Django SelectFilter2): same markup and scripts, readable headings and calmer controls. */
+.management-ui .selector { width: 100%; max-width: 880px; gap: 0 14px; }
+.management-ui .selector-available-title, .management-ui .selector-chosen-title { padding: 10px 12px; border-color: var(--m-line); border-radius: var(--m-radius-sm) var(--m-radius-sm) 0 0; background: var(--m-surface-alt); color: var(--m-ink); }
+.management-ui .selector-chosen-title { background: var(--m-primary-soft); }
+.management-ui .selector-available-title h2, .management-ui .selector-chosen-title h2, .management-ui .selector-available-title label, .management-ui .selector-chosen-title label { margin: 0; padding: 0; background: transparent; color: var(--m-ink); font-size: 12px; font-weight: 650; }
+.management-ui .selector .helptext { margin: 4px 0 0; color: var(--m-muted); font-size: 11px; font-weight: 400; }
+.management-ui .selector .selector-filter { border-color: var(--m-line); background: #fff; }
+.management-ui .selector select { height: 17em; min-height: 0; padding: 4px 8px; margin: 0 0 10px; border-color: var(--m-line); border-radius: 0 0 var(--m-radius-sm) var(--m-radius-sm); font-size: 12.5px; line-height: 1.7; }
+.management-ui .selector .selector-chosen--with-filtered select { border-radius: 0; }
+.management-ui .selector select option:checked { background: var(--m-primary-soft); color: var(--m-ink); }
+.management-ui .selector-chosen .list-footer-display { border-color: var(--m-line); background: var(--m-primary-soft); color: var(--m-ink); }
+.management-ui .selector ul.selector-chooser { background-color: var(--m-primary-soft); }
+.management-ui .selector-chooseall, .management-ui .selector-clearall { padding: 6px 12px; border-radius: 6px; background: var(--m-primary); color: #fff; font-size: 12px; font-weight: 600; }
+
+/* Messages after saving or reconciling */
+.management-ui .messagelist { margin: 0; padding: 18px 32px 0; }
+.management-ui .messagelist li { margin: 0 0 8px; padding: 12px 16px 12px 44px; border: 1px solid transparent; border-radius: var(--m-radius-sm); background-position: 16px 14px; color: #334155; font-size: 13px; }
+.management-ui .messagelist li.success { background-color: #e2f5ec; border-color: #b6e2c9; color: #17603e; }
+.management-ui .messagelist li.warning { background-color: #fff4d6; border-color: #f0dca0; color: #6b4700; }
+.management-ui .messagelist li.error { background-color: #feecec; border-color: #f3b9b9; color: #8a1c1c; }
+
+/* Reconcile confirmation */
+.management-ui .management-confirm { max-width: 760px; }
+.management-ui .management-confirm-body { padding: 20px 24px 24px; }
+.management-ui .management-confirm-body p { margin: 0 0 12px; font-size: 14px; line-height: 1.6; }
+.management-ui .management-confirm-body form { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 18px; }
+.management-ui .management-confirm-body button { min-height: 40px; padding: 0 20px; }
+.management-ui a.management-cancel { display: inline-flex; align-items: center; min-height: 40px; padding: 0 18px; border: 1px solid #cbd5e1; border-radius: var(--m-radius-sm); background: #fff; color: #334155; font-weight: 650; text-decoration: none; }
+.management-ui a.management-cancel:hover { background: #f1f5f9; }
+
+/* Order record: two columns of label/value pairs on wide screens */
+.management-ui.model-order.change-form fieldset.module.aligned { display: grid; grid-template-columns: minmax(0, 1fr); }
 .management-ui.model-order.change-form fieldset.module.aligned > h2 { grid-column: 1 / -1; }
 .management-ui.model-order.change-form fieldset.module.aligned > .form-row { min-width: 0; margin: 0; }
-.management-ui .submit-row { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; padding: 16px; }
-.management-ui .submit-row a.closelink { height: auto; line-height: 1.4; padding: 10px 16px; display: inline-block; }
-.management-ui .errornote, .management-ui .errorlist { color: #a32121; }
-.management-ui .messagelist li { border-radius: 7px; margin: 12px 32px; color: #334155; }
+@media (min-width: 1200px) {
+  .management-ui.model-order.change-form fieldset.module.aligned { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .management-ui.model-order.change-form fieldset.module.aligned > .form-row:not(.form-multiline) > .flex-container { --m-label-w: 160px; }
+  .management-ui.model-order.change-form fieldset.module.aligned > .form-row:nth-last-child(-n+2) { border-bottom: 0; }
+}
+@media (min-width: 601px) {
+  .management-ui.change-form .submit-row:has(input[type=submit]) { position: sticky; bottom: 12px; z-index: 5; box-shadow: 0 8px 24px rgba(20, 33, 61, .12); }
+}
+
 .management-ui #footer { padding: 18px 32px; background: #fff; border-top: 1px solid #e2e8f0; margin: 0; }
 .management-ui .management-footer { color: #617187; font-size: 11px; }
 .management-ui .management-footer span { padding: 0 10px; }
-.management-ui.login { background: #f5f7fb; }
-.management-ui.login #container { width: min(440px, calc(100% - 32px)); margin: 8vh auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: none; min-height: 0; }
-.management-ui.login #header { justify-content: center; padding: 28px; }
-.management-ui.login #content { padding: 28px; }
+/* Staff login: one centred card using Django's own form. */
+.management-ui.login { background: var(--body-bg); }
+.management-ui.login #container { width: min(440px, calc(100% - 32px)); min-height: 0; margin: 10vh auto 6vh; border: 1px solid var(--m-line); border-radius: var(--m-radius); background: var(--m-surface); box-shadow: 0 12px 32px rgba(20, 33, 61, .06); overflow: hidden; }
+.management-ui.login #header { position: static; justify-content: center; padding: 26px 28px 22px; border-bottom: 1px solid var(--m-line); }
+.management-ui.login #content { padding: 24px 28px 28px; }
 .management-ui.login #content-main { width: 100%; }
+.management-ui.login #content-main::before { content: "Staff sign in"; display: block; margin: 0 0 14px; color: var(--m-ink); font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
 .management-ui.login #login-form .form-row { padding: 8px 0; border: 0; }
-.management-ui.login #login-form .submit-row { padding: 16px 0 0; border: 0; }
-.management-ui.login #login-form input[type=submit] { width: 100%; }
-.management-ui.login #footer { text-align: center; }
+.management-ui.login #login-form .form-row label { display: block; margin: 0 0 6px; color: #334155; font-size: 13px; font-weight: 600; }
+.management-ui.login #login-form input[type=text], .management-ui.login #login-form input[type=password] { width: 100%; min-height: 42px; }
+.management-ui.login #login-form .submit-row { display: block; margin: 0; padding: 14px 0 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; position: static; }
+.management-ui.login #login-form input[type=submit] { width: 100%; min-height: 44px; border: 0; background: var(--m-primary); color: #fff; font-size: 14px; font-weight: 650; }
+.management-ui.login #login-form input[type=submit]:hover { background: var(--m-primary-hover); }
+.management-ui.login .errornote { margin: 0 0 12px; }
+.management-ui.login #footer { padding: 16px 28px; border-top: 1px solid var(--m-line); background: var(--m-surface-alt); text-align: center; }
 @media (min-width: 1600px) { .management-ui .management-stat-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 @media (max-width: 1100px) {
   body.management-ui { --m-sidebar-w: 216px; }
@@ -294,6 +376,11 @@ body.management-ui {
   .management-ui #changelist-filter #changelist-filter-extra-actions { padding: 4px 18px; }
   .management-ui #changelist-filter details { padding: 8px 0 0; }
   .management-ui #result_list tbody td { white-space: nowrap; }
+  .management-ui .form-row:not(.form-multiline) > .flex-container { grid-template-columns: minmax(0, 1fr); }
+  .management-ui .form-row:not(.form-multiline) > .flex-container > label { grid-column: 1; grid-row: auto; padding-top: 0; }
+  .management-ui .form-row:not(.form-multiline) > .flex-container > :not(label) { grid-column: 1; }
+  .management-ui .form-row .checkbox { padding-top: 0; }
+  .management-ui .aligned label + div.readonly, .management-ui .aligned label + p, .management-ui .form-row div.readonly { padding: 2px 0; }
   .management-ui #changelist-filter ul { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 18px 10px; }
   .management-ui #changelist-filter li a { padding: 6px 12px; border: 1px solid var(--m-line); border-radius: 999px; background: #fff; }
   .management-ui #changelist-filter li.selected a { border-color: var(--m-primary-line); }
@@ -317,12 +404,6 @@ body.management-ui {
   .management-ui .management-work-row .management-add-link { margin: -4px 16px 12px 66px; }
   .management-ui .management-panel-heading { padding: 18px 16px 14px; }
   .management-ui .management-activity li { padding: 14px 16px; }
-  .management-ui .aligned label { float: none; width: auto; }
-  .management-ui .aligned .form-row div { min-width: 0; }
-  .management-ui .aligned .form-row .flex-container { flex-wrap: wrap; }
-  .management-ui .aligned .form-row .help { width: auto; margin-left: 0; }
-  .management-ui.model-order.change-form fieldset.module.aligned { grid-template-columns: 1fr; }
-  .management-ui .aligned p.help, .management-ui .aligned div.help, .management-ui .aligned .readonly { margin-left: 0; }
   .management-ui #toolbar { padding: 12px 16px; }
   .management-ui #toolbar form #searchbar { flex: 1 1 0; max-width: none; }
   .management-ui #changelist-search .quiet { margin-left: 0; flex-basis: 100%; }
@@ -332,9 +413,13 @@ body.management-ui {
   .management-ui .management-search button { flex: 1; }
   .management-ui #changelist .changelist-footer, .management-ui .management-pager { padding: 12px 16px; }
   .management-ui .titles-and-tools { flex-direction: column; gap: 0; }
-  .management-ui .selector { width: 100%; max-width: 100%; }
-  .management-ui .selector-available, .management-ui .selector-chosen { width: 100%; }
-  .management-ui .selector select { width: 100%; }
+  .management-ui .form-row { padding: 14px 16px; }
+  .management-ui .aligned .form-row, .management-ui .aligned .form-row > div { max-width: 100%; }
+  .management-ui .aligned .form-row > div { width: auto; }
+  .management-ui fieldset.module > h2, .management-ui fieldset .description { padding-left: 16px; padding-right: 16px; }
+  .management-ui .submit-row { padding: 14px 16px; }
+  .management-ui .messagelist { padding: 14px 16px 0; }
+  .management-ui .management-confirm-body { padding: 18px 16px 20px; }
   .management-ui #footer { padding: 16px; }
   .management-ui.login #header { align-items: center; }
 }
