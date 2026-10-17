@@ -276,6 +276,37 @@ class PortalTests(TestCase):
         self.assertContains(response, mine.provisioning_ip_address)
         self.assertContains(response, 'Manage VPS')
 
+    def test_dashboard_redesign_shows_real_data_and_states(self):
+        self.user.customer_profile.full_name = 'Alice Example'
+        self.user.customer_profile.save()
+        active = self.service_order()
+        provisioning = self.service_order(status='PROVISIONING', vmid='1008')
+        self.other_order()
+        response = self.client.get(reverse('dashboard'))
+        self.assertContains(response, 'page-dashboard')
+        self.assertContains(response, 'Welcome, Alice Example.')
+        self.assertContains(response, 'dashboard.css')
+        self.assertContains(response, f'VMID {active.provisioning_vmid}')
+        self.assertContains(response, f'VMID {provisioning.provisioning_vmid}')
+        self.assertContains(response, 'Provisioning')
+        self.assertContains(response, 'Assigning...')
+        self.assertContains(response, reverse('vps_detail', args=[provisioning.pk]))
+        self.assertContains(response, active.invoice.invoice_number)
+        self.assertNotContains(response, 'OTHER-INVOICE')
+
+    def test_dashboard_name_falls_back_and_empty_states_render(self):
+        Customer.objects.filter(pk=self.user.customer_profile.pk).update(full_name='')
+        response = self.client.get(reverse('dashboard'))
+        self.assertContains(response, 'Welcome, alice.')
+        self.assertContains(response, 'No VPS servers yet.')
+        self.assertContains(response, 'No orders yet.')
+
+    def test_dashboard_styles_do_not_leak_to_other_pages(self):
+        self.service_order()
+        for name in ['my_vps', 'orders', 'invoices', 'account']:
+            self.assertNotContains(self.client.get(reverse(name)), 'dashboard.css')
+            self.assertNotContains(self.client.get(reverse(name)), 'page-dashboard')
+
     def test_account_update_only_changes_own_profile(self):
         self.client.post(reverse('account'), {'full_name': 'Alice Updated', 'company': 'Example',
             'phone': '123', 'user': self.other.pk, 'id': self.other.customer_profile.pk})
