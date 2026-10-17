@@ -2,6 +2,7 @@
 <nav aria-label="Management">
 <div class="management-nav-group">
 <p class="management-nav-label">Workspace</p>
+{% if can_view_monitoring %}<a class="management-nav-link" data-area="services" href="{% url 'management:monitoring' %}"{% if request.resolver_match.url_name == 'monitoring' %} aria-current="page"{% endif %}>Monitoring</a>{% endif %}
 <a class="management-nav-link" data-area="overview" href="{% url 'management:index' %}"{% if request.resolver_match.url_name == 'index' %} aria-current="page"{% endif %}>Overview</a>
 {% if can_view_services %}<a class="management-nav-link" data-area="services" href="{% url 'management:services' %}"{% if request.resolver_match.url_name == 'services' %} aria-current="page"{% endif %}>VPS services</a>{% endif %}
 </div>
