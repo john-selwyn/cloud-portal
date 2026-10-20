@@ -177,11 +177,28 @@ HESTIA_API_TIMEOUT = float(os.getenv("HESTIA_API_TIMEOUT", "5"))
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+# Account email stays off until SMTP and the canonical public HTTPS origin are verified.
+# Do not use the console backend for account tokens on production.
+CUSTOMER_EMAIL_ENABLED = os.getenv('CUSTOMER_EMAIL_ENABLED', 'False').lower() == 'true'
+CUSTOMER_REQUIRE_EMAIL_VERIFICATION = os.getenv('CUSTOMER_REQUIRE_EMAIL_VERIFICATION', 'False').lower() == 'true'
+CUSTOMER_PUBLIC_ORIGIN = os.getenv('CUSTOMER_PUBLIC_ORIGIN', '')
+CUSTOMER_EMAIL_TOKEN_TIMEOUT = 3600
+CUSTOMER_TRUSTED_PROXY_IPS = [value.strip() for value in os.getenv('CUSTOMER_TRUSTED_PROXY_IPS', '').split(',') if value.strip()]
+PASSWORD_RESET_TIMEOUT = 3600
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', '')
+MAILERS = {'default': {
+    'BACKEND': 'django.core.mail.backends.smtp.EmailBackend' if CUSTOMER_EMAIL_ENABLED
+               else 'django.core.mail.backends.dummy.EmailBackend',
+    'OPTIONS': {
+        'host': os.getenv('EMAIL_HOST', ''),
+        'port': int(os.getenv('EMAIL_PORT', '587')),
+        'username': os.getenv('EMAIL_HOST_USER', ''),
+        'password': os.getenv('EMAIL_HOST_PASSWORD', ''),
+        'use_tls': os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true',
+        'use_ssl': os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true',
+        'timeout': 10,
+    } if CUSTOMER_EMAIL_ENABLED else {},
+}}
 
 # Monitoring reads saved snapshots only. Collection is a separate read-only job.
 MONITORING_HOSTS_JSON = os.getenv("MONITORING_HOSTS_JSON", "")

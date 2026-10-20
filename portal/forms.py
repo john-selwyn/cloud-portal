@@ -37,12 +37,35 @@ def validate_ssh_public_key(value):
 class RegistrationForm(UserCreationForm):
     full_name = forms.CharField(max_length=200)
     email = forms.EmailField(max_length=254)
+    company = forms.CharField(max_length=200, required=False)
+    phone = forms.CharField(max_length=50, required=False)
+
+    def clean_email(self):
+        from .customer_security import email_available, normalize_email
+        email = normalize_email(self.cleaned_data["email"])
+        if not email_available(email):
+            raise forms.ValidationError("This email address cannot be used. Choose another address or recover your account.")
+        return email
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.order_fields(["full_name", "username", "email", "company", "phone", "password1", "password2"])
+        for name, autocomplete in (("full_name", "name"), ("email", "email"),
+                                   ("company", "organization"), ("phone", "tel")):
+            self.fields[name].widget.attrs["autocomplete"] = autocomplete
+        self.fields["phone"].widget.input_type = "tel"
+        self.fields["email"].help_text = "Use an address you control for account recovery."
 
 
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Customer
         fields = ("full_name", "company", "phone")
+        widgets = {
+            "full_name": forms.TextInput(attrs={"autocomplete": "name"}),
+            "company": forms.TextInput(attrs={"autocomplete": "organization"}),
+            "phone": forms.TextInput(attrs={"autocomplete": "tel", "type": "tel"}),
+        }
 
 
 class BillingCycleForm(forms.Form):

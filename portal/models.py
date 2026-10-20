@@ -40,11 +40,29 @@ class Customer(models.Model):
     full_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=50, blank=True)
     company = models.CharField(max_length=200, blank=True)
+    # Existing customers retain access; enforce only for new opted-in registrations.
+    email_verification_required = models.BooleanField(default=False, editable=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.full_name
+
+
+class CustomerEmail(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="portal_emails")
+    email = models.EmailField(max_length=254, unique=True)
+    nonce = models.UUIDField(default=uuid.uuid4, editable=False)
+    original_email = models.CharField(max_length=254, blank=True)
+    auth_hash = models.CharField(max_length=128, blank=True, editable=False)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+
+
+class AccountRequestLimit(models.Model):
+    key = models.CharField(max_length=40, unique=True)
+    count = models.PositiveIntegerField(default=0)
+    expires_at = models.DateTimeField(db_index=True)
 
 
 class Order(models.Model):

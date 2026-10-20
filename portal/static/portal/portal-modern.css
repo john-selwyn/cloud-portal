@@ -514,6 +514,11 @@ th { background: var(--surface-alt); }
 }
 
 /* ---------- Footer ---------- */
+.account-layout > *, .auth { min-width: 0; overflow-wrap: anywhere; }
+.account-layout aside form { margin-top: var(--space-3); }
+.account-layout aside button { max-width: 100%; white-space: normal; }
+
+/* ---------- Footer ---------- */
 .site-footer {
   display: flex;
   justify-content: space-between;

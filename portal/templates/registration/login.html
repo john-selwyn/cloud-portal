@@ -3,7 +3,9 @@
 <p class="eyebrow">CUSTOMER PORTAL</p>
 <h1>Welcome back.</h1>
 <p class="muted">Sign in to ICT Ventures Cloud Portal to manage your services, orders and invoices.</p>
+{% if login_limited %}<p role="alert">Too many sign-in attempts. Please try again in 15 minutes.</p>{% endif %}
 <form method="post" class="auth-form">{% csrf_token %}{{ form.as_p }}{% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}<button type="submit" class="wide">Sign in</button>
 </form>
 <p class="auth-switch">New here? <a href="{% url 'register' %}">Create an account</a></p>
+<p><a href="{% url 'password_reset' %}">Forgot your password?</a></p>
 </section>{% endblock %}
