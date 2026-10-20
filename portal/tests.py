@@ -893,3 +893,59 @@ class InvoicesListingTests(TestCase):
         with CaptureQueriesContext(connection) as queries:
             self.listing()
         self.assertLess(len(queries), 12)
+
+
+class ClientShellTests(TestCase):
+    """The signed-in customer header, footer and container geometry is defined once, in shared CSS."""
+
+    PAGE_STYLESHEETS = ['dashboard.css', 'orders.css', 'invoices.css']
+    SHELL_SELECTORS = ('.site-header', '.nav-wrap', '.main-nav', '.brand', '.site-footer', '.nav-icon')
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user('alice', password='Test-Password-9821')
+        cls.staff = User.objects.create_user('staffer', password='Test-Password-9821', is_staff=True)
+
+    def test_client_pages_carry_the_shared_shell_class(self):
+        self.client.force_login(self.user)
+        for name in ['dashboard', 'my_vps', 'orders', 'invoices', 'account', 'plans']:
+            with self.subTest(page=name):
+                self.assertContains(self.client.get(reverse(name)), 'client-shell')
+
+    def test_public_and_staff_pages_do_not_get_the_client_shell(self):
+        for name in ['home', 'plans', 'login']:
+            with self.subTest(page=name):
+                self.assertNotContains(self.client.get(reverse(name)), 'client-shell')
+        self.client.force_login(self.staff)
+        self.assertNotContains(self.client.get(reverse('management:index'), follow=True), 'client-shell')
+
+    def test_page_stylesheets_do_not_override_the_shared_header_or_container_width(self):
+        import re
+        from pathlib import Path
+        css_dir = Path(__file__).resolve().parent / 'static' / 'portal'
+        for name in self.PAGE_STYLESHEETS:
+            css = re.sub(r'/\*.*?\*/', '', (css_dir / name).read_text(encoding='utf-8'), flags=re.S)
+            for selector in self.SHELL_SELECTORS:
+                with self.subTest(file=name, selector=selector):
+                    self.assertNotIn(selector, css)
+            for rule in re.findall(r'main\.container\s*\{[^}]*\}', css):
+                self.assertNotIn('max-width', rule, f'{name} must not set the container width')
+
+    def test_my_vps_block_in_shared_css_does_not_override_the_shell(self):
+        import re
+        from pathlib import Path
+        css = (Path(__file__).resolve().parent / 'static' / 'portal' / 'portal-modern.css').read_text(encoding='utf-8')
+        for selector in ('body.page-my-vps .nav-wrap', 'body.page-my-vps .main-nav', 'body.page-my-vps .site-footer'):
+            self.assertNotIn(selector, css)
+        for rule in re.findall(r'body\.page-my-vps main\.container\s*\{[^}]*\}', css):
+            self.assertNotIn('max-width', rule)
+
+    def test_shared_css_reserves_scrollbar_space_and_keeps_active_link_size_stable(self):
+        from pathlib import Path
+        css = (Path(__file__).resolve().parent / 'static' / 'portal' / 'portal-modern.css').read_text(encoding='utf-8')
+        self.assertIn('scrollbar-gutter: stable', css)
+        self.assertIn('--client-width', css)
+        # No client-shell rule may change font weight or padding of the active link.
+        for block in __import__('re').findall(r'body\.client-shell[^{]*\.active[^{]*\{[^}]*\}', css):
+            self.assertNotIn('font-weight', block)
+            self.assertNotIn('padding', block)
