@@ -1,5 +1,33 @@
 # Customer accounts — prepared 20 October 2026
 
+## Current review and rehearsal state — 20 October 2026
+
+This section supersedes the older monitoring-only baseline and publication status below. User terminal output now verifies production `/opt/cloud-portal` on `codex/windows-rdp` at `a1a17752159fe9fe9c912c0687c88de3607c3996`, hostname `cloud-portal`, portal migrations 0001–0011 applied. Only untracked `billing/` and `monitoring-ca/` were reported; neither was changed. The account review now includes that current source, retaining the completed Dashboard, My VPS, Orders and Management changes. The shared stylesheet-version conflict was resolved while retaining the current navigation/template blocks.
+
+Review also fixed whitespace variants bypassing an identifier's login-rate bucket. Regression coverage verifies differently padded identifiers share their limit across different client IPs. **277 combined application tests passed on isolated PostgreSQL 17.11** after source reconciliation. The guarded helper's separate PostgreSQL 17.11 integration checks passed: production-name refusal, two-stage preflight, peer-client refusal, preserving migration and repeat, original credential/financial tamper detection, and refusal of unrelated renewal history. Test clusters stopped. These remain local tests, not the restored-production rehearsal.
+
+User-executed VM300 evidence: `ictdatabase`, NAS `10.50.4.210:/volume1/PostgreSQLBackup` mounted on `/mnt/postgresql-backup`; fresh existing backup job completed with directory `/mnt/postgresql-backup/native/2026-10-20_01-58-00`. The portal dump was restored into a new `cloud_portal_accounts_rehearsal_20261020`, owner `cloud_portal_user`, with PUBLIC CONNECT revoked. Restore used `--exit-on-error --single-transaction`, no `--create` or `--clean`, and a private postgres-owned mode-600 staged dump. Verified restored server: PostgreSQL 18.6. Verified counts: 29 invoices, 26 payments, 20 subscriptions; portal migrations 0001–0011 present. Production was not the restore target. Retain the source NAS dump, staged copy and test database until rehearsal/cleanup decisions are verified separately.
+
+### Guarded accounts rehearsal
+
+Use only a new standalone review checkout under the VM200 user's home, separate from `/opt/cloud-portal`. `deploy/rehearse_accounts.py` reads `/opt/cloud-portal/.env` privately, refuses the configured live database and non-accounts-rehearsal names, verifies actual database identity, rejects unrelated migration plans/peer clients, and disables mail/payment/provisioning/monitoring integrations. Only portal `0012_customer_accounts` is allowed. First run is database-read-only and saves original-column counts/fingerprints for users, credential hashes, grants, sessions, admin history and all operational/financial tables in a private mode-600 baseline. No row values are displayed or saved. The apply stage requires that retained baseline and checks preservation again before and after migration. Existing customers must not acquire a verification requirement; new account tables must remain empty.
+
+From that isolated checkout, on **VM200 Ubuntu** (proposed until verified there):
+
+```bash
+/opt/cloud-portal/venv/bin/python deploy/rehearse_accounts.py --env /opt/cloud-portal/.env --database cloud_portal_accounts_rehearsal_20261020
+```
+
+Expected: exact test database identity, original counts, one pending account migration and `PREFLIGHT PASSED`. Stop and inspect this result before running the separate apply step:
+
+```bash
+/opt/cloud-portal/venv/bin/python deploy/rehearse_accounts.py --env /opt/cloud-portal/.env --database cloud_portal_accounts_rehearsal_20261020 --apply
+```
+
+Expected: `0012_customer_accounts... OK`, original records unchanged, empty account tables, then `REHEARSAL PASSED`. This changes only the named restored copy. Never connect the production web service or workers to it. Do not copy `.env` into the checkout, start a preview against the restored customer data, create a baseline after migration, overwrite a failed baseline, or reuse the separate renewal rehearsal database. No production restart or migration belongs to this helper's workflow. A later failure can occur after the test schema changed; preserve evidence and fix forward in that test copy instead of concealing it by recapturing a baseline.
+
+Current milestone: fresh restore verified; isolated VM200 preflight/apply still pending. Phone visual review, verified Nginx client addressing and a reviewed production rollout remain later checks. Real email configuration remains deferred.
+
 Status: implemented and tested locally; not deployed. Customer email delivery is intentionally deferred by the owner. No production accounts, credentials, services or financial records were changed.
 
 ## Source and scope

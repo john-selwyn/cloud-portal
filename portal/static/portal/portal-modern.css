@@ -549,3 +549,496 @@ th { background: var(--surface-alt); }
 @media (prefers-reduced-motion: reduce) {
   .button, button { transition: none; }
 }
+
+/* ---------- Customer header (icons) ----------
+   Shared by every signed-in customer page. Icons come from the inline sprite in base.html. */
+.nav-icon {
+  width: 21px;
+  height: 21px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nav-wrap { padding-top: 9px; padding-bottom: 9px; }
+.brand { gap: 12px; }
+.brand-icon { width: 38px; height: 38px; border-radius: 10px; font-size: 1.35rem; font-weight: 700; line-height: 1; }
+.brand-copy strong { font-size: 1.1rem; letter-spacing: -.01em; }
+.brand-copy small { font-size: .66rem; letter-spacing: .12em; }
+.main-nav { gap: 2px; flex-wrap: nowrap; }
+.main-nav a:not(.button),
+.main-nav .nav-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  height: 42px;
+  border-radius: 10px;
+  color: var(--neutral-text);
+  font-size: .82rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.main-nav a.active, .main-nav a.active:hover { background: #EEF4FF; }
+.main-nav .nav-logout { margin: 0 0 0 10px; padding-left: 10px; border-left: 1px solid var(--line); }
+.main-nav .nav-logout .nav-button { cursor: pointer; padding: 0 14px 0 18px; }
+
+@media (max-width: 800px) {
+  .main-nav { flex-wrap: wrap; gap: 4px; }
+  .main-nav a:not(.button),
+  .main-nav .nav-button { padding: 0 12px; height: 38px; gap: 7px; font-size: .88rem; }
+  .main-nav .nav-icon { width: 18px; height: 18px; }
+  .main-nav .nav-logout { margin: 0; padding-left: 0; border-left: 0; }
+}
+
+/* ---------- My VPS page ----------
+   Everything below is scoped to body.page-my-vps (set by my_vps.html) so no other page changes.
+   Colours follow the supplied reference. Secondary text is #62708A instead of #7B879A because
+   #7B879A is only 3.5:1 on the light panels (the portal keeps a 4.5:1 minimum). */
+body.page-my-vps {
+  --v-primary: #1260FF;
+  --v-primary-hover: #0A4FDB;
+  --v-ink: #0F172A;
+  --v-muted: #62708A;
+  --v-bg: #F3F8FF;
+  --v-panel: #F8FAFC;
+  --v-line: #E3EAF5;
+  --v-control: #D5DFEE;
+  background:
+    radial-gradient(900px 460px at 88% -40px, rgba(18, 96, 255, .10), rgba(18, 96, 255, 0) 70%),
+    var(--v-bg);
+}
+body.page-my-vps .nav-wrap { max-width: 1376px; }
+body.page-my-vps .main-nav a.active, body.page-my-vps .main-nav a.active:hover { color: var(--v-primary); }
+body.page-my-vps main.container { max-width: 1376px; padding: 26px 28px 56px; }
+body.page-my-vps .site-footer { max-width: 1376px; }
+
+.page-my-vps .vps-icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Hero */
+.page-my-vps .vps-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 109px;
+  margin-bottom: 23px;
+}
+.page-my-vps .vps-hero-copy { position: relative; z-index: 1; }
+.page-my-vps .vps-eyebrow {
+  margin: 0;
+  font-size: .75rem;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--v-muted);
+}
+.page-my-vps .vps-hero h1 {
+  margin: 8px 0 4px;
+  font-size: 3.15rem;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -.035em;
+  color: var(--v-ink);
+}
+.page-my-vps .vps-lead { margin: 0; font-size: 1.04rem; line-height: 26px; color: var(--v-muted); }
+.page-my-vps .vps-art {
+  position: absolute;
+  top: -4px;
+  right: 290px;
+  width: 330px;
+  height: auto;
+  pointer-events: none;
+  z-index: 0;
+}
+.page-my-vps .vps-create {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 31px;
+  height: 57px;
+  padding: 0 25px 0 23px;
+  border-radius: 12px;
+  background: var(--v-primary);
+  color: #fff;
+  font-size: .97rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(18, 96, 255, .22);
+}
+.page-my-vps .vps-create:hover { background: var(--v-primary-hover); color: #fff; text-decoration: none; }
+.page-my-vps .vps-create .vps-icon { width: 22px; height: 22px; stroke-width: 2; }
+.page-my-vps .vps-create .vps-icon:last-child { width: 18px; height: 18px; margin-left: -5px; }
+
+/* Toolbar */
+.page-my-vps .vps-toolbar { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+.page-my-vps .vps-search {
+  position: relative;
+  flex: 0 1 385px;
+  min-width: 0;
+}
+.page-my-vps .vps-search .vps-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  width: 19px;
+  height: 19px;
+  margin-top: -9.5px;
+  color: var(--v-muted);
+  pointer-events: none;
+}
+.page-my-vps .vps-search input,
+.page-my-vps .vps-select select {
+  display: block;
+  width: 100%;
+  height: 40px;
+  margin: 0;
+  border: 1px solid var(--v-control);
+  border-radius: 10px;
+  background-color: #fff;
+  color: #334155;
+  font: inherit;
+  font-size: .83rem;
+  box-shadow: none;
+}
+.page-my-vps .vps-search input { padding: 0 14px 0 46px; }
+.page-my-vps .vps-search input::placeholder { color: var(--v-muted); opacity: 1; }
+.page-my-vps .vps-search input::-webkit-search-cancel-button { cursor: pointer; }
+.page-my-vps .vps-select { flex: 0 0 141px; }
+.page-my-vps .vps-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0 34px 0 16px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+  text-overflow: ellipsis;
+}
+.page-my-vps .vps-search input:focus,
+.page-my-vps .vps-select select:focus { border-color: var(--v-primary); }
+.page-my-vps .vps-view {
+  display: inline-flex;
+  margin-left: auto;
+  padding: 0;
+  gap: 0;
+  height: 40px;
+  border: 1px solid var(--v-control);
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+.page-my-vps .vps-view button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #475569;
+  box-shadow: none;
+}
+.page-my-vps .vps-view button:hover { background: #EEF4FF; color: var(--v-primary); }
+.page-my-vps .vps-view button.is-active,
+.page-my-vps .vps-view button.is-active:hover { background: var(--v-primary); color: #fff; }
+
+/* Grid */
+.page-my-vps .vps-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 16px; }
+
+/* Card */
+.page-my-vps .vps-card {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px 22px 20px;
+  background: #fff;
+  border: 1px solid var(--v-line);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 8px 24px rgba(30, 64, 120, .06);
+}
+.page-my-vps .vps-card-head { display: flex; align-items: center; gap: 18px; margin-bottom: 4px; }
+.page-my-vps .vps-card-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #EAF2FF;
+  color: var(--v-primary);
+}
+.page-my-vps .vps-card-icon .vps-icon { width: 26px; height: 26px; stroke-width: 1.9; }
+.page-my-vps .vps-card-title { flex: 1 1 auto; min-width: 0; }
+.page-my-vps .vps-card-id { margin: 0 0 1px; font-size: .92rem; line-height: 1.3; color: var(--v-muted); }
+.page-my-vps .vps-card h2 {
+  margin: 0;
+  font-size: 1.08rem;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--v-ink);
+  overflow-wrap: anywhere;
+}
+
+/* Status badge */
+.page-my-vps .vps-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #EEF2F7;
+  color: #334155;
+  font-size: .82rem;
+  font-weight: 600;
+  line-height: 18px;
+  white-space: nowrap;
+}
+.page-my-vps .vps-badge::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #64748B;
+  opacity: 1;
+}
+.page-my-vps .vps-badge--active { background: #E6F6EC; color: #166534; }
+.page-my-vps .vps-badge--active::before { background: #16A34A; }
+.page-my-vps .vps-badge--provisioning { background: #EAF2FF; color: #1D4ED8; }
+.page-my-vps .vps-badge--provisioning::before { background: var(--v-primary); }
+.page-my-vps .vps-badge--failed { background: #FDECEC; color: #9B1C1C; }
+.page-my-vps .vps-badge--failed::before { background: #DC2626; }
+
+/* Provisioning progress (only while PROVISIONING) */
+.page-my-vps .vps-progress .provisioning-track { height: 8px; margin: 0 0 8px; }
+.page-my-vps .vps-progress small { display: block; font-size: .85rem; color: var(--v-muted); }
+
+/* IP address panel */
+.page-my-vps .vps-ip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 55px;
+  padding: 8px 12px 8px 16px;
+  background: var(--v-panel);
+  border: 1px solid var(--v-line);
+  border-radius: 12px;
+}
+.page-my-vps .vps-ip-text { display: flex; flex-direction: column; min-width: 0; }
+.page-my-vps .vps-label { font-size: .73rem; line-height: 1.2; color: var(--v-muted); }
+.page-my-vps .vps-ip code {
+  padding: 0;
+  background: none;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--v-ink);
+  user-select: all;
+  overflow-wrap: anywhere;
+}
+.page-my-vps .vps-ip-pending { font-size: .95rem; line-height: 1.35; color: var(--v-muted); }
+.page-my-vps .vps-copy {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #5B6B82;
+  box-shadow: none;
+}
+.page-my-vps .vps-copy .vps-icon { width: 17px; height: 17px; }
+.page-my-vps .vps-copy:hover { background: #E6EEFB; color: var(--v-primary); }
+.page-my-vps .vps-copy .vps-icon { grid-area: 1 / 1; }
+.page-my-vps .vps-copy-done { display: none; color: #16803C; }
+.page-my-vps .vps-copy.is-copied .vps-copy-idle,
+.page-my-vps .vps-copy.is-failed .vps-copy-idle { display: none; }
+.page-my-vps .vps-copy.is-copied .vps-copy-done { display: block; }
+.page-my-vps .vps-copy.is-failed { color: #9B1C1C; }
+.page-my-vps .vps-copy.is-failed .vps-copy-idle { display: block; }
+.page-my-vps .vps-copy-tip {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--v-ink);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity .15s ease, transform .15s ease;
+  pointer-events: none;
+}
+.page-my-vps .vps-copy.is-copied .vps-copy-tip,
+.page-my-vps .vps-copy.is-failed .vps-copy-tip { opacity: 1; transform: none; }
+
+/* Specification boxes */
+.page-my-vps .vps-specs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; margin: 0; }
+.page-my-vps .vps-specs > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "icon label" "icon value";
+  column-gap: 8px;
+  align-items: center;
+  min-height: 61px;
+  padding: 8px 12px;
+  background: var(--v-panel);
+  border: 1px solid var(--v-line);
+  border-radius: 12px;
+}
+.page-my-vps .vps-specs .vps-icon { grid-area: icon; width: 21px; height: 21px; color: #475569; stroke-width: 1.7; }
+.page-my-vps .vps-specs dt { grid-area: label; font-size: .75rem; line-height: 1.2; color: var(--v-muted); }
+.page-my-vps .vps-specs dd {
+  grid-area: value;
+  margin: 0;
+  font-size: 1.04rem;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--v-ink);
+  white-space: nowrap;
+}
+@container (max-width: 400px) {
+  .vps-specs > div { grid-template-areas: "icon label" "value value"; row-gap: 2px; padding: 8px 10px; }
+  .vps-specs .vps-icon { width: 18px; height: 18px; }
+  .vps-specs dd { font-size: 1.02rem; }
+}
+
+/* Actions */
+.page-my-vps .vps-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 22px; margin-top: auto; padding-top: 1px; }
+.page-my-vps .vps-manage {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 8px;
+  background: var(--v-primary);
+  color: #fff;
+  font-size: .875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.page-my-vps .vps-manage .vps-icon { width: 18px; height: 18px; }
+.page-my-vps .vps-manage:hover { background: var(--v-primary-hover); color: #fff; text-decoration: none; }
+.page-my-vps .vps-order {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  color: var(--v-primary);
+  font-size: .92rem;
+  font-weight: 500;
+}
+.page-my-vps .vps-order:hover { color: var(--v-primary-hover); text-decoration: none; }
+.page-my-vps .vps-order:hover span { text-decoration: underline; }
+.page-my-vps .vps-order .vps-icon { width: 18px; height: 18px; stroke-width: 2; }
+.page-my-vps .vps-manage:focus-visible, .page-my-vps .vps-create:focus-visible { outline-offset: 3px; }
+
+/* Empty states */
+.page-my-vps .vps-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 560px;
+  margin: 24px auto 0;
+  padding: 40px 28px;
+  text-align: center;
+  background: #fff;
+  border: 1px dashed #BFD2F2;
+  border-radius: 16px;
+}
+.page-my-vps .vps-empty h2 { margin: 0 0 6px; font-size: 1.25rem; font-weight: 700; color: var(--v-ink); }
+.page-my-vps .vps-empty p { margin: 0 0 20px; color: var(--v-muted); }
+.page-my-vps .vps-empty .vps-card-icon { margin-bottom: 16px; }
+.page-my-vps .vps-clear {
+  height: 40px;
+  padding: 0 20px;
+  border: 1px solid var(--v-control);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--v-primary);
+  font-weight: 600;
+  box-shadow: none;
+}
+.page-my-vps .vps-clear:hover { background: #EEF4FF; color: var(--v-primary-hover); border-color: var(--v-primary); }
+
+/* List view: one row per server */
+@media (min-width: 1001px) {
+  .page-my-vps .vps-grid[data-view="list"] { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .page-my-vps .vps-grid[data-view="list"] .vps-card {
+    display: grid;
+    grid-template-columns: minmax(250px, 1.15fr) minmax(190px, .8fr) minmax(300px, 1.1fr) 280px;
+    align-items: center;
+    column-gap: 16px;
+    padding: 14px 22px;
+  }
+  .page-my-vps .vps-grid[data-view="list"] .vps-card-head { margin: 0; }
+  .page-my-vps .vps-grid[data-view="list"] .vps-card-title { flex: 0 1 auto; }
+  .page-my-vps .vps-grid[data-view="list"] .vps-card-head .vps-badge { margin-left: 8px; }
+  .page-my-vps .vps-grid[data-view="list"] .vps-actions { margin: 0; padding: 0; flex-wrap: nowrap; }
+  .page-my-vps .vps-grid[data-view="list"] .vps-progress { grid-column: 1 / -1; order: 10; }
+}
+
+/* Tablet: two columns */
+@media (max-width: 1100px) {
+  .page-my-vps .vps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .page-my-vps .vps-art { right: 250px; width: 290px; }
+}
+@media (max-width: 900px) {
+  .page-my-vps .vps-art { display: none; }
+  .page-my-vps .vps-toolbar { flex-wrap: wrap; }
+  .page-my-vps .vps-search { flex: 1 1 100%; }
+  .page-my-vps .vps-select { flex: 1 1 0; }
+}
+/* Phone: one column */
+@media (max-width: 680px) {
+  body.page-my-vps main.container { padding: 20px 16px 40px; }
+  .page-my-vps .vps-grid { grid-template-columns: minmax(0, 1fr); }
+  .page-my-vps .vps-hero { flex-direction: column; gap: 16px; min-height: 0; margin-bottom: 20px; }
+  .page-my-vps .vps-hero h1 { font-size: 2.4rem; }
+  .page-my-vps .vps-create { width: 100%; justify-content: center; margin-top: 0; height: 52px; }
+  .page-my-vps .vps-select { flex: 1 1 calc(50% - 40px); min-width: 0; }
+  .page-my-vps .vps-view { margin-left: 0; }
+  .page-my-vps .vps-card { padding: 16px; }
+  .page-my-vps .vps-card-head { flex-wrap: wrap; row-gap: 10px; }
+  .page-my-vps .vps-actions { gap: 8px 16px; }
+  .page-my-vps .vps-manage { flex: 1 1 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-my-vps .vps-copy-tip { transition: none; }
+}

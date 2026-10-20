@@ -302,6 +302,12 @@ class CustomerAccountTests(TestCase):
             request = RequestFactory().post('/', REMOTE_ADDR='192.0.2.40', HTTP_X_REAL_IP=f'198.51.100.{number}')
             self.assertEqual(request_allowed(request, 'proxy-test', limit=1), number == 0)
 
+    def test_login_identity_whitespace_does_not_bypass_shared_limit(self):
+        factory = RequestFactory()
+        for number, identity in enumerate(['buyer', ' buyer', 'buyer ']):
+            request = factory.post('/', REMOTE_ADDR=f'192.0.2.{number + 1}')
+            self.assertEqual(request_allowed(request, 'login-whitespace', identity, limit=1), number == 0)
+
     @override_settings(CUSTOMER_TRUSTED_PROXY_IPS=['127.0.0.1'])
     def test_trusted_proxy_distinguishes_clients_and_rejects_malformed_ip(self):
         for address in ['198.51.100.1', '198.51.100.2']:

@@ -1,5 +1,135 @@
-{% extends 'portal/base.html' %}{% block title %}My orders{% endblock %}{% block content %}
-<p class="eyebrow">YOUR PURCHASES</p>
-<h1>My orders</h1>
-<p class="muted page-intro">Track your plans, billing cycles, and order status.</p>
-<section class="card">{% include 'portal/order_table.html' with orders=page_obj %}{% include 'portal/pagination.html' %}</section>{% endblock %}
+{% extends 'portal/base.html' %}
+{% load static %}
+{% block title %}My orders{% endblock %}
+{% block body_class %}page-orders{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'portal/orders.css' %}?v=orders-1">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="o-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+<symbol id="o-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.4-4.4"/></symbol>
+<symbol id="o-layers" viewBox="0 0 24 24"><path d="m12 3 9 4.6-9 4.6-9-4.6Z"/><path d="m3 12 9 4.6 9-4.6"/><path d="m3 16.4 9 4.6 9-4.6"/></symbol>
+<symbol id="o-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.4"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+<symbol id="o-down" viewBox="0 0 24 24"><path d="m6 9.5 6 6 6-6"/></symbol>
+<symbol id="o-right" viewBox="0 0 24 24"><path d="m9.5 5.5 6.5 6.5-6.5 6.5"/></symbol>
+<symbol id="o-left" viewBox="0 0 24 24"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></symbol>
+<symbol id="o-server" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M3.5 9.2h17M3.5 14.8h17M7.2 6.4h.01M7.2 12h.01M7.2 17.6h.01"/></symbol>
+</defs>
+</svg>
+
+<div class="ord">
+  <section class="ord-hero" aria-labelledby="ord-title">
+    <div class="ord-hero-copy">
+      <p class="ord-eyebrow">YOUR PURCHASES</p>
+      <h1 id="ord-title">My orders</h1>
+      <p class="ord-lead">Track your plans, billing cycles, and order status.</p>
+    </div>
+    <a class="ord-create" href="{% url 'plans' %}">
+      <svg class="o-icon" aria-hidden="true" focusable="false"><use href="#o-plus"/></svg>
+      <span>Create VPS</span>
+    </a>
+  </section>
+
+  {% if has_orders %}
+  <nav class="ord-tabs" aria-label="Filter orders by status">
+    {% for tab in tabs %}<a class="ord-tab{% if tab.current %} is-active{% endif %}" href="{{ tab.url }}"{% if tab.current %} aria-current="page"{% endif %}>{% if tab.dot %}<span class="ord-dot dot-{{ tab.dot }}" aria-hidden="true"></span>{% endif %}{{ tab.label }}</a>{% endfor %}
+  </nav>
+  {% endif %}
+
+  <section class="ord-panel" aria-label="Orders">
+    {% if has_orders %}
+    <form class="ord-toolbar" method="get" action="{% url 'orders' %}" role="search" data-orders-filter>
+      {% if filters.status != 'all' %}<input type="hidden" name="status" value="{{ filters.status }}">{% endif %}
+      <label class="ord-search">
+        <span class="ord-sr">Search orders by ID, plan or IP address</span>
+        <svg class="o-icon" aria-hidden="true" focusable="false"><use href="#o-search"/></svg>
+        <input type="search" name="q" value="{{ filters.q }}" placeholder="Search orders by ID, plan or IP…" maxlength="100" autocomplete="off" enterkeyhint="search">
+      </label>
+      <label class="ord-select">
+        <span class="ord-sr">Filter by plan</span>
+        <svg class="o-icon o-lead" aria-hidden="true" focusable="false"><use href="#o-layers"/></svg>
+        <select name="plan">
+          <option value="">All plans</option>
+          {% for plan in plan_options %}<option value="{{ plan.pk }}"{% if plan.selected %} selected{% endif %}>{{ plan.name }}</option>{% endfor %}
+        </select>
+        <svg class="o-icon o-caret" aria-hidden="true" focusable="false"><use href="#o-down"/></svg>
+      </label>
+      <label class="ord-select">
+        <span class="ord-sr">Filter by billing cycle</span>
+        <svg class="o-icon o-lead" aria-hidden="true" focusable="false"><use href="#o-calendar"/></svg>
+        <select name="cycle">
+          <option value="">Billing cycle</option>
+          {% for cycle in cycle_options %}<option value="{{ cycle.value }}"{% if cycle.selected %} selected{% endif %}>{{ cycle.label }}</option>{% endfor %}
+        </select>
+        <svg class="o-icon o-caret" aria-hidden="true" focusable="false"><use href="#o-down"/></svg>
+      </label>
+      <noscript><button class="ord-apply" type="submit">Apply filters</button></noscript>
+    </form>
+
+    {% if page_obj %}
+    <div class="ord-table-wrap" role="region" aria-label="Orders table" tabindex="0">
+      <table class="ord-table">
+        <thead>
+          <tr>
+            <th scope="col" class="c-order">Order / Plan</th>
+            <th scope="col" class="c-cycle">Billing cycle</th>
+            <th scope="col" class="c-amount">Amount (PHP)</th>
+            <th scope="col" class="c-status">Status</th>
+            <th scope="col" class="c-ip">VPS address</th>
+            <th scope="col" class="c-created">Created</th>
+            <th scope="col" class="c-invoice">Invoice</th>
+            <th scope="col" class="c-go"><span class="ord-sr">Order details</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in page_obj %}<tr>
+            <td class="c-order" data-label="Order / Plan">
+              <span class="ord-tile" aria-hidden="true"><svg class="o-icon" focusable="false"><use href="#o-server"/></svg></span>
+              <span class="ord-plan"><a class="ord-id" href="{% url 'order_detail' order.pk %}">#{{ order.pk }}</a><strong>{{ order.plan.name }}</strong></span>
+            </td>
+            <td class="c-cycle" data-label="Billing cycle">{{ order.get_billing_cycle_display }}</td>
+            <td class="c-amount" data-label="Amount (PHP)">₱{{ order.amount|floatformat:"2g" }}</td>
+            <td class="c-status" data-label="Status"><span class="ord-badge st-{{ order.status|lower }}">{% if order.status == 'PENDING' %}Pending payment{% else %}{{ order.get_status_display }}{% endif %}</span></td>
+            <td class="c-ip" data-label="VPS address">
+              {% if order.provisioning_ip_address %}<code>{{ order.provisioning_ip_address }}</code>
+              {% elif order.status == 'PROVISIONING' %}<span class="ord-progress"><span class="ord-muted">{{ order.provisioning_progress }}% provisioning</span><progress value="{{ order.provisioning_progress }}" max="100" aria-label="Provisioning progress for order {{ order.pk }}"></progress></span>
+              {% elif order.provisioning_vmid %}<span class="ord-muted">VMID {{ order.provisioning_vmid }}</span>
+              {% else %}<span class="ord-muted" title="No address assigned yet">—</span>{% endif %}
+            </td>
+            <td class="c-created" data-label="Created">{{ order.created_at|date:'M j, Y' }}</td>
+            <td class="c-invoice" data-label="Invoice">{% if order.invoice %}<a href="{% url 'invoice' order.pk %}">{{ order.invoice.invoice_number }}</a>{% else %}<span class="ord-muted">Not issued</span>{% endif %}</td>
+            <td class="c-go"><a class="ord-go" href="{% url 'order_detail' order.pk %}" aria-label="View details for order #{{ order.pk }}"><svg class="o-icon" aria-hidden="true" focusable="false"><use href="#o-right"/></svg></a></td>
+          </tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ord-foot">
+      <p class="ord-showing" aria-live="polite">Showing {{ showing_start }} – {{ showing_end }} of {{ total_count }} order{{ total_count|pluralize }}{% if filters_active %} <span class="ord-sep" aria-hidden="true">·</span> <a class="ord-clear" href="{{ clear_url }}">Clear filters</a>{% endif %}</p>
+      {% if page_obj.paginator.num_pages > 1 %}
+      <nav class="ord-pager" aria-label="Pagination">
+        {% if previous_url %}<a class="ord-page ord-page-nav" href="{{ previous_url }}" rel="prev"><svg class="o-icon" aria-hidden="true" focusable="false"><use href="#o-left"/></svg>Previous</a>{% else %}<span class="ord-page ord-page-nav is-disabled" aria-disabled="true"><svg class="o-icon" aria-hidden="true" focusable="false"><use href="#o-left"/></svg>Previous</span>{% endif %}
+        {% for link in page_links %}{% if link.ellipsis %}<span class="ord-gap" aria-hidden="true">…</span>{% elif link.current %}<span class="ord-page is-current" aria-current="page" aria-label="Page {{ link.number }}, current page">{{ link.number }}</span>{% else %}<a class="ord-page" href="{{ link.url }}" aria-label="Go to page {{ link.number }}">{{ link.number }}</a>{% endif %}{% endfor %}
+        {% if next_url %}<a class="ord-page ord-page-nav" href="{{ next_url }}" rel="next">Next<svg class="o-icon" aria-hidden="true" focusable="false"><use href="#o-right"/></svg></a>{% else %}<span class="ord-page ord-page-nav is-disabled" aria-disabled="true">Next<svg class="o-icon" aria-hidden="true" focusable="false"><use href="#o-right"/></svg></span>{% endif %}
+      </nav>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="ord-empty">
+      <h2>No orders match your filters.</h2>
+      <p>Try a different search term, status, plan or billing cycle.</p>
+      <a class="ord-clear-btn" href="{{ clear_url }}">Clear filters</a>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="ord-empty">
+      <h2>No orders yet.</h2>
+      <p>Choose a VPS plan to create your first order.</p>
+      <a class="ord-clear-btn" href="{% url 'plans' %}">Explore plans</a>
+    </div>
+    {% endif %}
+  </section>
+</div>
+<script src="{% static 'portal/orders.js' %}?v=orders-1" defer></script>
+{% endblock %}

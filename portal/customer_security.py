@@ -68,7 +68,7 @@ def request_allowed(request, action, identity="", limit=5, seconds=3600):
             pass
     identities = [("ip", remote)]
     if identity:
-        identities.append(("identity", str(identity).lower()))
+        identities.append(("identity", str(identity).strip().lower()))
     for kind, value in identities:
         key = salted_hmac("portal.request-limit", f"{action}:{kind}:{value}").hexdigest()
         with transaction.atomic():
