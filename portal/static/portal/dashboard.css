@@ -1,0 +1,446 @@
+/* Client Dashboard (/dashboard/) only.
+   Loaded from dashboard.html. Every rule is either a .dash* class (used only by that template) or is
+   prefixed with body.page-dashboard, so My VPS, Orders and every other page are unaffected.
+   Secondary text is #566581 rather than a lighter grey so it keeps a 4.5:1 contrast on white. */
+
+body.page-dashboard {
+  --d-primary: #1259E8;
+  --d-primary-hover: #0A47C4;
+  --d-ink: #0B1530;
+  --d-text: #2A3A57;
+  --d-muted: #566581;
+  --d-line: #E7EDF6;
+  --d-soft: #F6F8FC;
+  --d-shadow: 0 8px 28px rgba(33, 80, 170, .08), 0 1px 3px rgba(33, 80, 170, .06);
+  position: relative;
+  background: #fff;
+}
+
+/* Shared header, restyled on this page only */
+body.page-dashboard .site-header {
+  border-bottom: 0;
+  border-radius: 0 0 28px 28px;
+  box-shadow: 0 10px 34px rgba(40, 90, 180, .10);
+}
+body.page-dashboard .nav-wrap { max-width: 1283px; padding-top: 11px; padding-bottom: 11px; }
+body.page-dashboard .main-nav a.active,
+body.page-dashboard .main-nav a.active:hover { color: var(--d-primary); background: #E9F1FF; font-weight: 600; }
+body.page-dashboard main.container { max-width: 1283px; padding: 0 28px 64px; }
+body.page-dashboard .site-footer { max-width: 1283px; }
+
+/* Cloud sky behind the hero, fading into white */
+.dash-sky {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 540px;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(180deg, #C6DDFF 0%, #D8E8FF 32%, #E9F2FF 62%, #FFFFFF 100%);
+}
+.dash-clouds { display: block; width: 100%; height: 100%; }
+
+.dash { position: relative; z-index: 1; color: var(--d-text); }
+.dash h1, .dash h2, .dash h3, .dash p { margin: 0; }
+.dash a { text-decoration: none; }
+.dash a:hover { text-decoration: none; }
+
+.d-icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- Hero ---------- */
+.dash-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 419px;
+  align-items: start;
+  min-height: 155px;
+  padding-top: 29px;
+}
+.dash-hero-copy { position: relative; z-index: 2; }
+.dash-eyebrow {
+  font-size: .75rem;
+  line-height: 16px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--d-primary);
+}
+.dash-hero h1 {
+  margin-top: 8px;
+  font-size: 2.75rem;
+  line-height: 1.12;
+  font-weight: 800;
+  letter-spacing: -.025em;
+  color: var(--d-ink);
+  overflow-wrap: anywhere;
+}
+.dash-lead { margin-top: 13px; font-size: 1.1rem; line-height: 1.45; color: var(--d-muted); }
+
+.dash-create {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 47px;
+  margin-top: 31px;
+  padding: 0 22px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: .95rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: linear-gradient(180deg, #1C69F4 0%, #0B4FD6 100%);
+  box-shadow: 0 10px 22px rgba(18, 89, 232, .32), inset 0 1px 0 rgba(255, 255, 255, .22);
+}
+.dash-create:hover { color: #fff; background: linear-gradient(180deg, #175FE6 0%, #0A47C4 100%); }
+.dash-create .d-icon { width: 18px; height: 18px; stroke-width: 2.2; }
+
+/* 3D server-and-cloud illustration. It lives in the full-width sky layer, so it can never push the
+   page wider or draw over a card. Its right edge follows the content column but stops at the viewport. */
+.dash-art {
+  position: absolute;
+  top: 36px;
+  right: max(0px, calc((100% - 1283px) / 2 + 28px - 145px));
+  width: 537px;
+  height: auto;
+  overflow: hidden;
+}
+
+/* ---------- Cards ---------- */
+.dash-card {
+  background: #fff;
+  border: 1px solid rgba(214, 226, 244, .7);
+  border-radius: 16px;
+  box-shadow: var(--d-shadow);
+}
+
+/* ---------- Summary cards ---------- */
+.dash-stats {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 17px;
+}
+.dash-stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+  min-height: 118px;
+  padding: 21px 23px 12px;
+}
+.dash-tile {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  flex: none;
+  border-radius: 14px;
+}
+.dash-tile .d-icon { width: 28px; height: 28px; stroke-width: 1.7; }
+.tile-blue { background: #E4EEFF; color: #1259E8; }
+.tile-green { background: #DFF4EA; color: #12875A; }
+.tile-purple { background: #F0E6FC; color: #7C3AC8; }
+.tile-sm { width: 40px; height: 40px; border-radius: 11px; }
+.tile-sm .d-icon { width: 22px; height: 22px; }
+.dash-stat-body { display: grid; gap: 1px; min-width: 0; }
+.dash-stat-label { font-size: .875rem; line-height: 20px; color: var(--d-muted); }
+.dash-stat-value { font-size: 2rem; line-height: 38px; font-weight: 800; color: var(--d-ink); letter-spacing: -.02em; }
+
+.dash-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .875rem;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--d-primary);
+}
+.dash-link:hover { color: var(--d-primary-hover); }
+.dash-link .d-icon { width: 15px; height: 15px; stroke-width: 2.2; }
+.dash-link-lg { font-size: .95rem; }
+.dash-link-lg .d-icon { width: 17px; height: 17px; }
+
+/* ---------- Section headings ---------- */
+.dash-section { margin-top: 30px; }
+.dash-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 0 3px;
+}
+.dash-eyebrow-sm { font-size: .72rem; letter-spacing: .1em; }
+.dash-section h2, .dash-orders h2 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: -.015em;
+  color: var(--d-ink);
+}
+.dash-section-head h2 { margin-top: 4px; }
+.dash-sub { font-size: .875rem; line-height: 1.5; color: var(--d-muted); }
+.dash-section-head .dash-link-lg { margin-top: 24px; }
+
+/* ---------- Server cards ---------- */
+.dash-servers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 17px;
+}
+.dash-server {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 17px 22px;
+  min-width: 0;
+}
+.dash-server-head { display: flex; align-items: center; gap: 14px; margin-bottom: 1px; }
+.dash-avatar {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  flex: none;
+  border-radius: 50%;
+  background: #E6EFFF;
+  color: var(--d-primary);
+}
+.dash-avatar .d-icon { width: 24px; height: 24px; stroke-width: 1.8; }
+.dash-server-title { flex: 1; min-width: 0; }
+.dash-vmid { font-size: .8125rem; line-height: 18px; color: var(--d-muted); }
+.dash-server h3 {
+  font-size: 1.125rem;
+  line-height: 1.3;
+  font-weight: 800;
+  color: var(--d-ink);
+  letter-spacing: -.01em;
+  overflow-wrap: anywhere;
+}
+
+/* Status badges: used for the actual order status on cards and in the table */
+.dash-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  height: 30px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: .8125rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  background: #E8EEF6;
+  color: #3B4A64;
+}
+.dash-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.dash-badge-sm { height: 24px; padding: 0 10px; font-size: .75rem; gap: 6px; }
+.st-active { background: #E2F6EB; color: #12733F; }
+.st-paid { background: #E4EEFF; color: #1650C6; }
+.st-provisioning, .st-pending { background: #FFF1D2; color: #8A5300; }
+.st-failed { background: #FDE6E4; color: #B42318; }
+.st-cancelled { background: #ECEFF5; color: #475569; }
+
+.dash-progress { display: grid; gap: 6px; }
+.dash-progress small { font-size: .78rem; color: var(--d-muted); }
+.dash-progress-track { height: 7px; overflow: hidden; border-radius: 999px; background: #E3ECF9; }
+.dash-progress-bar { height: 100%; border-radius: inherit; background: var(--d-primary); }
+
+.dash-ip, .dash-spec {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--d-line);
+  border-radius: 10px;
+  color: var(--d-muted);
+}
+.dash-ip { min-height: 51px; padding: 7px 14px; background: var(--d-soft); }
+.dash-ip .d-icon { width: 20px; height: 20px; color: #4B5A76; }
+.dash-ip > div, .dash-spec > div { display: grid; min-width: 0; }
+.dash-mini-label { font-size: .72rem; line-height: 15px; color: var(--d-muted); }
+.dash-ip code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: .8125rem;
+  font-weight: 700;
+  line-height: 18px;
+  color: var(--d-ink);
+  background: none;
+  padding: 0;
+  overflow-wrap: anywhere;
+}
+.dash-assigning { font-size: .8125rem; line-height: 18px; color: var(--d-muted); }
+
+.dash-specs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.dash-spec { padding: 8px 10px 8px 12px; gap: 9px; background: #fff; }
+.dash-spec .d-icon { width: 21px; height: 21px; color: var(--d-primary); stroke-width: 1.7; }
+.dash-spec strong { font-size: .875rem; line-height: 19px; font-weight: 700; color: var(--d-ink); white-space: nowrap; }
+
+.dash-manage {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 34px;
+  border-radius: 8px;
+  font-size: .8125rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(180deg, #1A63EE 0%, #0F52DA 100%);
+  box-shadow: 0 4px 10px rgba(18, 89, 232, .22);
+}
+.dash-manage:hover { color: #fff; background: #0A47C4; }
+.dash-manage .d-icon { width: 15px; height: 15px; stroke-width: 2.2; }
+.dash-manage-inline { display: inline-flex; padding: 0 18px; margin-top: 6px; }
+
+/* ---------- Empty states ---------- */
+.dash-empty { display: grid; justify-items: start; gap: 6px; padding: 26px 24px; }
+.dash-empty h3 { font-size: 1.125rem; font-weight: 800; color: var(--d-ink); }
+.dash-empty p { color: var(--d-muted); }
+.dash-empty-flat { padding: 8px 0 20px; }
+
+/* ---------- Recent orders ---------- */
+.dash-orders { margin-top: 16px; padding: 16px 23px 12px; }
+.dash-orders-head { display: flex; align-items: center; gap: 16px; margin-bottom: 9px; }
+.dash-orders-title { flex: 1; min-width: 0; }
+.dash-orders h2 { font-size: 1.125rem; line-height: 1.3; letter-spacing: -.01em; }
+.dash-orders .dash-sub { font-size: .8125rem; }
+.dash-orders-head .dash-link { padding-right: 0; }
+
+.dash-table-wrap { overflow-x: auto; }
+.dash-table { width: 100%; min-width: 720px; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: .8125rem; color: var(--d-muted); }
+.dash-table th {
+  padding: 0 14px;
+  height: 31px;
+  text-align: left;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #4B5A76;
+  background: #F3F5FA;
+  white-space: nowrap;
+}
+.dash-table th:first-child { border-radius: 9px 0 0 9px; padding-left: 20px; }
+.dash-table th:last-child { border-radius: 0 9px 9px 0; }
+.dash-table td { padding: 5px 14px; height: 37px; vertical-align: middle; border-bottom: 1px solid #EDF1F8; }
+.dash-table td:first-child { padding-left: 20px; }
+.dash-table tbody tr:last-child td { border-bottom: 0; }
+.dash-table .num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 72px; }
+.dash-table th.num { padding-right: 72px; }
+.dash-table th:nth-child(1) { width: 15.4%; }
+.dash-table th:nth-child(2) { width: 8.9%; }
+.dash-table th:nth-child(3) { width: 16.5%; }
+.dash-table th:nth-child(4) { width: 13.4%; }
+.dash-table th:nth-child(5) { width: 13.3%; }
+.dash-table th:nth-child(6) { width: 13.4%; }
+.dash-table th:nth-child(7) { width: 19.1%; }
+.dash-table td:first-child { display: table-cell; line-height: 1.25; }
+.dash-order-id { display: block; font-size: .75rem; font-weight: 500; color: var(--d-primary); }
+.dash-table td strong { font-weight: 700; color: var(--d-ink); }
+.dash-table td a:not(.dash-order-id) { font-weight: 500; color: var(--d-primary); }
+.dash-table a:hover { color: var(--d-primary-hover); text-decoration: underline; }
+.dash-table code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: .75rem;
+  color: var(--d-text);
+  background: none;
+  padding: 0;
+}
+.dash-muted { color: var(--d-muted); }
+.dash-table td:nth-child(6), .dash-table td:nth-child(7) { white-space: nowrap; }
+
+/* ---------- Focus ---------- */
+.dash a:focus-visible { outline: 3px solid #7FA8F7; outline-offset: 3px; border-radius: 6px; }
+
+/* ---------- Narrow desktop ---------- */
+@media (max-width: 1380px) {
+  .dash-art { width: 462px; top: 64px; right: max(0px, calc((100% - 1283px) / 2 + 28px - 68px)); }
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1100px) {
+  .dash-hero { grid-template-columns: minmax(0, 1fr) auto; }
+  .dash-art { width: 430px; top: 76px; right: 0; opacity: .6; }
+  .dash-servers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-stat { gap: 18px; padding: 20px 18px; }
+}
+
+@media (max-width: 860px) {
+  .dash-stats { grid-template-columns: 1fr; }
+  .dash-stat { min-height: 0; }
+  .dash-hero { grid-template-columns: 1fr; gap: 18px; min-height: 0; padding-bottom: 28px; }
+  .dash-create { justify-self: start; margin-top: 0; }
+  .dash-art { width: 322px; top: 90px; right: 0; opacity: .5; }
+}
+
+/* ---------- Phone ---------- */
+@media (max-width: 640px) {
+  body.page-dashboard .site-header { border-radius: 0 0 20px 20px; }
+  body.page-dashboard main.container { padding: 0 16px 40px; }
+  .dash-hero { padding-top: 22px; }
+  .dash-hero h1 { font-size: 2rem; }
+  .dash-lead { font-size: 1rem; }
+  .dash-art { display: none; }
+  .dash-servers { grid-template-columns: 1fr; }
+  .dash-section { margin-top: 26px; }
+  .dash-section h2 { font-size: 1.3rem; }
+  .dash-section-head { flex-wrap: wrap; }
+  .dash-section-head .dash-link-lg { margin-top: 0; }
+  .dash-orders { padding: 16px 16px 8px; }
+  .dash-orders-head { flex-wrap: wrap; }
+  .dash-orders-title { flex-basis: calc(100% - 60px); }
+  .dash-orders-head .dash-link { margin-left: 56px; }
+
+  /* Table rows become stacked cards so nothing scrolls sideways */
+  .dash-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .dash-table { min-width: 0; table-layout: auto; }
+  .dash-table, .dash-table tbody, .dash-table tr, .dash-table td { display: block; width: 100%; }
+  .dash-table tr { padding: 10px 0; border-bottom: 1px solid #EDF1F8; }
+  .dash-table tbody tr:last-child { border-bottom: 0; }
+  .dash-table td, .dash-table td:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: auto;
+    padding: 4px 0;
+    border: 0;
+    text-align: right;
+  }
+  .dash-table td::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: #4B5A76;
+  }
+  .dash-table td:first-child { display: flex; }
+  .dash-table td:nth-child(6), .dash-table td:nth-child(7) { white-space: normal; }
+  .dash-table td:first-child .dash-order-id { display: inline; margin-right: 8px; }
+  .dash-table .num, .dash-table th.num { padding-right: 0; }
+}
+
+@media (max-width: 380px) {
+  .dash-specs { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash * { transition: none !important; animation: none !important; }
+}
