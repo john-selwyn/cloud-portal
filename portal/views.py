@@ -16,6 +16,7 @@ from .xendit import configured as xendit_configured
 from .forms import AccountForm, BillingCycleForm, RegistrationForm
 from .hestia import list_packages
 from .models import Customer, Invoice, Order, Subscription, VPSPlan, VPSPowerOperation
+from .orders_listing import build_orders_context
 from .provisioning import get_vps_provisioning_status, require_paid
 from .services import confirm_order, plan_amount
 from .vps_control import VPSControlError, get_vps_runtime, sync_power_operation
@@ -318,8 +319,7 @@ def order_confirm(request):
 @customer_required
 @require_GET
 def orders(request):
-    records = Order.objects.filter(customer__user=request.user).select_related('plan', 'invoice').order_by('-created_at', '-pk')
-    return render(request, 'portal/orders.html', {'page_obj': Paginator(records, 20).get_page(request.GET.get('page'))})
+    return render(request, 'portal/orders.html', build_orders_context(request.user, request.GET))
 
 
 @customer_required

@@ -341,3 +341,294 @@ class PortalTests(TestCase):
                                     billing_cycle='MONTHLY', amount='299.00')
         self.assertEqual(self.client.get(reverse('invoice', args=[order.pk])).status_code, 404)
         self.assertContains(self.client.get(reverse('orders')), 'Not issued')
+
+
+class OrdersListingTests(TestCase):
+    """Tabs, search, dropdown filters and pagination on the client My orders page (/orders/)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user('alice', password='Test-Password-9821')
+        cls.other = User.objects.create_user('bob', password='Test-Password-9821')
+        cls.basic = VPSPlan.objects.create(name='VPS Basic', cpu=1, ram=2, storage=40,
+            monthly_price=Decimal('999.00'), yearly_price=Decimal('9990.00'))
+        cls.standard = VPSPlan.objects.create(name='VPS Standard', cpu=2, ram=4, storage=80,
+            monthly_price=Decimal('1499.00'), yearly_price=Decimal('14990.00'))
+        cls.secret = VPSPlan.objects.create(name='Bob Only Plan', cpu=4, ram=8, storage=160,
+            monthly_price=Decimal('4999.00'), yearly_price=Decimal('49990.00'))
+        # Oldest first, so the newest order (listed first) is the last entry.
+        specs = [
+            (cls.standard, 'MONTHLY', '1499.00', 'ACTIVE', '10.60.0.22'),
+            (cls.standard, 'MONTHLY', '1499.00', 'ACTIVE', '10.60.0.23'),
+            (cls.basic, 'MONTHLY', '999.00', 'ACTIVE', '10.60.0.25'),
+            (cls.basic, 'MONTHLY', '999.00', 'ACTIVE', '10.60.0.26'),
+            (cls.basic, 'YEARLY', '9990.00', 'ACTIVE', '10.60.0.27'),
+            (cls.basic, 'MONTHLY', '999.00', 'PROVISIONING', None),
+            (cls.standard, 'YEARLY', '14990.00', 'PROVISIONING', None),
+            (cls.basic, 'MONTHLY', '999.00', 'PENDING', None),
+            (cls.standard, 'MONTHLY', '1499.00', 'PENDING', None),
+            (cls.basic, 'MONTHLY', '999.00', 'FAILED', None),
+            (cls.basic, 'YEARLY', '9990.00', 'CANCELLED', None),
+            (cls.standard, 'MONTHLY', '1499.00', 'PAID', None),
+            (cls.basic, 'MONTHLY', '999.00', 'ACTIVE', '10.60.0.28'),
+        ]
+        cls.orders = []
+        for index, (plan, cycle, amount, status, ip) in enumerate(specs):
+            order = Order.objects.create(customer=cls.user.customer_profile, plan=plan, billing_cycle=cycle,
+                amount=amount, status=status, provisioning_ip_address=ip)
+            Order.objects.filter(pk=order.pk).update(created_at=timezone.now() - timedelta(days=len(specs) - index))
+            cls.orders.append(order)
+            if index != 8:  # order index 8 deliberately has no invoice
+                Invoice.objects.create(order=order, invoice_number=f'INV-{order.pk:08d}', amount=amount,
+                                       due_date=timezone.now() + timedelta(days=1))
+        Order.objects.filter(pk=cls.orders[5].pk).update(provisioning_progress=42)
+        Order.objects.filter(pk=cls.orders[9].pk).update(provisioning_vmid='2001')
+
+        stranger = Order.objects.create(customer=cls.other.customer_profile, plan=cls.secret,
+            billing_cycle='MONTHLY', amount='4999.00', status='ACTIVE', provisioning_ip_address='10.99.0.1')
+        Invoice.objects.create(order=stranger, invoice_number='OTHER-INV-1', amount=stranger.amount,
+                               due_date=timezone.now() + timedelta(days=1))
+        cls.stranger = stranger
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def listing(self, **params):
+        return self.client.get(reverse('orders'), params)
+
+    def all_ids(self, **params):
+        first = self.listing(**params)
+        ids = []
+        for number in range(1, first.context['page_obj'].paginator.num_pages + 1):
+            ids += [order.pk for order in self.listing(**params, page=number).context['page_obj']]
+        return ids
+
+    def pk(self, index):
+        return self.orders[index].pk
+
+    # ----- pagination and counts -----
+    def test_first_page_has_five_newest_orders_and_accurate_range(self):
+        response = self.listing()
+        self.assertEqual([o.pk for o in response.context['page_obj']], [self.pk(i) for i in (12, 11, 10, 9, 8)])
+        self.assertEqual(response.context['total_count'], 13)
+        self.assertContains(response, 'Showing 1 – 5 of 13 orders')
+        self.assertEqual(response.context['page_obj'].paginator.num_pages, 3)
+
+    def test_last_page_range_and_rows(self):
+        response = self.listing(page=3)
+        self.assertEqual(len(response.context['page_obj']), 3)
+        self.assertContains(response, 'Showing 11 – 13 of 13 orders')
+
+    def test_out_of_range_and_garbage_page_fall_back_safely(self):
+        self.assertContains(self.listing(page=99), 'Showing 11 – 13 of 13 orders')
+        self.assertContains(self.listing(page='abc'), 'Showing 1 – 5 of 13 orders')
+
+    def test_single_result_uses_singular(self):
+        response = self.listing(q='INV-%08d' % self.pk(6))
+        self.assertContains(response, 'Showing 1 – 1 of 1 order')
+        self.assertNotContains(response, 'of 1 orders')
+        self.assertNotContains(response, 'aria-label="Pagination"')
+
+    def test_page_links_are_elided_and_mark_current_page(self):
+        response = self.listing(page=2)
+        self.assertContains(response, 'aria-current="page" aria-label="Page 2, current page"')
+        self.assertEqual([link.get('number') for link in response.context['page_links']], [1, 2, 3])
+
+    # ----- status tabs -----
+    def test_tabs_map_to_existing_statuses(self):
+        expected = {'active': ('ACTIVE', 6), 'provisioning': ('PROVISIONING', 2), 'pending': ('PENDING', 2),
+                    'paid': ('PAID', 1), 'failed': ('FAILED', 1), 'cancelled': ('CANCELLED', 1)}
+        for key, (status, count) in expected.items():
+            with self.subTest(tab=key):
+                ids = self.all_ids(status=key)
+                self.assertEqual(len(ids), count)
+                self.assertEqual(set(Order.objects.filter(pk__in=ids).values_list('status', flat=True)), {status})
+
+    def test_pending_payment_tab_uses_existing_pending_status_only(self):
+        self.assertFalse(any(value == 'PENDING_PAYMENT' for value, _ in Order.Status.choices))
+        response = self.listing(status='pending')
+        self.assertContains(response, 'Pending payment')
+        self.assertEqual(response.context['total_count'], Order.objects.filter(
+            customer__user=self.user, status=Order.Status.PENDING).count())
+
+    def test_tab_total_spans_all_pages_not_just_the_displayed_one(self):
+        self.assertEqual(self.listing(status='active').context['total_count'], 6)
+        page_two = self.listing(status='active', page=2)
+        self.assertEqual(len(page_two.context['page_obj']), 1)
+        self.assertContains(page_two, 'Showing 6 – 6 of 6 orders')
+
+    def test_failed_cancelled_and_paid_tabs_appear_only_when_relevant(self):
+        keys = [tab['key'] for tab in self.listing().context['tabs']]
+        self.assertEqual(keys, ['all', 'active', 'provisioning', 'pending', 'paid', 'failed', 'cancelled'])
+        newcomer = User.objects.create_user('dana', password='Test-Password-9821')
+        Order.objects.create(customer=newcomer.customer_profile, plan=self.basic, billing_cycle='MONTHLY',
+                             amount='999.00', status='ACTIVE')
+        self.client.force_login(newcomer)
+        self.assertEqual([tab['key'] for tab in self.listing().context['tabs']],
+                         ['all', 'active', 'provisioning', 'pending'])
+
+    def test_current_tab_is_marked_and_invalid_status_is_ignored(self):
+        response = self.listing(status='provisioning')
+        current = [tab['key'] for tab in response.context['tabs'] if tab['current']]
+        self.assertEqual(current, ['provisioning'])
+        ignored = self.listing(status='bogus')
+        self.assertEqual(ignored.context['total_count'], 13)
+        self.assertEqual([tab['key'] for tab in ignored.context['tabs'] if tab['current']], ['all'])
+
+    # ----- search -----
+    def test_search_by_order_number_with_and_without_hash(self):
+        target = self.pk(11)
+        self.assertEqual(self.all_ids(q=f'#{target}'), [target])
+        self.assertIn(target, self.all_ids(q=str(target)))
+
+    def test_search_by_plan_name_is_case_insensitive(self):
+        ids = self.all_ids(q='vps standard')
+        self.assertEqual(set(ids), {self.pk(i) for i in (0, 1, 6, 8, 11)})
+
+    def test_search_by_ip_address_exact_and_partial(self):
+        self.assertEqual(self.all_ids(q='10.60.0.27'), [self.pk(4)])
+        self.assertEqual(set(self.all_ids(q='10.60.0.2')), {self.pk(i) for i in (0, 1, 2, 3, 4, 12)})
+
+    def test_search_by_invoice_number(self):
+        self.assertEqual(self.all_ids(q='INV-%08d' % self.pk(6)), [self.pk(6)])
+
+    def test_search_covers_every_page_of_results(self):
+        ids = self.all_ids(q='10.60')
+        self.assertEqual(len(ids), 6)
+        self.assertEqual(self.listing(q='10.60').context['total_count'], 6)
+        self.assertEqual(len(self.listing(q='10.60', page=2).context['page_obj']), 1)
+
+    # ----- dropdown filters and combinations -----
+    def test_plan_and_cycle_filters(self):
+        self.assertEqual(set(self.all_ids(plan=self.standard.pk)), {self.pk(i) for i in (0, 1, 6, 8, 11)})
+        self.assertEqual(set(self.all_ids(cycle='YEARLY')), {self.pk(i) for i in (4, 6, 10)})
+
+    def test_all_filters_combine(self):
+        self.assertEqual(set(self.all_ids(status='active', plan=self.basic.pk, cycle='MONTHLY', q='10.60')),
+                         {self.pk(i) for i in (2, 3, 12)})
+        self.assertEqual(self.all_ids(status='provisioning', plan=self.standard.pk, cycle='YEARLY'), [self.pk(6)])
+        self.assertEqual(self.all_ids(status='failed', cycle='YEARLY'), [])
+
+    def test_invalid_filter_values_are_ignored(self):
+        for params in ({'plan': 'abc'}, {'plan': self.secret.pk}, {'plan': '99999999999999999999'},
+                       {'cycle': 'weekly'}, {'q': 'x' * 500}, {'q': '   '}):
+            with self.subTest(params=params):
+                response = self.listing(**params)
+                self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.listing(plan=self.secret.pk).context['total_count'], 13)
+        self.assertEqual(self.listing(cycle='weekly').context['total_count'], 13)
+        self.assertEqual(self.listing(q='   ').context['total_count'], 13)
+
+    def test_filter_options_list_only_the_customers_own_plans(self):
+        response = self.listing()
+        self.assertEqual([option['name'] for option in response.context['plan_options']], ['VPS Basic', 'VPS Standard'])
+        self.assertNotContains(response, 'Bob Only Plan')
+
+    # ----- links keep the filters -----
+    def test_pagination_and_tab_links_preserve_filters(self):
+        response = self.listing(status='active', q='10.60', plan=self.basic.pk, cycle='MONTHLY')
+        self.assertEqual(response.context['total_count'], 3)
+        response = self.listing(status='active', q='10.60')
+        self.assertEqual(response.context['next_url'], '/orders/?status=active&q=10.60&page=2')
+        self.assertContains(response, 'href="/orders/?status=active&amp;q=10.60&amp;page=2"')
+        tabs = {tab['key']: tab['url'] for tab in response.context['tabs']}
+        self.assertEqual(tabs['provisioning'], '/orders/?status=provisioning&q=10.60')
+        self.assertEqual(tabs['all'], '/orders/?q=10.60')
+        previous = self.listing(status='active', q='10.60', page=2).context['previous_url']
+        self.assertEqual(previous, '/orders/?status=active&q=10.60')
+
+    def test_search_text_is_url_encoded_in_links(self):
+        response = self.listing(q='vps basic')
+        self.assertEqual(response.context['total_count'], 8)
+        self.assertEqual(response.context['next_url'], '/orders/?q=vps+basic&page=2')
+
+    def test_toolbar_keeps_selected_values(self):
+        response = self.listing(status='active', q='10.60', plan=self.basic.pk, cycle='YEARLY')
+        self.assertContains(response, 'value="10.60"')
+        self.assertContains(response, f'<option value="{self.basic.pk}" selected>VPS Basic</option>', html=True)
+        self.assertContains(response, '<option value="YEARLY" selected>Yearly</option>', html=True)
+        self.assertContains(response, '<input type="hidden" name="status" value="active">', html=True)
+
+    # ----- rendering of real data -----
+    def test_rows_show_real_customer_data(self):
+        yearly = self.orders[4]
+        response = self.listing(q=f'#{yearly.pk}')
+        self.assertContains(response, '₱9,990.00')
+        self.assertContains(response, 'Yearly')
+        self.assertContains(response, '<code>10.60.0.27</code>', html=True)
+        self.assertContains(response, f'href="{reverse("invoice", args=[yearly.pk])}"')
+        self.assertContains(response, f'INV-{yearly.pk:08d}')
+        self.assertContains(response, f'href="{reverse("order_detail", args=[yearly.pk])}"')
+        self.assertContains(response, 'Active')
+
+    def test_provisioning_vmid_pending_and_missing_invoice_states(self):
+        provisioning = self.listing(status='provisioning')
+        self.assertContains(provisioning, '42% provisioning')
+        self.assertContains(provisioning, '<progress value="42" max="100"')
+        self.assertContains(self.listing(status='failed'), 'VMID 2001')
+        pending = self.listing(status='pending')
+        self.assertContains(pending, 'Pending payment')
+        self.assertContains(pending, 'Not issued')
+
+    def test_ip_unavailable_state_renders_dash(self):
+        response = self.listing(status='cancelled')
+        self.assertContains(response, 'title="No address assigned yet"')
+
+    # ----- empty states -----
+    def test_no_matching_orders_shows_filtered_empty_state(self):
+        response = self.listing(q='zzz-no-such-order')
+        self.assertContains(response, 'No orders match your filters.')
+        self.assertContains(response, 'Clear filters')
+        self.assertContains(response, 'data-orders-filter')
+        self.assertNotContains(response, 'Showing ')
+        self.assertEqual(response.context['total_count'], 0)
+
+    def test_customer_without_orders_sees_first_order_empty_state(self):
+        newcomer = User.objects.create_user('erin', password='Test-Password-9821')
+        self.client.force_login(newcomer)
+        response = self.listing()
+        self.assertContains(response, 'No orders yet.')
+        self.assertContains(response, 'Explore plans')
+        self.assertContains(response, f'href="{reverse("plans")}"')
+        self.assertNotContains(response, 'data-orders-filter')
+        self.assertNotContains(response, 'Filter orders by status')
+
+    # ----- ownership, auth, scope -----
+    def test_other_customers_orders_never_appear(self):
+        self.assertEqual(self.all_ids(q='10.99'), [])
+        self.assertEqual(self.all_ids(q='OTHER-INV'), [])
+        response = self.listing(q=f'#{self.stranger.pk}')
+        self.assertEqual(response.context['total_count'], 0)
+        self.assertNotContains(response, reverse('order_detail', args=[self.stranger.pk]))
+        self.assertNotIn(self.stranger.pk, self.all_ids())
+
+    def test_authentication_methods_and_staff_rules_are_unchanged(self):
+        self.client.logout()
+        self.assertEqual(self.listing().status_code, 302)
+        staff = User.objects.create_user('staffer', password='Test-Password-9821', is_staff=True)
+        self.client.force_login(staff)
+        self.assertEqual(self.listing().status_code, 403)
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.post(reverse('orders')).status_code, 405)
+
+    def test_orders_assets_are_scoped_to_this_page(self):
+        response = self.listing()
+        self.assertContains(response, 'portal/orders.css')
+        self.assertContains(response, 'portal/orders.js')
+        self.assertContains(response, 'page-orders')
+        self.assertContains(response, 'Create VPS')
+        self.assertContains(response, f'href="{reverse("plans")}"')
+        self.assertNotContains(response, 'dashboard.css')
+        for name in ['dashboard', 'my_vps', 'invoices', 'account']:
+            with self.subTest(page=name):
+                other = self.client.get(reverse(name))
+                self.assertNotContains(other, 'orders.css')
+                self.assertNotContains(other, 'orders.js')
+                self.assertNotContains(other, 'page-orders')
+
+    def test_query_count_does_not_grow_with_rows(self):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+        with CaptureQueriesContext(connection) as queries:
+            self.listing()
+        self.assertLess(len(queries), 15)
