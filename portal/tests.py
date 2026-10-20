@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as dt_timezone
 from decimal import Decimal
 from unittest.mock import patch
 
@@ -632,3 +632,320 @@ class OrdersListingTests(TestCase):
         with CaptureQueriesContext(connection) as queries:
             self.listing()
         self.assertLess(len(queries), 15)
+
+
+FIXED_NOW = datetime(2026, 10, 20, 10, 0, tzinfo=dt_timezone.utc)
+
+
+class InvoicesListingTests(TestCase):
+    """Tabs, search, due-date filter and pagination on the client My invoices page (/invoices/)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user('alice', password='Test-Password-9821')
+        cls.other = User.objects.create_user('bob', password='Test-Password-9821')
+        cls.plan = VPSPlan.objects.create(name='VPS Basic', cpu=1, ram=2, storage=40,
+            monthly_price=Decimal('999.00'), yearly_price=Decimal('9990.00'))
+        D = lambda m, d, h=9: datetime(2026, m, d, h, 0, tzinfo=dt_timezone.utc)
+        # Oldest first. (stored status, due date, amount)
+        specs = [
+            ('PAID', D(8, 1), '999.00'), ('PAID', D(9, 25), '999.00'), ('PAID', D(10, 11), '1499.00'),
+            ('PAID', D(10, 11), '1499.00'), ('PAID', D(10, 16), '999.00'), ('PAID', D(10, 16), '14990.00'),
+            ('PENDING', D(10, 20, 15), '999.00'), ('PENDING', D(10, 22), '999.00'),
+            ('PENDING', D(10, 25), '1499.00'), ('PENDING', D(11, 10), '999.00'),
+            ('PENDING', D(10, 6), '999.00'),   # unpaid and past due -> derived Overdue
+            ('OVERDUE', D(10, 1), '999.00'),   # stored Overdue
+            ('VOID', D(10, 3), '999.00'),
+        ]
+        cls.invoices = []
+        for index, (status, due, amount) in enumerate(specs):
+            order = Order.objects.create(customer=cls.user.customer_profile, plan=cls.plan,
+                billing_cycle='MONTHLY', amount=amount)
+            invoice = Invoice.objects.create(order=order, invoice_number=f'INV-{order.pk:08d}',
+                amount=amount, status=status, due_date=due,
+                paid_at=due if status == 'PAID' else None)
+            Invoice.objects.filter(pk=invoice.pk).update(created_at=timezone.now() - timedelta(days=len(specs) - index))
+            cls.invoices.append(invoice)
+        stranger_order = Order.objects.create(customer=cls.other.customer_profile, plan=cls.plan,
+            billing_cycle='MONTHLY', amount='999.00')
+        cls.stranger = Invoice.objects.create(order=stranger_order, invoice_number='OTHER-INV-1',
+            amount='999.00', due_date=D(10, 20, 15))
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def listing(self, **params):
+        with patch('django.utils.timezone.now', return_value=FIXED_NOW):
+            return self.client.get(reverse('invoices'), params)
+
+    def all_ids(self, **params):
+        pages = self.listing(**params).context['page_obj'].paginator.num_pages
+        ids = []
+        for number in range(1, pages + 1):
+            ids += [i.pk for i in self.listing(**params, page=number).context['page_obj']]
+        return ids
+
+    def pks(self, *indexes):
+        return {self.invoices[i].pk for i in indexes}
+
+    # ----- pagination and counts -----
+    def test_first_page_has_five_newest_invoices_and_accurate_range(self):
+        response = self.listing()
+        self.assertEqual([i.pk for i in response.context['page_obj']],
+                         [self.invoices[n].pk for n in (12, 11, 10, 9, 8)])
+        self.assertEqual(response.context['total_count'], 13)
+        self.assertContains(response, 'Showing 1–5 of 13 invoices')
+        self.assertEqual(response.context['page_obj'].paginator.num_pages, 3)
+
+    def test_last_page_and_bad_page_values(self):
+        self.assertContains(self.listing(page=3), 'Showing 11–13 of 13 invoices')
+        self.assertContains(self.listing(page=99), 'Showing 11–13 of 13 invoices')
+        self.assertContains(self.listing(page='abc'), 'Showing 1–5 of 13 invoices')
+
+    def test_single_result_uses_singular_and_hides_pager(self):
+        response = self.listing(q=self.invoices[3].invoice_number)
+        self.assertContains(response, 'Showing 1–1 of 1 invoice')
+        self.assertNotContains(response, 'of 1 invoices')
+        self.assertNotContains(response, 'aria-label="Pagination"')
+
+    # ----- status tabs and the derived Overdue state -----
+    def test_tabs_use_supported_statuses_only(self):
+        keys = [tab['key'] for tab in self.listing().context['tabs']]
+        self.assertEqual(keys, ['all', 'pending', 'paid', 'overdue', 'void'])
+        self.assertNotContains(self.listing(), 'Cancelled')
+
+    def test_overdue_and_void_tabs_hidden_when_not_relevant(self):
+        newcomer = User.objects.create_user('dana', password='Test-Password-9821')
+        order = Order.objects.create(customer=newcomer.customer_profile, plan=self.plan,
+            billing_cycle='MONTHLY', amount='999.00')
+        Invoice.objects.create(order=order, invoice_number='DANA-1', amount='999.00',
+            due_date=FIXED_NOW + timedelta(days=1))
+        self.client.force_login(newcomer)
+        self.assertEqual([t['key'] for t in self.listing().context['tabs']], ['all', 'pending', 'paid'])
+
+    def test_each_tab_filters_across_all_pages(self):
+        expected = {'paid': (0, 1, 2, 3, 4, 5), 'pending': (6, 7, 8, 9),
+                    'overdue': (10, 11), 'void': (12,)}
+        for key, indexes in expected.items():
+            with self.subTest(tab=key):
+                self.assertEqual(set(self.all_ids(status=key)), self.pks(*indexes))
+                self.assertEqual(self.listing(status=key).context['total_count'], len(indexes))
+
+    def test_paid_invoices_are_never_overdue_even_when_past_due(self):
+        self.assertTrue(self.invoices[0].due_date < FIXED_NOW)
+        self.assertNotIn(self.invoices[0].pk, self.all_ids(status='overdue'))
+        response = self.listing(status='paid')
+        self.assertNotContains(response, 'Overdue</span>')
+
+    def test_unpaid_past_due_is_derived_overdue_and_labelled(self):
+        response = self.listing(status='overdue')
+        self.assertContains(response, '<span class="inv-badge st-overdue">Overdue</span>', html=True)
+        self.assertNotContains(response, 'st-pending')
+        # Stored PENDING still due in the future stays Pending.
+        pending = self.listing(status='pending')
+        self.assertContains(pending, '<span class="inv-badge st-pending">Pending</span>', html=True)
+
+    def test_badges_for_paid_and_void(self):
+        self.assertContains(self.listing(status='paid'), '<span class="inv-badge st-paid">Paid</span>', html=True)
+        self.assertContains(self.listing(status='void'), '<span class="inv-badge st-void">Void</span>', html=True)
+
+    def test_invalid_status_is_ignored(self):
+        response = self.listing(status='cancelled')
+        self.assertEqual(response.context['total_count'], 13)
+        self.assertEqual([t['key'] for t in response.context['tabs'] if t['current']], ['all'])
+
+    # ----- search -----
+    def test_search_by_invoice_number_and_order_number(self):
+        target = self.invoices[6]
+        self.assertEqual(self.all_ids(q=target.invoice_number), [target.pk])
+        self.assertEqual(self.all_ids(q=f'#{target.order_id}'), [target.pk])
+        self.assertIn(target.pk, self.all_ids(q=str(target.order_id)))
+
+    def test_search_partial_invoice_prefix_spans_pages(self):
+        self.assertEqual(len(self.all_ids(q='inv-0000')), 13)
+        self.assertEqual(self.listing(q='inv-0000').context['total_count'], 13)
+
+    def test_blank_and_oversized_search_are_safe(self):
+        self.assertEqual(self.listing(q='   ').context['total_count'], 13)
+        self.assertEqual(self.listing(q='x' * 500).status_code, 200)
+
+    # ----- due-date filter -----
+    def test_due_date_options(self):
+        expected = {'today': (6,), 'next7': (6, 7, 8), 'month': (2, 3, 4, 5, 6, 7, 8, 10, 11, 12),
+                    'last30': (1, 2, 3, 4, 5, 10, 11, 12), 'older': (0,)}
+        for key, indexes in expected.items():
+            with self.subTest(due=key):
+                self.assertEqual(set(self.all_ids(due=key)), self.pks(*indexes))
+
+    def test_due_filter_uses_application_timezone(self):
+        order = Order.objects.create(customer=self.user.customer_profile, plan=self.plan,
+            billing_cycle='MONTHLY', amount='999.00')
+        late = Invoice.objects.create(order=order, invoice_number='LATE-NIGHT', amount='999.00',
+            due_date=datetime(2026, 10, 19, 17, 0, tzinfo=dt_timezone.utc))  # 01:00 on Oct 20 in Manila
+        self.assertNotIn(late.pk, self.all_ids(due='today'))
+        with override_settings(TIME_ZONE='Asia/Manila'):
+            self.assertIn(late.pk, self.all_ids(due='today'))
+
+    def test_invalid_due_value_is_ignored(self):
+        self.assertEqual(self.listing(due='yesterday').context['total_count'], 13)
+
+    def test_due_options_are_clearly_labelled_and_no_status_dropdown(self):
+        response = self.listing()
+        labels = [o['label'] for o in response.context['due_options']]
+        self.assertEqual(labels, ['All dates', 'Due today', 'Due in the next 7 days', 'Due this month',
+                                  'Due in the last 30 days', 'Due more than 30 days ago'])
+        self.assertContains(response, 'name="due"')
+        self.assertNotContains(response, '<select name="status"')
+        self.assertNotContains(response, 'All statuses')
+
+    # ----- combinations and links -----
+    def test_filters_combine(self):
+        self.assertEqual(set(self.all_ids(status='paid', due='last30', q='inv')), self.pks(1, 2, 3, 4, 5))
+        self.assertEqual(self.all_ids(status='pending', due='older'), [])
+        self.assertEqual(self.all_ids(status='overdue', due='last30'), [self.invoices[11].pk, self.invoices[10].pk])  # newest first
+        self.assertEqual(self.all_ids(status='paid', q=self.invoices[7].invoice_number), [])
+
+    def test_pagination_and_tab_links_preserve_filters(self):
+        response = self.listing(status='paid', due='last30', q='inv')
+        self.assertEqual(response.context['total_count'], 5)
+        response = self.listing(status='paid', q='inv')
+        self.assertEqual(response.context['next_url'], '/invoices/?status=paid&q=inv&page=2')
+        self.assertContains(response, 'href="/invoices/?status=paid&amp;q=inv&amp;page=2"')
+        tabs = {t['key']: t['url'] for t in response.context['tabs']}
+        self.assertEqual(tabs['pending'], '/invoices/?status=pending&q=inv')
+        self.assertEqual(tabs['all'], '/invoices/?q=inv')
+        self.assertEqual(self.listing(status='paid', q='inv', page=2).context['previous_url'],
+                         '/invoices/?status=paid&q=inv')
+        both = self.listing(due='month', q='inv').context['next_url']
+        self.assertEqual(both, '/invoices/?q=inv&due=month&page=2')
+
+    def test_toolbar_keeps_selected_values(self):
+        response = self.listing(status='paid', q='inv', due='month')
+        self.assertContains(response, 'value="inv"')
+        self.assertContains(response, '<option value="month" selected>Due this month</option>', html=True)
+        self.assertContains(response, '<input type="hidden" name="status" value="paid">', html=True)
+
+    # ----- rendering of real data and links -----
+    def test_rows_show_real_data_and_exact_detail_links(self):
+        invoice = self.invoices[5]
+        response = self.listing(q=invoice.invoice_number)
+        self.assertContains(response, '₱14,990.00')
+        self.assertContains(response, 'Oct 16, 2026')
+        self.assertContains(response, invoice.invoice_number)
+        self.assertContains(response, f'href="{reverse("invoice", args=[invoice.order_id])}"')
+        self.assertContains(response, f'href="{reverse("order_detail", args=[invoice.order_id])}"')
+        self.assertContains(response, f'View invoice')
+        self.assertEqual(self.client.get(reverse('invoice', args=[invoice.order_id])).status_code, 200)
+
+    # ----- empty states -----
+    def test_no_matching_results_state(self):
+        response = self.listing(q='zzz-nothing')
+        self.assertContains(response, 'No invoices match your filters.')
+        self.assertContains(response, 'data-invoices-filter')
+        self.assertContains(response, 'Clear filters')
+        self.assertNotContains(response, 'Showing ')
+
+    def test_no_invoices_state(self):
+        newcomer = User.objects.create_user('erin', password='Test-Password-9821')
+        self.client.force_login(newcomer)
+        response = self.listing()
+        self.assertContains(response, 'No invoices yet.')
+        self.assertContains(response, f'href="{reverse("plans")}"')
+        self.assertNotContains(response, 'data-invoices-filter')
+        self.assertNotContains(response, 'Filter invoices by status')
+
+    # ----- ownership, auth, scope -----
+    def test_other_customers_invoices_never_appear(self):
+        self.assertNotIn(self.stranger.pk, self.all_ids())
+        self.assertEqual(self.all_ids(q='OTHER-INV'), [])
+        self.assertEqual(self.all_ids(q=f'#{self.stranger.order_id}'), [])
+        response = self.listing()
+        self.assertNotContains(response, 'OTHER-INV-1')
+        self.assertNotContains(response, reverse('invoice', args=[self.stranger.order_id]))
+        self.assertEqual(self.client.get(reverse('invoice', args=[self.stranger.order_id])).status_code, 404)
+
+    def test_authentication_and_methods_unchanged(self):
+        self.client.logout()
+        self.assertEqual(self.client.get(reverse('invoices')).status_code, 302)
+        staff = User.objects.create_user('staffer', password='Test-Password-9821', is_staff=True)
+        self.client.force_login(staff)
+        self.assertEqual(self.client.get(reverse('invoices')).status_code, 403)
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.post(reverse('invoices')).status_code, 405)
+
+    def test_assets_are_scoped_to_this_page(self):
+        response = self.listing()
+        for text in ('portal/invoices.css', 'portal/invoices.js', 'page-invoices'):
+            self.assertContains(response, text)
+        self.assertNotContains(response, 'orders.css')
+        self.assertNotContains(response, 'dashboard.css')
+        for name in ['dashboard', 'my_vps', 'orders', 'account']:
+            with self.subTest(page=name):
+                other = self.client.get(reverse(name))
+                for text in ('invoices.css', 'invoices.js', 'page-invoices'):
+                    self.assertNotContains(other, text)
+        detail = self.client.get(reverse('invoice', args=[self.invoices[0].order_id]))
+        self.assertNotContains(detail, 'invoices.css')
+
+    def test_query_count_is_bounded(self):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+        with CaptureQueriesContext(connection) as queries:
+            self.listing()
+        self.assertLess(len(queries), 12)
+
+
+class ClientShellTests(TestCase):
+    """The signed-in customer header, footer and container geometry is defined once, in shared CSS."""
+
+    PAGE_STYLESHEETS = ['dashboard.css', 'orders.css', 'invoices.css']
+    SHELL_SELECTORS = ('.site-header', '.nav-wrap', '.main-nav', '.brand', '.site-footer', '.nav-icon')
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user('alice', password='Test-Password-9821')
+        cls.staff = User.objects.create_user('staffer', password='Test-Password-9821', is_staff=True)
+
+    def test_client_pages_carry_the_shared_shell_class(self):
+        self.client.force_login(self.user)
+        for name in ['dashboard', 'my_vps', 'orders', 'invoices', 'account', 'plans']:
+            with self.subTest(page=name):
+                self.assertContains(self.client.get(reverse(name)), 'client-shell')
+
+    def test_public_and_staff_pages_do_not_get_the_client_shell(self):
+        for name in ['home', 'plans', 'login']:
+            with self.subTest(page=name):
+                self.assertNotContains(self.client.get(reverse(name)), 'client-shell')
+        self.client.force_login(self.staff)
+        self.assertNotContains(self.client.get(reverse('management:index'), follow=True), 'client-shell')
+
+    def test_page_stylesheets_do_not_override_the_shared_header_or_container_width(self):
+        import re
+        from pathlib import Path
+        css_dir = Path(__file__).resolve().parent / 'static' / 'portal'
+        for name in self.PAGE_STYLESHEETS:
+            css = re.sub(r'/\*.*?\*/', '', (css_dir / name).read_text(encoding='utf-8'), flags=re.S)
+            for selector in self.SHELL_SELECTORS:
+                with self.subTest(file=name, selector=selector):
+                    self.assertNotIn(selector, css)
+            for rule in re.findall(r'main\.container\s*\{[^}]*\}', css):
+                self.assertNotIn('max-width', rule, f'{name} must not set the container width')
+
+    def test_my_vps_block_in_shared_css_does_not_override_the_shell(self):
+        import re
+        from pathlib import Path
+        css = (Path(__file__).resolve().parent / 'static' / 'portal' / 'portal-modern.css').read_text(encoding='utf-8')
+        for selector in ('body.page-my-vps .nav-wrap', 'body.page-my-vps .main-nav', 'body.page-my-vps .site-footer'):
+            self.assertNotIn(selector, css)
+        for rule in re.findall(r'body\.page-my-vps main\.container\s*\{[^}]*\}', css):
+            self.assertNotIn('max-width', rule)
+
+    def test_shared_css_reserves_scrollbar_space_and_keeps_active_link_size_stable(self):
+        from pathlib import Path
+        css = (Path(__file__).resolve().parent / 'static' / 'portal' / 'portal-modern.css').read_text(encoding='utf-8')
+        self.assertIn('scrollbar-gutter: stable', css)
+        self.assertIn('--client-width', css)
+        # No client-shell rule may change font weight or padding of the active link.
+        for block in __import__('re').findall(r'body\.client-shell[^{]*\.active[^{]*\{[^}]*\}', css):
+            self.assertNotIn('font-weight', block)
+            self.assertNotIn('padding', block)

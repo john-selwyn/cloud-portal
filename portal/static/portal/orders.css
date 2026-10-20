@@ -24,16 +24,9 @@ body.page-orders {
   background-size: 100% 960px;
 }
 
-/* Shared header, restyled on this page only (same approach as the Dashboard and My VPS pages) */
-body.page-orders .site-header {
-  border-bottom: 0;
-  box-shadow: 0 1px 0 rgba(33, 80, 170, .04), 0 8px 26px rgba(33, 80, 170, .07);
-}
-body.page-orders .nav-wrap { max-width: 1399px; padding-top: 13px; padding-bottom: 13px; }
-body.page-orders .main-nav a.active,
-body.page-orders .main-nav a.active:hover { color: var(--o-primary); background: #EDF3FE; font-weight: 600; }
-body.page-orders main.container { max-width: 1399px; padding: 51px 28px 64px; min-height: 0; }
-body.page-orders .site-footer { max-width: 1399px; }
+/* The header, footer and container width are shared (.client-shell in portal-modern.css); only the
+   page's own vertical padding is set here. */
+body.page-orders main.container { padding: 51px 28px 64px; min-height: 0; }
 
 .ord { color: var(--o-text); }
 .ord h1, .ord h2, .ord p { margin: 0; }
@@ -246,12 +239,12 @@ body.page-orders .site-footer { max-width: 1399px; }
 }
 .ord-table td.c-order { padding-left: 16px; padding-right: 12px; }
 .ord-table .c-order { width: 18.4%; }
-.ord-table .c-cycle { width: 10.7%; }
+.ord-table .c-cycle { width: 10.2%; }
 .ord-table .c-amount { width: 12.8%; padding-right: 47px; text-align: right; font-variant-numeric: tabular-nums; }
-.ord-table .c-status { width: 11.9%; }
-.ord-table .c-ip { width: 14.4%; }
-.ord-table .c-created { width: 14.3%; white-space: nowrap; }
-.ord-table .c-invoice { width: 13.3%; white-space: nowrap; }
+.ord-table .c-status { width: 14.4%; }
+.ord-table .c-ip { width: 14%; }
+.ord-table .c-created { width: 13.2%; white-space: nowrap; }
+.ord-table .c-invoice { width: 12.9%; white-space: nowrap; }
 .ord-table .c-go { width: 4.1%; text-align: right; }
 .ord-table td.c-go { padding-right: 17px; }
 .ord-table td.c-order { display: table-cell; }

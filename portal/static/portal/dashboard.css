@@ -16,17 +16,9 @@ body.page-dashboard {
   background: #fff;
 }
 
-/* Shared header, restyled on this page only */
-body.page-dashboard .site-header {
-  border-bottom: 0;
-  border-radius: 0 0 28px 28px;
-  box-shadow: 0 10px 34px rgba(40, 90, 180, .10);
-}
-body.page-dashboard .nav-wrap { max-width: 1283px; padding-top: 11px; padding-bottom: 11px; }
-body.page-dashboard .main-nav a.active,
-body.page-dashboard .main-nav a.active:hover { color: var(--d-primary); background: #E9F1FF; font-weight: 600; }
-body.page-dashboard main.container { max-width: 1283px; padding: 0 28px 64px; }
-body.page-dashboard .site-footer { max-width: 1283px; }
+/* The header, footer and container width are shared (.client-shell in portal-modern.css); only the
+   page's own vertical padding is set here. */
+body.page-dashboard main.container { padding: 0 28px 64px; }
 
 /* Cloud sky behind the hero, fading into white */
 .dash-sky {
@@ -112,7 +104,7 @@ body.page-dashboard .site-footer { max-width: 1283px; }
 .dash-art {
   position: absolute;
   top: 36px;
-  right: max(0px, calc((100% - 1283px) / 2 + 28px - 145px));
+  right: max(0px, calc((100% - var(--client-width)) / 2 + 28px - 145px));
   width: 537px;
   height: auto;
   overflow: hidden;
@@ -368,8 +360,8 @@ body.page-dashboard .site-footer { max-width: 1283px; }
 .dash a:focus-visible { outline: 3px solid #7FA8F7; outline-offset: 3px; border-radius: 6px; }
 
 /* ---------- Narrow desktop ---------- */
-@media (max-width: 1380px) {
-  .dash-art { width: 462px; top: 64px; right: max(0px, calc((100% - 1283px) / 2 + 28px - 68px)); }
+@media (max-width: 1470px) {
+  .dash-art { width: 462px; top: 64px; right: max(0px, calc((100% - var(--client-width)) / 2 + 28px - 68px)); }
 }
 
 /* ---------- Tablet ---------- */
@@ -390,7 +382,6 @@ body.page-dashboard .site-footer { max-width: 1283px; }
 
 /* ---------- Phone ---------- */
 @media (max-width: 640px) {
-  body.page-dashboard .site-header { border-radius: 0 0 20px 20px; }
   body.page-dashboard main.container { padding: 0 16px 40px; }
   .dash-hero { padding-top: 22px; }
   .dash-hero h1 { font-size: 2rem; }
