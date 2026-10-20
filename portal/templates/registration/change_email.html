@@ -1,0 +1,7 @@
+{% extends 'portal/base.html' %}{% block title %}Change email{% endblock %}{% block content %}
+<section class="card auth"><p class="eyebrow">ACCOUNT SECURITY</p><h1>Change email address</h1>
+<p>Current email: <strong>{{ user.email|default:'Not provided' }}</strong></p>
+{% if mail_enabled %}<p>Your current password is required. Your email will change only after you confirm the link sent to your new address.</p>
+<form method="post" class="auth-form">{% csrf_token %}{{ form.as_p }}<button type="submit" class="wide">Send confirmation link</button></form>
+{% else %}<p>Email changes will be available after email delivery is configured.</p>{% endif %}
+<p><a href="{% url 'account' %}">Back to account</a></p></section>{% endblock %}

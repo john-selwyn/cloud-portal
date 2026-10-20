@@ -1,5 +1,6 @@
 import uuid
 from django.contrib import messages
+from django.conf import settings
 from django.contrib.auth import login
 from .account_access import customer_required
 from django.core import signing
@@ -11,6 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_variables
+from django.views.decorators.debug import sensitive_post_parameters
 from .windows_access import get_windows_credentials
 from .xendit import configured as xendit_configured
 from .forms import AccountForm, BillingCycleForm, RegistrationForm
@@ -45,22 +47,37 @@ def web_hosting(request):
 
 
 @require_http_methods(['GET', 'POST'])
+@sensitive_post_parameters('password1', 'password2')
 def register(request):
     if request.user.is_authenticated:
         if request.user.is_staff or request.user.is_superuser:
             return redirect('management:index')
         return redirect('dashboard')
     form = RegistrationForm(request.POST if request.method == 'POST' else None)
+    from .customer_security import prepare_email, request_allowed, send_verification
+    if request.method == 'POST' and not request_allowed(request, 'register', limit=10):
+        return render(request, 'portal/register.html', {'form': RegistrationForm(), 'registration_limited': True}, status=429)
     if request.method == 'POST' and form.is_valid():
-        with transaction.atomic():
-            user = form.save(commit=False)
-            user.email = form.cleaned_data['email']
-            user.save()
-            customer = customer_for(user)
-            customer.full_name = form.cleaned_data['full_name']
-            customer.save(update_fields=['full_name'])
+        try:
+            with transaction.atomic():
+                user = form.save(commit=False)
+                user.email = form.cleaned_data['email']
+                user.save()
+                customer = customer_for(user)
+                customer.full_name = form.cleaned_data['full_name']
+                customer.company = form.cleaned_data['company']
+                customer.phone = form.cleaned_data['phone']
+                customer.email_verification_required = settings.CUSTOMER_REQUIRE_EMAIL_VERIFICATION
+                customer.save(update_fields=['full_name', 'company', 'phone', 'email_verification_required'])
+                row = prepare_email(user, user.email)
+        except (IntegrityError, ValueError):
+            form.add_error(None, 'This account could not be created. Choose another username/email or recover your account.')
+            return render(request, 'portal/register.html', {'form': form})
+        if settings.CUSTOMER_EMAIL_ENABLED and not send_verification(row):
+            messages.info(request, 'Your account was created, but the verification email could not be sent. Please try again from Account.')
         login(request, user)
-        return redirect('dashboard')
+        messages.success(request, 'Welcome! Your account is ready. Review your profile and email status below.')
+        return redirect('email_verification_needed' if customer.email_verification_required else 'account')
     return render(request, 'portal/register.html', {'form': form})
 
 
@@ -374,7 +391,8 @@ def invoice(request, order_id):
     return render(request, 'portal/invoice.html', {'invoice': record, 'order': record.order, **payment_context(record.order)})
 
 
-@customer_required
+@customer_required(allow_unverified=True)
+@never_cache
 @require_http_methods(['GET', 'POST'])
 def account(request):
     form = AccountForm(request.POST if request.method == 'POST' else None, instance=customer_for(request.user))
@@ -382,7 +400,13 @@ def account(request):
         form.save()
         messages.success(request, 'Your account details have been updated.')
         return redirect('account')
-    return render(request, 'portal/account.html', {'form': form})
+    from .customer_security import verified_email
+    from .models import CustomerEmail
+    return render(request, 'portal/account.html', {
+        'form': form, 'email_verified': verified_email(request.user),
+        'pending_email': CustomerEmail.objects.filter(user=request.user, verified_at__isnull=True).first(),
+        'mail_enabled': settings.CUSTOMER_EMAIL_ENABLED,
+    })
 
 
 def payment_context(order):

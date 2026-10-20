@@ -1,0 +1,5 @@
+{% extends 'portal/base.html' %}{% block title %}Verify your email{% endblock %}{% block content %}
+<section class="card auth"><h1>Verify your email to continue</h1><p>Your account is created. Confirm your email before accessing services or placing an order.</p>
+{% if mail_enabled %}<form method="post" action="{% url 'resend_verification' %}">{% csrf_token %}<button type="submit">Send a new verification link</button></form>
+{% else %}<p>Email delivery is currently unavailable. Please contact support.</p>{% endif %}
+<p><a href="{% url 'account' %}">Review your email and profile</a></p></section>{% endblock %}

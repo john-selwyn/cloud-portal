@@ -18,6 +18,17 @@
 <dd>{{ user.username }}</dd>
 <dt>Email</dt>
 <dd>{{ user.email|default:'Not provided' }}</dd>
+<dt>Email status</dt>
+<dd>{% if email_verified %}Verified{% else %}Not verified{% endif %}</dd>
 </dl>
+<p><a href="{% url 'password_change' %}">Change password</a></p>
+<p><a href="{% url 'change_email' %}">Change email address</a></p>
+{% if mail_enabled %}
+{% if not email_verified %}<form method="post" action="{% url 'resend_verification' %}">{% csrf_token %}<button type="submit">Verify current email</button></form>{% endif %}
+{% else %}<p class="muted">Email verification, email changes and email recovery are awaiting email setup. You can still update your profile and change your password.</p>{% endif %}
+{% if mail_enabled and pending_email %}
+<p>Awaiting confirmation: <strong>{{ pending_email.email }}</strong>. Requests expire after one hour; requesting another link replaces the previous request.</p>
+<form method="post" action="{% url 'cancel_email_change' %}">{% csrf_token %}<button type="submit">Cancel pending confirmation</button></form>
+{% endif %}
 </aside>
 </div>{% endblock %}

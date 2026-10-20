@@ -1,0 +1,6 @@
+{% extends 'portal/base.html' %}{% block title %}Confirm email{% endblock %}{% block content %}
+<section class="card auth">{% if confirmed %}<h1>Email confirmed</h1><p>Your email address is now verified.</p>
+<a href="{% url 'account' %}">Continue to your account</a>
+{% elif validlink %}<h1>Confirm your email address</h1><p>Confirm only if you requested this for your Cloud Portal account. Opening the link alone does not change your email.</p>
+<form method="post">{% csrf_token %}<button type="submit">Confirm email address</button></form>
+{% else %}<h1>This confirmation link is unavailable</h1><p>It may have expired, been cancelled or already been used. Sign in and request a new link from Account.</p><a href="{% url 'account' %}">Go to account</a>{% endif %}</section>{% endblock %}

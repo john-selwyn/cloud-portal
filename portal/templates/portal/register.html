@@ -3,7 +3,9 @@
 <p class="eyebrow">WELCOME ABOARD</p>
 <h1>Create your account</h1>
 <p class="muted">Manage your services, orders and invoices with ICT Ventures Cloud Portal.</p>
+{% if registration_limited %}<p role="alert">Too many registrations. Please try again in an hour.</p>{% endif %}
 <form method="post" class="auth-form">{% csrf_token %}{{ form.as_p }}<button type="submit" class="wide">Create account</button>
 </form>
 <p class="auth-switch">Already registered? <a href="{% url 'login' %}">Sign in</a></p>
+<p class="muted">Your username identifies your account. Use your own email address for verification and password recovery. Company and phone are optional.</p>
 </section>{% endblock %}

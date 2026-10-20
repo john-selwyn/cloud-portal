@@ -71,7 +71,7 @@ class PortalTests(TestCase):
         response = self.client.post(reverse('register'), {'username': 'newcustomer',
             'password1': 'A-Strong-Password-9821', 'password2': 'A-Strong-Password-9821',
             'full_name': 'New Customer', 'email': 'new@example.com'})
-        self.assertRedirects(response, reverse('dashboard'))
+        self.assertRedirects(response, reverse('account'))
         user = User.objects.get(username='newcustomer')
         self.assertEqual(user.customer_profile.full_name, 'New Customer')
         self.assertEqual(user.email, 'new@example.com')
