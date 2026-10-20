@@ -91,3 +91,9 @@ Prefer a forward correction and keep the additive account tables. Reversing this
 Legacy administrative User edits bypass these public customer workflows. Investigate historical duplicate addresses and stale reservations privately; never bulk-normalize or reassign them without verified ownership. Generic recovery pages reduce account disclosure but synchronous SMTP timing is not an enumeration-proof queue. These application limits complement, not replace, edge protections and operational monitoring.
 
 Remaining: source publication/review, isolated restored-production migration rehearsal, live proxy validation and rollout acceptance, phone visual review, and the owner-deferred email configuration/end-to-end delivery. No live rollout, provider configuration or customer message occurred here.
+
+## Publication follow-up — 20 October 2026
+
+The owner explicitly approved public publication after reviewing the local result. [Draft PR #7](https://github.com/john-selwyn/cloud-portal/pull/7) publishes the implementation on `feature/customer-accounts`, based on `feature/monitoring-admin-ui` at `5bbfaea323019f1394330e4cb6fbb83591f9b9a1`. Published implementation commit: `eb29bd9b726677aa35a7c5a4d2c36cefc531d65d`; equivalent local implementation commit: `50e3f77`. All 33 uploaded file blobs were checked against the locally committed content with no mismatches. The GitHub comparison contains one implementation commit, 33 changed files, 1172 additions and 25 deletions.
+
+Source publication is now complete; the publication-pending item above is superseded. The PR remains draft and unmerged. Review, restored-data rehearsal, live proxy validation, phone acceptance, deployment and email configuration remain pending. This follow-up changes documentation only; the prior application tests are not new production verification.
