@@ -34,6 +34,9 @@ def confirm_order(*, customer, plan_id, cycle, checkout_token, reviewed_amount,
             raise ValidationError("This checkout SSH configuration does not match the existing order.")
         return existing
     # Serialize purchases on PostgreSQL; uniqueness also protects token retries.
+    if (operating_system == Order.OperatingSystem.UBUNTU_SERVER_26_04
+            and not settings.UBUNTU_SERVER_ORDERING_ENABLED):
+        raise ValidationError("Ubuntu Server ordering is not available yet.")
     plan = VPSPlan.objects.select_for_update().get(pk=plan_id, is_active=True)
     if operating_system == Order.OperatingSystem.WINDOWS_11:
         if not settings.WINDOWS_ORDERING_ENABLED:
