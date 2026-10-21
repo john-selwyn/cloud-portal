@@ -92,11 +92,14 @@ class BillingCycleForm(forms.Form):
     def __init__(self, *args, plan=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.plan = plan
+        hidden = set()
         if not settings.WINDOWS_ORDERING_ENABLED:
-            self.fields["operating_system"].choices = [
-                choice for choice in Order.OperatingSystem.choices
-                if choice[0] != Order.OperatingSystem.WINDOWS_11
-            ]
+            hidden.add(Order.OperatingSystem.WINDOWS_11)
+        if not settings.UBUNTU_SERVER_ORDERING_ENABLED:
+            hidden.add(Order.OperatingSystem.UBUNTU_SERVER_26_04)
+        self.fields["operating_system"].choices = [
+            choice for choice in Order.OperatingSystem.choices if choice[0] not in hidden
+        ]
 
     def clean(self):
         cleaned = super().clean()

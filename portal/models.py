@@ -101,7 +101,8 @@ class Order(models.Model):
         YEARLY = "YEARLY", "Yearly"
 
     class OperatingSystem(models.TextChoices):
-        UBUNTU_26_04 = "Ubuntu 26.04", "Ubuntu 26.04 LTS"
+        UBUNTU_26_04 = "Ubuntu 26.04", "Ubuntu Desktop 26.04 LTS"
+        UBUNTU_SERVER_26_04 = "Ubuntu Server 26.04", "Ubuntu Server 26.04 LTS"
         DEBIAN_13 = "Debian 13", "Debian 13"
         WINDOWS_11 = "Windows 11", "Windows 11"
 

@@ -102,6 +102,14 @@ class ProvisioningTests(TransactionTestCase):
         self.order.refresh_from_db()
         self.assertEqual(self.order.provisioning_payload["ssh_public_key"], key)
 
+    def test_ubuntu_server_is_forwarded_without_using_desktop_default(self):
+        Order.objects.filter(pk=self.order.pk).update(operating_system='Ubuntu Server 26.04')
+        self.order.refresh_from_db()
+        self.pay()
+        self.assertEqual(self.http.call_args.kwargs['json']['os'], 'Ubuntu Server 26.04')
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.provisioning_payload['os'], 'Ubuntu Server 26.04')
+
     def test_http_occurs_only_after_commit(self):
         def response(*args, **kwargs):
             self.assertFalse(connection.in_atomic_block)
