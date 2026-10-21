@@ -1,10 +1,23 @@
-# Customer billing portal
+# ICT Ventures Cloud Portal
 
 This Django application manages customers, orders, invoices, and billing-side
 provisioning integration with the existing VM100 API. VM100 alone owns Proxmox.
 Xendit Payment Sessions handle initial one-time customer payments. Payment is
 confirmed only by an authenticated webhook plus independent provider verification;
 browser return URLs never mark orders paid. Recurring renewal billing is not implemented.
+
+## Verified production naming — 12 October 2026
+
+VM200 runs this portal from `/opt/cloud-portal` using `cloud-portal.service`,
+Django project `cloud_portal` and application `portal`. Its PostgreSQL database
+on VM300 is `cloud_portal_db`, with login role `cloud_portal_user`.
+The deployed application commit at cutover is `ecbfd6d` on `codex/windows-rdp`;
+repository main has not been promoted to this deployment.
+
+See [the verified cutover and recovery record](deploy/CLOUD_PORTAL_RENAME.md).
+All 146 existing Django tests passed during the isolated refactor. Live checks
+passed and the new NAS backup completed; post-cutover browser confirmation is pending.
+The detailed original implementation notes below retain their historical scope.
 
 ## Local development (PowerShell)
 
@@ -49,9 +62,9 @@ test runner uses a separate temporary test database.
   same confirmation is submitted again. A separate review represents a new order.
 - Migration `0002_order_checkout_token` adds only this nullable unique column;
   existing orders and migrations are retained.
-- `billing/services.py` creates orders. `billing/payments.py` records already
-  verified payments. `billing/provisioning.py` coordinates paid-order dispatch
-  and status synchronization. `billing/provisioning_api.py` isolates the HTTP
+- `portal/services.py` creates orders. `portal/payments.py` records already
+  verified payments. `portal/provisioning.py` coordinates paid-order dispatch
+  and status synchronization. `portal/provisioning_api.py` isolates the HTTP
   protocol and VM100 response parsing.
 
 ## Provisioning configuration
@@ -111,7 +124,7 @@ both session and successful payment, PHP currency, amount, business and referenc
 mapping **before** calling:
 
 ```python
-from billing.payments import record_verified_payment
+from portal.payments import record_verified_payment
 record_verified_payment(
     order_id=verified_order_id,
     provider=verified_provider,
@@ -243,6 +256,10 @@ instance and with a disposable plan/order. No SSH or Proxmox steps are needed.
    or command output; consult VM100's own logs using the order ID for details.
 
 ## Validation and limits
+
+The following validation paragraph records the original implementation snapshot.
+For the 12 October deployment and later test results, use the cutover record above.
+
 
 Latest local validation: **100 tests passed**; `manage.py check` reported no
 issues; `makemigrations --check --dry-run` reported no changes; `git diff --check`
@@ -399,24 +416,24 @@ ALLOW_TEST_PAYMENT=False throughout the Xendit test.
 
 - `.env.example`
 - `README.md`
-- `billing_project/settings.py`
-- `billing/admin.py`
-- `billing/apps.py`
-- `billing/models.py`
-- `billing/payments.py` (description only; payment logic unchanged)
-- `billing/urls.py`
-- `billing/views.py`
-- `billing/tests.py` (updated unavailable-payment copy assertion)
-- `billing/checks.py` (new)
-- `billing/checkouts.py` (new)
-- `billing/xendit.py` (new)
-- `billing/payment_views.py` (new)
-- `billing/test_xendit.py` (new)
-- `billing/migrations/0004_xendit_checkout.py` (new)
-- `billing/management/commands/reconcile_xendit_checkout.py` (new)
-- `billing/templates/billing/home.html`
-- `billing/templates/billing/review_order.html`
-- `billing/templates/billing/order_detail.html`
-- `billing/templates/billing/invoice.html`
-- `billing/templates/billing/pay_button.html` (new)
-- `billing/templates/billing/payment_return.html` (new)
+- `cloud_portal/settings.py`
+- `portal/admin.py`
+- `portal/apps.py`
+- `portal/models.py`
+- `portal/payments.py` (description only; payment logic unchanged)
+- `portal/urls.py`
+- `portal/views.py`
+- `portal/tests.py` (updated unavailable-payment copy assertion)
+- `portal/checks.py` (new)
+- `portal/checkouts.py` (new)
+- `portal/xendit.py` (new)
+- `portal/payment_views.py` (new)
+- `portal/test_xendit.py` (new)
+- `portal/migrations/0004_xendit_checkout.py` (new)
+- `portal/management/commands/reconcile_xendit_checkout.py` (new)
+- `portal/templates/portal/home.html`
+- `portal/templates/portal/review_order.html`
+- `portal/templates/portal/order_detail.html`
+- `portal/templates/portal/invoice.html`
+- `portal/templates/portal/pay_button.html` (new)
+- `portal/templates/portal/payment_return.html` (new)

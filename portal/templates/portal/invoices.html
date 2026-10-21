@@ -1,0 +1,107 @@
+{% extends 'portal/base.html' %}
+{% load static %}
+{% block title %}My invoices{% endblock %}
+{% block body_class %}page-invoices{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'portal/invoices.css' %}?v=invoices-2">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="v-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.4-4.4"/></symbol>
+<symbol id="v-down" viewBox="0 0 24 24"><path d="m6 9.5 6 6 6-6"/></symbol>
+<symbol id="v-right" viewBox="0 0 24 24"><path d="m9.5 5.5 6.5 6.5-6.5 6.5"/></symbol>
+<symbol id="v-left" viewBox="0 0 24 24"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></symbol>
+<symbol id="v-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+<symbol id="v-doc" viewBox="0 0 24 24"><path d="M14.5 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14.5 2.5V8H19"/><path d="M9 13h6M9 17h4"/></symbol>
+</defs>
+</svg>
+
+<div class="inv">
+  <section class="inv-hero" aria-labelledby="inv-title">
+    <p class="inv-eyebrow">BILLING HISTORY</p>
+    <h1 id="inv-title">My invoices</h1>
+    <p class="inv-lead">Your invoice totals, due dates, and payment status.</p>
+  </section>
+
+  {% if has_invoices %}
+  <nav class="inv-tabs" aria-label="Filter invoices by status">
+    {% for tab in tabs %}<a class="inv-tab{% if tab.current %} is-active{% endif %}" href="{{ tab.url }}"{% if tab.current %} aria-current="page"{% endif %}>{% if tab.dot %}<span class="inv-dot dot-{{ tab.dot }}" aria-hidden="true"></span>{% else %}<svg class="v-icon" aria-hidden="true" focusable="false"><use href="#v-doc"/></svg>{% endif %}{{ tab.label }}</a>{% endfor %}
+  </nav>
+  {% endif %}
+
+  <section class="inv-panel" aria-label="Invoices">
+    {% if has_invoices %}
+    <form class="inv-toolbar" method="get" action="{% url 'invoices' %}" role="search" data-invoices-filter>
+      {% if filters.status != 'all' %}<input type="hidden" name="status" value="{{ filters.status }}">{% endif %}
+      <label class="inv-search">
+        <span class="inv-sr">Search by invoice or order number</span>
+        <svg class="v-icon" aria-hidden="true" focusable="false"><use href="#v-search"/></svg>
+        <input type="search" name="q" value="{{ filters.q }}" placeholder="Search by invoice or order number…" maxlength="100" autocomplete="off" enterkeyhint="search">
+      </label>
+      <label class="inv-select">
+        <span class="inv-select-label">Due date</span>
+        <select name="due">
+          {% for option in due_options %}<option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>{% endfor %}
+        </select>
+        <svg class="v-icon v-caret" aria-hidden="true" focusable="false"><use href="#v-down"/></svg>
+      </label>
+      <noscript><button class="inv-apply" type="submit">Apply filters</button></noscript>
+    </form>
+
+    {% if page_obj %}
+    <div class="inv-table-wrap" role="region" aria-label="Invoices table" tabindex="0">
+      <table class="inv-table">
+        <thead>
+          <tr>
+            <th scope="col" class="c-invoice">Invoice</th>
+            <th scope="col" class="c-order">Order</th>
+            <th scope="col" class="c-amount">Amount (PHP)</th>
+            <th scope="col" class="c-status">Status</th>
+            <th scope="col" class="c-due">Due date</th>
+            <th scope="col" class="c-action">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for invoice in page_obj %}<tr>
+            <td class="c-invoice" data-label="Invoice">
+              <span class="inv-tile" aria-hidden="true"><svg class="v-icon" focusable="false"><use href="#v-doc"/></svg></span>
+              <a class="inv-number" href="{% url 'invoice' invoice.order_id %}">{{ invoice.invoice_number }}</a>
+            </td>
+            <td class="c-order" data-label="Order"><a href="{% url 'order_detail' invoice.order_id %}">#{{ invoice.order_id }}</a></td>
+            <td class="c-amount" data-label="Amount (PHP)">₱{{ invoice.amount|floatformat:"2g" }}</td>
+            <td class="c-status" data-label="Status"><span class="inv-badge st-{{ invoice.effective_status|lower }}">{% if invoice.effective_status == 'OVERDUE' %}Overdue{% else %}{{ invoice.get_status_display }}{% endif %}</span></td>
+            <td class="c-due" data-label="Due date">{{ invoice.due_date|date:'M j, Y' }}</td>
+            <td class="c-action"><a class="inv-view" href="{% url 'invoice' invoice.order_id %}" aria-label="View invoice {{ invoice.invoice_number }}">View invoice <svg class="v-icon" aria-hidden="true" focusable="false"><use href="#v-arrow"/></svg></a></td>
+          </tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="inv-foot">
+      <p class="inv-showing" aria-live="polite">Showing {{ showing_start }}–{{ showing_end }} of {{ total_count }} invoice{{ total_count|pluralize }}{% if filters_active %} <span aria-hidden="true">·</span> <a class="inv-clear" href="{{ clear_url }}">Clear filters</a>{% endif %}</p>
+      {% if page_obj.paginator.num_pages > 1 %}
+      <nav class="inv-pager" aria-label="Pagination">
+        {% if previous_url %}<a class="inv-page inv-page-nav is-prev" href="{{ previous_url }}" rel="prev"><svg class="v-icon" aria-hidden="true" focusable="false"><use href="#v-left"/></svg>Previous</a>{% else %}<span class="inv-page inv-page-nav is-prev is-disabled" aria-disabled="true"><svg class="v-icon" aria-hidden="true" focusable="false"><use href="#v-left"/></svg>Previous</span>{% endif %}
+        {% for link in page_links %}{% if link.ellipsis %}<span class="inv-gap" aria-hidden="true">…</span>{% elif link.current %}<span class="inv-page is-current" aria-current="page" aria-label="Page {{ link.number }}, current page">{{ link.number }}</span>{% else %}<a class="inv-page" href="{{ link.url }}" aria-label="Go to page {{ link.number }}">{{ link.number }}</a>{% endif %}{% endfor %}
+        {% if next_url %}<a class="inv-page inv-page-nav is-next" href="{{ next_url }}" rel="next">Next<svg class="v-icon" aria-hidden="true" focusable="false"><use href="#v-right"/></svg></a>{% else %}<span class="inv-page inv-page-nav is-next is-disabled" aria-disabled="true">Next<svg class="v-icon" aria-hidden="true" focusable="false"><use href="#v-right"/></svg></span>{% endif %}
+      </nav>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="inv-empty">
+      <h2>No invoices match your filters.</h2>
+      <p>Try a different search term, status or due date.</p>
+      <a class="inv-btn" href="{{ clear_url }}">Clear filters</a>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="inv-empty">
+      <h2>No invoices yet.</h2>
+      <p>Your invoice will appear here when you confirm an order.</p>
+      <a class="inv-btn" href="{% url 'plans' %}">Explore plans</a>
+    </div>
+    {% endif %}
+  </section>
+</div>
+<script src="{% static 'portal/invoices.js' %}?v=invoices-1" defer></script>
+{% endblock %}

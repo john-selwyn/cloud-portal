@@ -1,0 +1,17 @@
+<aside class="management-sidebar" aria-label="Workspace navigation">
+<nav aria-label="Management">
+<div class="management-nav-group">
+<p class="management-nav-label">Workspace</p>
+{% if can_view_monitoring %}<a class="management-nav-link" data-area="services" href="{% url 'management:monitoring' %}"{% if request.resolver_match.url_name == 'monitoring' %} aria-current="page"{% endif %}>Monitoring</a>{% endif %}
+<a class="management-nav-link" data-area="overview" href="{% url 'management:index' %}"{% if request.resolver_match.url_name == 'index' %} aria-current="page"{% endif %}>Overview</a>
+{% if can_view_services %}<a class="management-nav-link" data-area="services" href="{% url 'management:services' %}"{% if request.resolver_match.url_name == 'services' %} aria-current="page"{% endif %}>VPS services</a>{% endif %}
+</div>
+{% for app in available_apps %}
+<div class="management-nav-group">
+<p class="management-nav-label">{% if app.app_label == 'auth' %}Team{% else %}Records{% endif %}</p>
+{% for model in app.models %}{% if model.admin_url %}<a class="management-nav-link" data-area="{{ model.object_name|lower }}" href="{{ model.admin_url }}"{% if request.path == model.admin_url or opts.object_name == model.object_name %} aria-current="page"{% endif %}>{% if model.object_name == 'VPSPlan' %}VPS plans{% else %}{{ model.name }}{% endif %}</a>{% endif %}{% endfor %}
+</div>
+{% endfor %}
+</nav>
+<div class="management-sidebar-note"><strong>Staff workspace</strong><p>Your assigned permissions determine the records and actions available.</p></div>
+</aside>

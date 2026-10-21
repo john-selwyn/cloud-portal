@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% block bodyclass %}{{ block.super }} management-services{% endblock %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'management:index' %}">Overview</a> &rsaquo; VPS services</div>{% endblock %}
+{% block content %}
+<p class="management-lede">Recorded provisioning state; opening this page does not contact the provisioner. Open an order to inspect its last check or request reconciliation.</p>
+<div class="management-list">
+<form method="get" class="management-search">
+  <div class="management-field management-field-grow"><label for="q">Customer, order number or VMID</label> <input id="q" name="q" value="{{ q }}" maxlength="200"></div>
+  <div class="management-field"><label for="status">Status</label> <select id="status" name="status"><option value="">All statuses</option>{% for value,label in statuses %}<option value="{{ value }}"{% if status == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  <div class="management-search-actions"><button type="submit">Search</button> <a class="management-clear" href="{% url 'management:services' %}">Clear</a></div>
+</form>
+<div class="management-table-wrap" role="region" aria-label="VPS service records" tabindex="0">
+<table><caption>{{ page.paginator.count }} VPS service records</caption>
+<thead><tr><th scope="col">Order</th><th scope="col">Customer</th><th scope="col">Plan / OS</th><th scope="col">Status</th><th scope="col">VMID</th><th scope="col">IP address</th><th scope="col">Last checked</th></tr></thead>
+<tbody>{% for order in page %}<tr>
+<td class="management-cell-id"><a href="{% url 'management:portal_order_change' order.pk %}">#{{ order.pk }}</a></td><td>{{ order.customer.full_name }}</td>
+<td>{{ order.plan.name }} / {{ order.get_operating_system_display }}</td><td><span class="management-status management-status-{{ order.status|lower }}">{{ order.get_status_display }}</span> <span class="management-progress">{{ order.provisioning_progress }}%</span></td>
+<td>{{ order.provisioning_vmid|default:"Pending" }}</td><td>{{ order.provisioning_ip_address|default:"Pending" }}</td><td>{{ order.provisioning_checked_at|default:"Never" }}</td>
+</tr>{% empty %}<tr><td class="management-table-empty" colspan="7">No VPS services match these filters.</td></tr>{% endfor %}</tbody></table>
+</div>
+<nav class="management-pager" aria-label="Pagination">
+<p>Page {{ page.number }} of {{ page.paginator.num_pages }}.</p>
+<div class="management-pager-links">
+{% if page.has_previous %}<a href="?q={{ q|urlencode }}&amp;status={{ status|urlencode }}&amp;page={{ page.previous_page_number }}">Previous</a>{% endif %}
+{% if page.has_next %}<a href="?q={{ q|urlencode }}&amp;status={{ status|urlencode }}&amp;page={{ page.next_page_number }}">Next</a>{% endif %}
+</div>
+</nav>
+</div>
+{% endblock %}

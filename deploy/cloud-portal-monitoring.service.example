@@ -1,0 +1,17 @@
+[Unit]
+Description=Cloud Portal read-only infrastructure monitoring
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=REPLACE_PORTAL_SERVICE_USER
+WorkingDirectory=/opt/cloud-portal
+ExecStart=/opt/cloud-portal/venv/bin/python manage.py collect_monitoring
+TimeoutStartSec=180
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/cloud-portal/var
