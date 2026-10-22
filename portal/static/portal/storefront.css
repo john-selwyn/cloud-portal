@@ -209,3 +209,10 @@
   .route-copy small { font-size: .82rem; }
   .choice-card { min-height: 0; }
 }
+
+/* ---------- VPS plans page: same intro and pricing card as web hosting ---------- */
+.hosting-plans.vps-plans { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.hosting-plans > .card.empty { grid-column: 1 / -1; }
+@media (max-width: 900px) {
+  .hosting-plans.vps-plans .hosting-plan:last-child { grid-column: auto; }
+}
