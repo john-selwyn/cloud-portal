@@ -3,7 +3,7 @@
 {% block title %}Dashboard{% endblock %}
 {% block body_class %}page-dashboard{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{% static 'portal/dashboard.css' %}?v=dashboard-4">
+<link rel="stylesheet" href="{% static 'portal/dashboard.css' %}?v=dashboard-5">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
 <defs>
 <symbol id="d-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
@@ -12,10 +12,11 @@
 <symbol id="d-doc-fill" viewBox="0 0 24 24"><path d="M14.5 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" fill="currentColor" fill-opacity=".14"/><path d="M14.5 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14.5 2.5V8H19"/><path d="M9 13h6M9 17h6M9 9.5h2"/></symbol>
 <symbol id="d-server" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="7.5" rx="2.2"/><rect x="3" y="13.5" width="18" height="7.5" rx="2.2"/><path d="M7 6.75h.01M7 17.25h.01M11 6.75h6M11 17.25h6"/></symbol>
 <symbol id="d-invoice" viewBox="0 0 24 24"><path d="M14.5 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14.5 2.5V8H19"/><path d="M9 12.5h6M9 16h4"/></symbol>
+<symbol id="d-gear" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="d-pin" viewBox="0 0 24 24"><path d="M12 21.5s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10.3" r="2.4"/></symbol>
-<symbol id="d-cpu" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2.4"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></symbol>
-<symbol id="d-ram" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="11" rx="2"/><path d="M6 17v3M10 17v3M14 17v3M18 17v3M7 10v3M11 10v3M15 10v3"/></symbol>
-<symbol id="d-disk" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8.5" ry="3"/><path d="M3.5 5.5v13c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3v-13"/><path d="M3.5 12c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3"/></symbol>
+<symbol id="d-cpu" viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></symbol>
+<symbol id="d-ram" viewBox="0 0 24 24"><path d="M6 19v-3"/><path d="M10 19v-3"/><path d="M14 19v-3"/><path d="M18 19v-3"/><path d="M8 11V9"/><path d="M16 11V9"/><path d="M12 11V9"/><path d="M2 15h20"/><path d="M2 7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1.1a2 2 0 0 0 0 3.837V17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5.1a2 2 0 0 0 0-3.837Z"/></symbol>
+<symbol id="d-disk" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></symbol>
 </defs>
 </svg>
 
@@ -73,7 +74,7 @@
       {% for order in services %}
       <article class="dash-card dash-server dash-server-{{ order.status|lower }}">
         <div class="dash-server-head">
-          <span class="dash-avatar"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-server"/></svg></span>
+          <span class="dash-avatar"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#i-server"/></svg></span>
           <div class="dash-server-title">
             <p class="dash-vmid">VMID {{ order.provisioning_vmid|default:"—" }}</p>
             <h3>{{ order.plan.name }}</h3>
@@ -89,20 +90,19 @@
         {% endif %}
 
         <div class="dash-ip">
-          <svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-pin"/></svg>
           <div>
-            <span class="dash-mini-label">IP Address</span>
+            <span class="dash-mini-label">IP address</span>
             {% if order.provisioning_ip_address %}<code>{{ order.provisioning_ip_address }}</code>{% else %}<span class="dash-assigning">Assigning...</span>{% endif %}
           </div>
         </div>
 
-        <div class="dash-specs">
-          <div class="dash-spec"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-cpu"/></svg><div><span class="dash-mini-label">CPU</span><strong>{{ order.plan.cpu }} vCPU</strong></div></div>
-          <div class="dash-spec"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-ram"/></svg><div><span class="dash-mini-label">RAM</span><strong>{{ order.plan.ram }} GB</strong></div></div>
-          <div class="dash-spec"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-disk"/></svg><div><span class="dash-mini-label">Disk</span><strong>{{ order.plan.storage }} GB</strong></div></div>
-        </div>
+        <dl class="dash-specs">
+          <div><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-cpu"/></svg><dt>vCPU</dt><dd>{{ order.plan.cpu }}</dd></div>
+          <div><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-ram"/></svg><dt>RAM</dt><dd>{{ order.plan.ram }} GB</dd></div>
+          <div><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-disk"/></svg><dt>Storage</dt><dd>{{ order.plan.storage }} GB</dd></div>
+        </dl>
 
-        <a class="dash-manage" href="{% url 'vps_detail' order.pk %}">Manage VPS <svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-arrow"/></svg></a>
+        <a class="dash-manage" href="{% url 'vps_detail' order.pk %}"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-gear"/></svg><span>Manage VPS</span></a>
       </article>
       {% endfor %}
     </div>
