@@ -120,8 +120,6 @@ body.page-dashboard { background: var(--bg); }
 /* ---------- Server cards ---------- */
 .dash-servers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
 .dash-server { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
-.dash-server-provisioning { border-left: 4px solid var(--primary); }
-.dash-server-failed { border-left: 4px solid var(--danger); }
 .dash-server-head { display: flex; align-items: center; gap: var(--space-3); }
 .dash-avatar {
   display: grid;
@@ -189,29 +187,7 @@ body.page-dashboard { background: var(--bg); }
 }
 .dash-assigning { font-size: .8125rem; color: var(--muted); }
 
-.dash-specs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
-.dash-spec { padding: var(--space-2) var(--space-3); gap: var(--space-2); background: var(--surface); }
-.dash-spec .d-icon { width: 18px; height: 18px; color: var(--primary); }
-.dash-spec strong { font-size: .85rem; line-height: 1.3; font-weight: 700; color: var(--ink); white-space: nowrap; }
-
-/* Server action: shared small primary button look, pinned to the bottom of every card */
-.dash-manage {
-  margin-top: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: 7px 14px;
-  border: 1px solid var(--primary);
-  border-radius: var(--radius-sm);
-  background: var(--primary);
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 650;
-}
-.dash-manage:hover { background: var(--primary-hover); color: #fff; }
-.dash-manage .d-icon { width: 15px; height: 15px; stroke-width: 2.2; }
-.dash-manage-inline { display: inline-flex; margin-top: var(--space-2); }
+/* Spec grid, IP box, badges, progress and Manage VPS: see customer-pages.css (shared with My VPS) */
 
 /* ---------- Empty states ---------- */
 .dash-empty { display: grid; justify-items: start; gap: var(--space-2); background: var(--surface-alt); border-style: dashed; border-color: var(--primary-line); }
@@ -316,10 +292,6 @@ body.page-dashboard { background: var(--bg); }
   }
   .dash-table td:nth-child(6), .dash-table td:nth-child(7) { white-space: normal; }
   .dash-table td:first-child .dash-order-id { display: inline; margin-right: var(--space-2); }
-}
-
-@media (max-width: 380px) {
-  .dash-specs { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

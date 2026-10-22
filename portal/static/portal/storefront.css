@@ -216,3 +216,26 @@
 @media (max-width: 900px) {
   .hosting-plans.vps-plans .hosting-plan:last-child { grid-column: auto; }
 }
+
+/* ---------- Pricing cards: tight, aligned rows ----------
+   Each card is a subgrid of the card grid, so name, description, price, features and button line up
+   across a row of cards without padded minimum heights. A one-line description no longer leaves a
+   blank gap above the price, and stacked phone cards stay compact. */
+.hosting-plan h2 { margin: var(--space-4) 0 var(--space-2); }
+.hosting-plan .price { margin: var(--space-3) 0 0; }
+.plan-fit { min-height: 0; }
+.price-note { margin: .2rem 0 var(--space-4); }
+.hosting-plan .button { align-self: end; }
+@supports (grid-template-rows: subgrid) {
+  .hosting-plan { display: grid; grid-template-rows: subgrid; grid-row: span 8; row-gap: 0; }
+  .hosting-plans.vps-plans .hosting-plan { grid-row: span 7; }
+  .hosting-plan .button { margin-top: 0; }
+}
+@supports not (grid-template-rows: subgrid) {
+  .plan-fit { min-height: 3rem; }
+  .hosting-plan .button { margin-top: auto; align-self: auto; }
+}
+@media (max-width: 640px) {
+  .plan-fit { min-height: 0; }
+  .hosting-plan .price { margin-top: var(--space-2); }
+}

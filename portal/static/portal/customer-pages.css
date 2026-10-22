@@ -111,6 +111,103 @@ html body.page-invoices .inv-tab { height: 38px; }
 .account-layout aside > p { margin: 0 0 var(--space-2); }
 .account-layout aside > p.muted { margin-top: var(--space-4); }
 
+/* =====================================================================
+   Shared VPS card (Dashboard + My VPS) and status palette
+   Same icons, padding, labels (vCPU / RAM / Storage), IP box, badges and Manage VPS button.
+   Page-specific parts (VMID vs "VPS #", Order link, copy-IP button) stay in their own stylesheets.
+   ===================================================================== */
+:root {
+  --st-active-bg: #E6F6EC;   --st-active: #166534;
+  --st-prov-bg: #EAF2FF;     --st-prov: #1D4ED8;
+  --st-pending-bg: #FFF1D2;  --st-pending: #8A5300;
+  --st-paid-bg: #E8ECFC;     --st-paid: #3347A8;
+  --st-failed-bg: #FDECEC;   --st-failed: #9B1C1C;
+  --st-muted-bg: #ECEFF5;    --st-muted: #475569;
+}
+
+/* Card shell */
+html body.page-dashboard .dash-server,
+html body.page-my-vps .vps-card { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: none; }
+
+/* Header: icon, title, badge */
+html body.page-dashboard .dash-server-head,
+html body.page-my-vps .vps-card-head { display: flex; align-items: center; gap: var(--space-3); margin: 0; }
+html body.page-dashboard .dash-avatar,
+html body.page-my-vps .vps-card-icon { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--primary-soft); color: var(--primary); }
+html body.page-dashboard .dash-avatar .d-icon,
+html body.page-my-vps .vps-card-icon .vps-icon { width: 22px; height: 22px; stroke-width: 1.8; }
+html body.page-dashboard .dash-vmid,
+html body.page-my-vps .vps-card-id { margin: 0; font-size: .8125rem; line-height: 1.4; color: var(--muted); }
+html body.page-dashboard .dash-server h3,
+html body.page-my-vps .vps-card h2 { margin: 0; font-size: 1.1rem; line-height: 1.3; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+
+/* IP box */
+html body.page-dashboard .dash-ip,
+html body.page-my-vps .vps-ip { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-alt); }
+html body.page-dashboard .dash-mini-label,
+html body.page-my-vps .vps-label { font-size: .72rem; line-height: 1.3; color: var(--muted); }
+html body.page-dashboard .dash-ip code,
+html body.page-my-vps .vps-ip code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: .85rem; font-weight: 700; color: var(--ink); background: none; padding: 0; overflow-wrap: anywhere; }
+html body.page-dashboard .dash-assigning,
+html body.page-my-vps .vps-ip-pending { font-size: .85rem; line-height: 1.35; color: var(--muted); }
+
+/* Spec grid: icon, label, value */
+html body.page-dashboard .dash-specs,
+html body.page-my-vps .vps-specs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); margin: 0; }
+html body.page-dashboard .dash-specs > div,
+html body.page-my-vps .vps-specs > div { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "icon label" "icon value"; column-gap: var(--space-2); align-items: center; min-height: 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); }
+html body.page-dashboard .dash-specs .d-icon,
+html body.page-my-vps .vps-specs .vps-icon { grid-area: icon; width: 20px; height: 20px; color: var(--primary); stroke-width: 1.7; }
+html body.page-dashboard .dash-specs dt,
+html body.page-my-vps .vps-specs dt { grid-area: label; margin: 0; font-size: .72rem; line-height: 1.3; color: var(--muted); }
+html body.page-dashboard .dash-specs dd,
+html body.page-my-vps .vps-specs dd { grid-area: value; margin: 0; font-size: .95rem; line-height: 1.3; font-weight: 700; color: var(--ink); white-space: nowrap; }
+
+/* Provisioning progress */
+html body.page-dashboard .dash-progress-track,
+html body.page-my-vps .vps-progress .provisioning-track { height: 8px; margin: 0; border-radius: 999px; background: var(--primary-soft); overflow: hidden; }
+html body.page-dashboard .dash-progress small,
+html body.page-my-vps .vps-progress small { display: block; font-size: .8rem; color: var(--muted); }
+
+/* Badge: same size and colors on both pages */
+html body.page-dashboard .dash-server .dash-badge,
+html body.page-my-vps .vps-badge { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 4px 12px; border-radius: 999px; font-size: .8125rem; font-weight: 650; line-height: 1.3; white-space: nowrap; background: var(--neutral-bg); color: var(--neutral-text); }
+html body.page-dashboard .dash-badge::before,
+html body.page-my-vps .vps-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 1; }
+html body.page-dashboard .dash-server .st-active,
+html body.page-my-vps .vps-badge--active { background: var(--st-active-bg); color: var(--st-active); }
+html body.page-dashboard .dash-server .st-provisioning,
+html body.page-my-vps .vps-badge--provisioning { background: var(--st-prov-bg); color: var(--st-prov); }
+html body.page-dashboard .dash-server .st-pending,
+html body.page-my-vps .vps-badge--pending { background: var(--st-pending-bg); color: var(--st-pending); }
+html body.page-dashboard .dash-server .st-paid,
+html body.page-my-vps .vps-badge--paid { background: var(--st-paid-bg); color: var(--st-paid); }
+html body.page-dashboard .dash-server .st-failed,
+html body.page-my-vps .vps-badge--failed { background: var(--st-failed-bg); color: var(--st-failed); }
+html body.page-dashboard .dash-server .st-cancelled,
+html body.page-my-vps .vps-badge--cancelled { background: var(--st-muted-bg); color: var(--st-muted); }
+
+/* Manage VPS: one button, gear icon, no arrow */
+html body.page-dashboard .dash-manage,
+html body.page-my-vps .vps-manage { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); height: auto; padding: 7px 14px; border: 1px solid var(--primary); border-radius: var(--radius-sm); background: var(--primary); color: #fff; font-size: 1rem; font-weight: 650; white-space: nowrap; box-shadow: none; }
+html body.page-dashboard .dash-manage:hover,
+html body.page-my-vps .vps-manage:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #fff; text-decoration: none; }
+html body.page-dashboard .dash-manage .d-icon,
+html body.page-my-vps .vps-manage .vps-icon { width: 18px; height: 18px; margin: 0; stroke-width: 1.8; }
+html body.page-dashboard .dash-server .dash-manage { margin-top: auto; align-self: flex-start; }
+
+/* Status palette on the other pages (Orders, Invoices, dashboard table) */
+html body.page-dashboard .dash-badge.st-active, html body.page-orders .st-active, html body.page-invoices .st-paid { background: var(--st-active-bg); color: var(--st-active); }
+html body.page-dashboard .dash-badge.st-provisioning, html body.page-orders .st-provisioning { background: var(--st-prov-bg); color: var(--st-prov); }
+html body.page-dashboard .dash-badge.st-pending, html body.page-orders .st-pending, html body.page-invoices .st-pending { background: var(--st-pending-bg); color: var(--st-pending); }
+html body.page-dashboard .dash-badge.st-paid, html body.page-orders .st-paid { background: var(--st-paid-bg); color: var(--st-paid); }
+html body.page-dashboard .dash-badge.st-failed, html body.page-orders .st-failed, html body.page-invoices .st-overdue { background: var(--st-failed-bg); color: var(--st-failed); }
+html body.page-dashboard .dash-badge.st-cancelled, html body.page-orders .st-cancelled, html body.page-invoices .st-void { background: var(--st-muted-bg); color: var(--st-muted); }
+
+@media (max-width: 380px) {
+  html body.page-dashboard .dash-specs, html body.page-my-vps .vps-specs { grid-template-columns: 1fr; }
+}
+
 /* ---------- Phones ---------- */
 @media (max-width: 800px) {
   html body.page-my-vps main.container,
@@ -124,6 +221,7 @@ html body.page-invoices .inv-tab { height: 38px; }
   html body.page-my-vps .vps-create,
   html body.page-orders .ord-create { width: 100%; margin-top: 0; }
   html body.page-my-vps .vps-card,
+  html body.page-dashboard .dash-server,
   html body.page-orders .ord-panel,
   html body.page-invoices .inv-panel { padding: var(--space-4); }
 }
