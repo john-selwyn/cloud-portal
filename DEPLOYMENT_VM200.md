@@ -106,6 +106,7 @@ Manual, on a phone-width browser, signed in as a **test customer** (do not click
 ```bash
 cd /opt/cloud-portal
 D=<date used in step 0>
+B=https://proxmoxportal.dyndns.org
 test "$(cat ~/deploy-records/rollback-sha-$D.txt)" = e44d4f0543adc3522edb12e3a4df2a8aad48a4c8 && echo "rollback SHA ok"
 git status --porcelain=v1 --untracked-files=no       # expect empty before resetting
 git reset --hard e44d4f0543adc3522edb12e3a4df2a8aad48a4c8   # tracked files only; untracked billing/ and monitoring-ca/ are not touched
