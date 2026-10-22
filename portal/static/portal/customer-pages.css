@@ -1,0 +1,129 @@
+/* Customer page consistency layer: My VPS, My orders, My invoices.
+   Loaded after the shared stylesheets. Each page keeps its own layout stylesheet; this file only brings
+   their page background, heading, Create button, tabs and panels onto the shared tokens in portal.css
+   (flat white cards, 12px corners, 24px padding, no gradients, no decorative shadows).
+   Selectors are body-scoped and one step more specific than the page stylesheets so load order does not
+   matter. Presentation only: no JavaScript hook, id, data attribute or form is touched. */
+
+/* ---------- Page background and spacing ---------- */
+html body.page-my-vps,
+html body.page-orders,
+html body.page-invoices { background-color: var(--bg); background-image: none; }
+html body.page-my-vps main.container,
+html body.page-orders main.container,
+html body.page-invoices main.container { padding: 42px 28px 64px; }
+
+/* ---------- Page heading: eyebrow, h1, lead (same as the dashboard) ---------- */
+html body.page-my-vps .vps-eyebrow,
+html body.page-orders .ord-eyebrow,
+html body.page-invoices .inv-eyebrow {
+  margin: 0;
+  font-size: .73rem;
+  line-height: 1.2;
+  font-weight: 750;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+html body.page-my-vps .vps-hero h1,
+html body.page-orders .ord-hero h1,
+html body.page-invoices .inv-hero h1 {
+  margin: var(--space-2) 0 var(--space-1);
+  font-size: clamp(1.85rem, 3vw, 2.3rem);
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--ink);
+}
+html body.page-my-vps .vps-lead,
+html body.page-orders .ord .ord-lead,
+html body.page-invoices .inv .inv-lead { margin: 0; font-size: 1rem; line-height: 1.6; color: var(--muted); }
+
+/* Heading row: welcome text left, Create button right, button level with the h1 */
+html body.page-my-vps .vps-hero,
+html body.page-orders .ord-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+  min-height: 0;
+  margin-bottom: var(--space-5);
+}
+html body.page-my-vps .vps-create,
+html body.page-orders .ord-create {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  gap: var(--space-2);
+  height: auto;
+  margin: calc(.73rem * 1.2 + var(--space-2)) 0 0;
+  padding: 7px 14px;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  box-shadow: none;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+html body.page-my-vps .vps-create:hover,
+html body.page-orders .ord-create:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #fff; }
+html body.page-my-vps .vps-create .vps-icon,
+html body.page-orders .ord-create .o-icon { width: 18px; height: 18px; margin: 0; stroke-width: 2.2; }
+
+/* ---------- Cards and panels: one radius, one padding, no shadow ---------- */
+html body.page-my-vps .vps-card,
+html body.page-orders .ord-panel,
+html body.page-invoices .inv-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: none;
+}
+html body.page-orders .ord-panel,
+html body.page-invoices .inv-panel { margin: var(--space-4) 0 0; padding: var(--space-5); }
+html body.page-my-vps .vps-card { padding: var(--space-5); }
+
+/* ---------- Status tabs ---------- */
+html body.page-orders .ord-tab,
+html body.page-invoices .inv-tab {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+html body.page-orders .ord-tab:hover,
+html body.page-invoices .inv-tab:hover { background: var(--primary-soft); }
+html body.page-orders .ord-tab.is-active,
+html body.page-orders .ord-tab.is-active:hover,
+html body.page-invoices .inv-tab.is-active,
+html body.page-invoices .inv-tab.is-active:hover { background: var(--primary-soft); border-color: var(--primary-line); }
+
+html body.page-invoices .inv-tab { height: 38px; }
+
+/* ---------- Account page and shared .page-heading (account, order, invoice) ---------- */
+.page-heading { margin-bottom: var(--space-5); }
+.page-heading .eyebrow { margin: 0 0 var(--space-2); font-size: .73rem; font-weight: 750; letter-spacing: .15em; }
+.page-heading h1 { margin: 0 0 var(--space-1); }
+.account-layout .card { padding: var(--space-5); }
+.account-layout .details { margin-bottom: var(--space-4); }
+.account-layout aside > p { margin: 0 0 var(--space-2); }
+.account-layout aside > p.muted { margin-top: var(--space-4); }
+
+/* ---------- Phones ---------- */
+@media (max-width: 800px) {
+  html body.page-my-vps main.container,
+  html body.page-orders main.container,
+  html body.page-invoices main.container { padding: 30px 20px 40px; }
+}
+@media (max-width: 640px) {
+  .account-layout .card { padding: var(--space-4); }
+  html body.page-my-vps .vps-hero,
+  html body.page-orders .ord-hero { flex-direction: column; align-items: stretch; gap: var(--space-4); }
+  html body.page-my-vps .vps-create,
+  html body.page-orders .ord-create { width: 100%; margin-top: 0; }
+  html body.page-my-vps .vps-card,
+  html body.page-orders .ord-panel,
+  html body.page-invoices .inv-panel { padding: var(--space-4); }
+}

@@ -1051,3 +1051,15 @@ body.page-my-vps main.container { padding: 26px 28px 56px; }
 @media (prefers-reduced-motion: reduce) {
   .page-my-vps .vps-copy-tip { transition: none; }
 }
+
+/* ---------- Mobile navigation ----------
+   Phones: links share equal columns instead of wrapping to ragged rows. Customer nav is two rows of
+   three; the public nav is three links with Create account full width beneath. Presentation only. */
+@media (max-width: 800px) {
+  .nav-wrap { gap: var(--space-3); }
+  .main-nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; gap: 4px; }
+  .main-nav a:not(.button),
+  .main-nav .nav-button { justify-content: center; padding: 0 8px; font-size: .85rem; }
+  .main-nav .nav-logout { display: grid; }
+  .main-nav .button.small { grid-column: 1 / -1; margin: var(--space-1) 0 0; }
+}
