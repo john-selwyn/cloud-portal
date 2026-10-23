@@ -100,8 +100,16 @@ can leave that fixture's code/static files changed. The verified property is
 that no later action/restart or success marker occurs; the runbook describes
 guarded rollback and does not claim that every failure is mutation-free.
 
-## Remaining work
+## Rev 4: re-pinned to the Ubuntu Server release (23 October 2026)
 
-Prepare and review a visual target retaining the current production baseline;
-re-pin its SHA/tree/scope/test count, then obtain deployment authorization.
-Live VM200/HTTP checks and actual deployment remain outside this review.
+Baseline and rollback target `7fa0023af434929b27d243e73a9a3a11ef8b0dd6`; target (PR #9 head) `4783e90a466913707e58a3e659d7bdac8a9d738b`, tree `d3a58a08d91e8005f84ee471ceb4266ecfe9eb7e`.
+
+Independently verified:
+
+- `git range-diff e44d4f0..5147723 7fa0023..4783e90` shows both cleanup commits as identical patches (clean cherry-pick, no conflicts).
+- `git diff --name-status 7fa0023 4783e90`: exactly the nine files (1 added + 3 modified CSS, 5 modified HTML). Zero Python, migration, settings, form or model changes. Django tags/variables in the five templates: nothing removed; added only `{% static 'portal/customer-pages.css' %}` and `{% url 'web_hosting' %}`.
+- Isolated checkout of the PR head (`env -i`, empty `.env`, in-memory SQLite): `check` clean, `makemigrations --check --dry-run` no changes, **314 tests ran, 312 passed, 2 PostgreSQL-only skipped** (same count as `7fa0023` itself).
+- Pixel comparison `7fa0023` vs `4783e90` with Ubuntu ordering enabled: checkout, Ubuntu VPS detail and order pages are identical on desktop; see `screenshots/on-7fa0023/README.md`.
+- Runbook blocks A-F run in a VM200-like sandbox (clone at `7fa0023`, untracked `billing/` and `monitoring-ca/`, fake sudo/systemctl/journalctl/curl/hostname, local remote): full path passed; rollback returned HEAD `7fa0023`, tree `9bcfeef`, 143 static files, `billing/` and `monitoring-ca/` unchanged. Rejected: dirty tracked file, rollback ref moved, missing backup (rollback), and a production tree still at `e44d4f0` (Block B stopped before any backup or branch).
+
+Sandbox limits: SQLite replaced PostgreSQL, so in the sandbox copy of Block B only the `DEBUG is False` and PostgreSQL/database-name assertions were substituted. They are unmodified in the runbook and were **not** exercised. Real VM200, systemd, Nginx, Gunicorn, PostgreSQL, sudo and live HTTP were not tested. No merge, deployment, migration, environment change or restart was performed.

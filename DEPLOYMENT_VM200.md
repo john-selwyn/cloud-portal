@@ -1,22 +1,23 @@
-# VM200 deployment and rollback — visual consistency preview (rev 3 — review only)
+# VM200 deployment and rollback — visual consistency on the Ubuntu Server release (rev 4 — awaiting approval)
 
-**Status: REVIEW ONLY; DEPLOYMENT BLOCKED. No production action is authorized by this document.**
+**Status: PREPARED FOR REVIEW. Nothing is authorized to run until the owner approves.** No merge, deployment, migration, environment change or service restart has been performed. Stop at the first `ABORT`.
 
-VM200 is now verified at `7fa0023af434929b27d243e73a9a3a11ef8b0dd6`, with migration `0013_ubuntu_server_operating_system` applied and Ubuntu Server ordering enabled (23 October 2026). PR #9 remains at `5147723351b2672ec5c81fa4d7d1ba6a3d9828f2`, based on the older accounts release `e44d4f0`. **That target is not a descendant of the deployed release.** Its complete tree does not contain the Ubuntu Server changes. Do not reset production to it or substitute an unreviewed merge commit.
+VM200 was verified at `7fa0023af434929b27d243e73a9a3a11ef8b0dd6` (`feature/ubuntu-server`; migration `0013_ubuntu_server_operating_system` applied; Ubuntu Server ordering enabled; `ALLOW_TEST_PAYMENT=False`; `DEBUG=False`; PostgreSQL) on 23 October 2026. **That commit is now both the deployment baseline and the rollback target.** The old `e44d4f0` baseline is retired: its pair with `5147723` was not a descendant of production and is kept only as the archive branch `archive/visual-consistency-on-e44d4f0`.
 
-The constants intentionally pin this incompatible pair. Block B rejects it **before taking a backup or changing a branch**, and D checks again before touching application files. A new target preserving `7fa0023` must be prepared and reviewed separately; then its full SHA, complete tree, exact nine-file diff and test expectations must be re-pinned here. Do not bypass the guard or change BASE back to `e44d4f0`. The evidence branch must stay outside the application PR.
+The target is the two reviewed cleanup commits cherry-picked onto `7fa0023` (no conflicts): `4783e90a466913707e58a3e659d7bdac8a9d738b`, tree `d3a58a08d91e8005f84ee471ceb4266ecfe9eb7e`. `git diff 7fa0023 4783e90` is exactly the nine presentation files below, and that patch is byte-identical to the previously reviewed `e44d4f0..5147723` patch. The Ubuntu Server code, migration 0013, settings, forms, services and tests are unchanged from `7fa0023`.
 
-The blocks below are proposed operational instructions for that subsequent approved release, not commands to execute now. Stop at the first `ABORT`. No merge, deployment, migration or service restart was performed while correcting this document.
+The blocks are the proposed instructions for the approved release. They pin the exact SHA and tree; they reject any other commit. If production has moved beyond `7fa0023` by the time of approval, Block B aborts and the pair must be re-pinned and re-reviewed. The evidence branch must stay outside the application PR.
 
 This file lives on the `evidence/visual-consistency-preview` branch. It is not part of application PR #9 (`design/visual-consistency-preview`) and must never be added to it.
 
 | | |
 |---|---|
 | Baseline (latest verified deployed) | `7fa0023af434929b27d243e73a9a3a11ef8b0dd6`, local branch `codex/windows-rdp`; portal migration 0013 applied |
-| Reviewed visual target — blocked for deployment | `5147723351b2672ec5c81fa4d7d1ba6a3d9828f2` (PR #9 head); original review baseline `e44d4f0543adc3522edb12e3a4df2a8aad48a4c8` |
-| Target tree | `69e6ec4ca740de904c1a5d051aca8e615924453e` — identifies the reviewed visual snapshot only; no alternate SHA is accepted |
-| Scope | **9 files, presentation only: 4 stylesheets + 5 templates** (verified against the original review baseline: 1 added + 3 modified CSS, 5 modified HTML). CSS: `customer-pages.css` (new), `dashboard.css`, `portal-modern.css`, `storefront.css`. HTML: `base.html`, `dashboard.html`, `my_vps.html`, `orders.html`, `plans.html` (all under `portal/`). The blocks below enforce 4 CSS + 5 HTML + 0 other files. |
-| Not changed | Python, settings, models, migrations, forms, URLs, JavaScript, `.env`, database. **No migrations.** |
+| Rollback target | `7fa0023af434929b27d243e73a9a3a11ef8b0dd6` (same as the baseline; preserved by branch `rollback/visual-pre-<stamp>`) |
+| Target (PR #9 head) | `4783e90a466913707e58a3e659d7bdac8a9d738b` — two commits on `7fa0023` |
+| Target tree | `d3a58a08d91e8005f84ee471ceb4266ecfe9eb7e` — no alternate SHA is accepted, even with an identical tree |
+| Scope | **9 files, presentation only: 4 stylesheets + 5 templates** (`git diff --name-status 7fa0023 4783e90`: 1 added + 3 modified CSS, 5 modified HTML). CSS: `customer-pages.css` (new), `dashboard.css`, `portal-modern.css`, `storefront.css`. HTML: `base.html`, `dashboard.html`, `my_vps.html`, `orders.html`, `plans.html` (all under `portal/`). The blocks below enforce 4 CSS + 5 HTML + 0 other files. |
+| Not changed | Python, settings, models, migrations (including Ubuntu Server's 0013), forms, URLs, JavaScript, `.env`, database. **This change adds no migrations**; the read-only plan check must show none pending. |
 
 Latest owner-supplied VM200 output confirms the directory, service activity and source/migrations listed above. Repository operational references (`deploy/CLOUD_PORTAL_RENAME.md`, `deploy/CUSTOMER_ACCOUNTS.md`) describe: VM200 `/opt/cloud-portal`, user `ict-tech`, `cloud-portal.service` (Gunicorn, `127.0.0.1:8001`), Nginx site `cloud-portal`, assets in `/opt/cloud-portal/staticfiles`, public URL `https://proxmoxportal.dyndns.org`. The public HTTPS URL and live HTTP behaviour were not re-verified during this runbook review; confirm them separately. Block B checks hostname, service state, branch, source and exact release compatibility.
 
@@ -42,16 +43,14 @@ Latest owner-supplied VM200 output confirms the directory, service activity and 
   set -o noclobber
   cat > "$BK/consts.sh" <<'EOF'
 BASE=7fa0023af434929b27d243e73a9a3a11ef8b0dd6
-REVIEW_BASE=e44d4f0543adc3522edb12e3a4df2a8aad48a4c8
-TARGET=5147723351b2672ec5c81fa4d7d1ba6a3d9828f2
-EXPECT_TREE=69e6ec4ca740de904c1a5d051aca8e615924453e
+TARGET=4783e90a466913707e58a3e659d7bdac8a9d738b
+EXPECT_TREE=d3a58a08d91e8005f84ee471ceb4266ecfe9eb7e
 EXPECT_BRANCH=codex/windows-rdp
 EXPECT_CSS=4
 EXPECT_HTML=5
-EXPECT_TESTS=309
+EXPECT_TESTS=314
 EXPECT_SKIPS=2
-# 309/2 describe the old reviewed visual snapshot. Re-pin after reviewing a
-# target preserving 7fa0023 (that release currently contains 314 portal tests).
+# 314 ran / 2 PostgreSQL-only skipped: identical to 7fa0023 itself.
 APP=/opt/cloud-portal
 PY=/opt/cloud-portal/venv/bin/python
 SERVICE=cloud-portal
@@ -104,7 +103,7 @@ assert_release() {
   git -C "$repo" fetch --quiet --no-tags origin "$REMOTE_REF" || die "target fetch failed"
   fetched=$(git -C "$repo" rev-parse --verify 'FETCH_HEAD^{commit}') || die "cannot resolve fetched target"
   [ "$fetched" = "$TARGET" ] || die "remote target moved: expected $TARGET, fetched $fetched"
-  git -C "$repo" merge-base --is-ancestor "$BASE" "$TARGET" || die "reviewed target omits the current production baseline; release is BLOCKED"
+  git -C "$repo" merge-base --is-ancestor "$BASE" "$TARGET" || die "target does not contain the production baseline $BASE; do not deploy"
   assert_scope "$repo"
 }
 assert_collected_css() {
@@ -160,6 +159,8 @@ from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 assert settings.DEBUG is False, "production DEBUG must be False"
 assert str(settings.STATIC_ROOT) == "/opt/cloud-portal/staticfiles"
+assert settings.ALLOW_TEST_PAYMENT is False, "ALLOW_TEST_PAYMENT must stay False"
+assert settings.UBUNTU_SERVER_ORDERING_ENABLED is True, "Ubuntu Server ordering state differs from the verified production state"
 assert connection.vendor == "postgresql", "unexpected production DB engine"
 with connection.cursor() as cursor:
     cursor.execute("SELECT current_database(), current_setting('transaction_read_only')")
@@ -167,7 +168,7 @@ with connection.cursor() as cursor:
 executor = MigrationExecutor(connection)
 assert not executor.migration_plan(executor.loader.graph.leaf_nodes()), "pending migration plan"
 connection.close()
-print("Read-only production check: no planned migration operations")
+print("Read-only production check: no planned migration operations; Ubuntu Server ordering on; test payments off")
 PLAN_PY
 }
 
@@ -300,7 +301,7 @@ PYEOF
 )
 ```
 
-Expected: `ISOLATION OK`, `309` tests, `OK (skipped=2)`. This proves the code on VM200's Python and Django against SQLite, **not** PostgreSQL concurrency behaviour (the two skipped tests need PostgreSQL).
+Expected: `ISOLATION OK`, `314` tests, `OK (skipped=2)` (312 passed). The same 314 tests also pass with `UBUNTU_SERVER_ORDERING_ENABLED=True`. This proves the code on VM200's Python and Django against SQLite, **not** PostgreSQL concurrency behaviour (the two skipped tests need PostgreSQL).
 
 ## D. Deploy the code and collect static files — does NOT restart
 
@@ -389,6 +390,7 @@ The restart is needed because Django caches templates when `DEBUG=False`. Nginx 
     cmp -s "$BK/served-css.tmp" "$f" || die "served file differs from source: $f"
     echo "served identical: ${f#portal/static/}"
   done
+  assert_readonly_plan                                  # settings and migration state unchanged after restart (read-only)
   assert_untracked_unchanged
   echo "$TARGET" > "$BK/state/restarted.ok"
   echo "DEPLOYED AND VERIFIED. Now do the manual phone-width check below."
@@ -467,6 +469,4 @@ Provisioning, payments, database migrations, PostgreSQL behaviour, or anything i
 
 ## Verification provenance and limitations
 
-The rev-2 author reported a Linux sandbox full-path test with 309 SQLite tests (307 passed, two PostgreSQL-only skips), mocked systemd/HTTP and negative cases. That report is historical, not a new live verification and not evidence of compatibility with current VM200 `7fa0023`.
-
-Rev-3 verification results are recorded in the accompanying `RUNBOOK_REVIEW_VM200.md`. No block was run on VM200. No application merge, database migration, deployment or service restart is authorized or performed by this documentation work. The pinned production baseline and reviewed target remain incompatible; passing syntax or fixture tests cannot remove that release blocker.
+Rev 4 re-pinned the constants only (plus the read-only Ubuntu/test-payment assertions and a post-restart re-check). Verification is recorded in `RUNBOOK_REVIEW_VM200.md` (rev 4 section). No block was run on VM200. Systemd, sudo, journal, HTTP and the production PostgreSQL plan are mocked in every rehearsal; real VM200 permissions, static directory and public HTTP behaviour are unverified. No application merge, database migration, environment change, deployment or service restart is authorized or performed by this documentation.
