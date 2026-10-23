@@ -3,7 +3,7 @@
 {% block title %}Dashboard{% endblock %}
 {% block body_class %}page-dashboard{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{% static 'portal/dashboard.css' %}?v=dashboard-3">
+<link rel="stylesheet" href="{% static 'portal/dashboard.css' %}?v=dashboard-5">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
 <defs>
 <symbol id="d-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
@@ -12,94 +12,13 @@
 <symbol id="d-doc-fill" viewBox="0 0 24 24"><path d="M14.5 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" fill="currentColor" fill-opacity=".14"/><path d="M14.5 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14.5 2.5V8H19"/><path d="M9 13h6M9 17h6M9 9.5h2"/></symbol>
 <symbol id="d-server" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="7.5" rx="2.2"/><rect x="3" y="13.5" width="18" height="7.5" rx="2.2"/><path d="M7 6.75h.01M7 17.25h.01M11 6.75h6M11 17.25h6"/></symbol>
 <symbol id="d-invoice" viewBox="0 0 24 24"><path d="M14.5 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14.5 2.5V8H19"/><path d="M9 12.5h6M9 16h4"/></symbol>
+<symbol id="d-gear" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="d-pin" viewBox="0 0 24 24"><path d="M12 21.5s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10.3" r="2.4"/></symbol>
-<symbol id="d-cpu" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2.4"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></symbol>
-<symbol id="d-ram" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="11" rx="2"/><path d="M6 17v3M10 17v3M14 17v3M18 17v3M7 10v3M11 10v3M15 10v3"/></symbol>
-<symbol id="d-disk" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8.5" ry="3"/><path d="M3.5 5.5v13c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3v-13"/><path d="M3.5 12c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3"/></symbol>
+<symbol id="d-cpu" viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></symbol>
+<symbol id="d-ram" viewBox="0 0 24 24"><path d="M6 19v-3"/><path d="M10 19v-3"/><path d="M14 19v-3"/><path d="M18 19v-3"/><path d="M8 11V9"/><path d="M16 11V9"/><path d="M12 11V9"/><path d="M2 15h20"/><path d="M2 7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1.1a2 2 0 0 0 0 3.837V17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5.1a2 2 0 0 0 0-3.837Z"/></symbol>
+<symbol id="d-disk" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></symbol>
 </defs>
 </svg>
-
-<div class="dash-sky" aria-hidden="true">
-<svg class="dash-clouds" viewBox="0 0 1600 520" preserveAspectRatio="xMidYMin slice" focusable="false">
-<defs>
-<filter id="d-soft" x="-30%" y="-60%" width="160%" height="220%"><feGaussianBlur stdDeviation="26"/></filter>
-<filter id="d-softer" x="-30%" y="-60%" width="160%" height="220%"><feGaussianBlur stdDeviation="14"/></filter>
-</defs>
-<g fill="#fff" filter="url(#d-soft)" opacity=".95">
-<ellipse cx="60" cy="150" rx="230" ry="62"/><ellipse cx="230" cy="250" rx="250" ry="58"/><ellipse cx="20" cy="330" rx="190" ry="54"/>
-<ellipse cx="1520" cy="160" rx="250" ry="64"/><ellipse cx="1380" cy="270" rx="270" ry="56"/><ellipse cx="1600" cy="320" rx="190" ry="52"/>
-<ellipse cx="800" cy="360" rx="560" ry="44" opacity=".7"/>
-</g>
-<g fill="#fff" filter="url(#d-softer)" opacity=".95">
-<ellipse cx="120" cy="190" rx="140" ry="36"/><ellipse cx="1470" cy="200" rx="160" ry="38"/><ellipse cx="300" cy="300" rx="120" ry="26"/>
-</g>
-</svg>
-  <svg class="dash-art" viewBox="-5 -12 505 190" aria-hidden="true" focusable="false">
-    <defs>
-      <linearGradient id="a-front" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1F7FF"/><stop offset=".55" stop-color="#D3E3FD"/><stop offset="1" stop-color="#AFCBF8"/></linearGradient>
-      <linearGradient id="a-side" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9DBFF7"/><stop offset=".6" stop-color="#6F9AEC"/><stop offset="1" stop-color="#5A86DE"/></linearGradient>
-      <linearGradient id="a-top" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DCEAFF"/></linearGradient>
-      <linearGradient id="a-slot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E3EEFF"/></linearGradient>
-      <linearGradient id="a-gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-      <linearGradient id="a-cloud" gradientUnits="userSpaceOnUse" x1="0" y1="92" x2="0" y2="160"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#EAF3FF"/><stop offset="1" stop-color="#BDD5FA"/></linearGradient>
-      <linearGradient id="a-bank" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/><stop offset="1" stop-color="#DCEAFF" stop-opacity=".9"/></linearGradient>
-      <filter id="a-shadow" x="-30%" y="-30%" width="170%" height="190%"><feGaussianBlur in="SourceAlpha" stdDeviation="5"/><feOffset dy="7" result="b"/><feFlood flood-color="#2A62D8" flood-opacity=".30"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-      <filter id="a-blur" x="-40%" y="-80%" width="180%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
-      <filter id="a-edge" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="1.6"/></filter>
-      <g id="a-unit-l">
-        <polygon points="0,0 56,-14 140,-14 84,0" fill="url(#a-top)"/>
-        <polygon points="84,0 140,-14 140,20 84,34" fill="url(#a-side)"/>
-        <polygon points="84,0 140,-14 140,-6 84,8" fill="#fff" fill-opacity=".28"/>
-        <rect width="84" height="34" rx="8" fill="url(#a-front)"/>
-        <rect width="84" height="16" rx="8" fill="url(#a-gloss)"/>
-        <rect x=".5" y=".5" width="83" height="33" rx="7.5" fill="none" stroke="#fff" stroke-opacity=".8"/>
-        <rect x="8" y="6" width="56" height="22" rx="11" fill="url(#a-slot)" stroke="#BFD4F7" stroke-width="1"/>
-        <circle cx="20" cy="17" r="5.2" fill="#BFE4FF" stroke="#3F86F5" stroke-width="2.3"/>
-        <rect x="31" y="13" width="27" height="3.2" rx="1.6" fill="#A9C4F2"/><rect x="31" y="18.5" width="18" height="3.2" rx="1.6" fill="#C9DAF8"/>
-        <circle cx="74" cy="17" r="3" fill="#fff"/>
-      </g>
-      <g id="a-unit-s">
-        <polygon points="0,0 44,-11 110,-11 66,0" fill="url(#a-top)"/>
-        <polygon points="66,0 110,-11 110,19 66,30" fill="url(#a-side)"/>
-        <polygon points="66,0 110,-11 110,-4 66,7" fill="#fff" fill-opacity=".28"/>
-        <rect width="66" height="30" rx="7" fill="url(#a-front)"/>
-        <rect width="66" height="14" rx="7" fill="url(#a-gloss)"/>
-        <rect x=".5" y=".5" width="65" height="29" rx="6.5" fill="none" stroke="#fff" stroke-opacity=".8"/>
-        <rect x="7" y="5" width="44" height="20" rx="10" fill="url(#a-slot)" stroke="#BFD4F7" stroke-width="1"/>
-        <circle cx="17" cy="15" r="4.5" fill="#BFE4FF" stroke="#3F86F5" stroke-width="2.1"/>
-        <rect x="26" y="12" width="20" height="2.8" rx="1.4" fill="#A9C4F2"/><rect x="26" y="16.5" width="13" height="2.8" rx="1.4" fill="#C9DAF8"/>
-        <circle cx="57" cy="15" r="2.7" fill="#fff"/>
-      </g>
-    </defs>
-
-    <g fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"><circle cx="262" cy="232" r="196"/><circle cx="262" cy="232" r="238" stroke-opacity=".45"/></g>
-
-    <g filter="url(#a-edge)" fill="url(#a-bank)">
-      <ellipse cx="236" cy="150" rx="178" ry="17"/>
-      <circle cx="118" cy="128" r="24"/><circle cx="150" cy="112" r="31"/><circle cx="188" cy="126" r="24"/>
-      <circle cx="352" cy="126" r="20"/>
-    </g>
-
-    <g filter="url(#a-shadow)">
-      <use href="#a-unit-l" transform="translate(240 122)"/>
-      <use href="#a-unit-l" transform="translate(240 86)"/>
-      <use href="#a-unit-l" transform="translate(240 50)"/>
-    </g>
-    <g filter="url(#a-shadow)">
-      <use href="#a-unit-s" transform="translate(130 126)"/>
-      <use href="#a-unit-s" transform="translate(130 95)"/>
-    </g>
-
-    <g filter="url(#a-shadow)">
-      <g fill="url(#a-cloud)">
-        <rect x="356" y="128" width="108" height="30" rx="15"/>
-        <circle cx="384" cy="130" r="22"/><circle cx="420" cy="112" r="30"/><circle cx="450" cy="132" r="19"/>
-      </g>
-      <path d="M402 98c10-8 26-7 34 3" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".9"/>
-    </g>
-    <ellipse cx="80" cy="152" rx="70" ry="12" fill="#fff" opacity=".9" filter="url(#a-blur)"/>
-  </svg>
-</div>
 
 <div class="dash">
   <section class="dash-hero" aria-labelledby="dash-title">
@@ -108,10 +27,9 @@
       <h1 id="dash-title">Welcome, {% firstof customer.full_name user.get_username "there" %}.</h1>
       <p class="dash-lead">Your servers, provisioning and billing at a glance.</p>
     </div>
-    <a class="dash-create" href="{% url 'plans' %}">
+    <a class="button small dash-create" href="{% url 'plans' %}">
       <svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-plus"/></svg>
       <span>Create VPS</span>
-      <svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-arrow"/></svg>
     </a>
   </section>
 
@@ -156,7 +74,7 @@
       {% for order in services %}
       <article class="dash-card dash-server dash-server-{{ order.status|lower }}">
         <div class="dash-server-head">
-          <span class="dash-avatar"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-server"/></svg></span>
+          <span class="dash-avatar"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#i-server"/></svg></span>
           <div class="dash-server-title">
             <p class="dash-vmid">VMID {{ order.provisioning_vmid|default:"—" }}</p>
             <h3>{{ order.plan.name }}</h3>
@@ -172,20 +90,19 @@
         {% endif %}
 
         <div class="dash-ip">
-          <svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-pin"/></svg>
           <div>
-            <span class="dash-mini-label">IP Address</span>
+            <span class="dash-mini-label">IP address</span>
             {% if order.provisioning_ip_address %}<code>{{ order.provisioning_ip_address }}</code>{% else %}<span class="dash-assigning">Assigning...</span>{% endif %}
           </div>
         </div>
 
-        <div class="dash-specs">
-          <div class="dash-spec"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-cpu"/></svg><div><span class="dash-mini-label">CPU</span><strong>{{ order.plan.cpu }} vCPU</strong></div></div>
-          <div class="dash-spec"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-ram"/></svg><div><span class="dash-mini-label">RAM</span><strong>{{ order.plan.ram }} GB</strong></div></div>
-          <div class="dash-spec"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-disk"/></svg><div><span class="dash-mini-label">Disk</span><strong>{{ order.plan.storage }} GB</strong></div></div>
-        </div>
+        <dl class="dash-specs">
+          <div><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-cpu"/></svg><dt>vCPU</dt><dd>{{ order.plan.cpu }}</dd></div>
+          <div><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-ram"/></svg><dt>RAM</dt><dd>{{ order.plan.ram }} GB</dd></div>
+          <div><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-disk"/></svg><dt>Storage</dt><dd>{{ order.plan.storage }} GB</dd></div>
+        </dl>
 
-        <a class="dash-manage" href="{% url 'vps_detail' order.pk %}">Manage VPS <svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-arrow"/></svg></a>
+        <a class="dash-manage" href="{% url 'vps_detail' order.pk %}"><svg class="d-icon" aria-hidden="true" focusable="false"><use href="#d-gear"/></svg><span>Manage VPS</span></a>
       </article>
       {% endfor %}
     </div>
