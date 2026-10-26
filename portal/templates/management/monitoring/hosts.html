@@ -1,0 +1,22 @@
+<div data-region="hosts">
+{% if monitor.empty %}
+<section class="mon-empty"><div class="mon-empty-icon" aria-hidden="true">&#9678;</div><span class="mon-eyebrow">READY WHEN YOU ARE</span><h2>Connect your hosts to start monitoring.</h2><p>No live readings have been collected yet. Once connected, this page will show host resources, virtual machines and recent backup results.</p><div class="mon-empty-hosts"><span>vps01 · Customer infrastructure</span><span>test-1 · Management infrastructure</span></div><p class="mon-footnote">Unknown readings stay unknown. No sample values are used on this page.</p></section>
+{% else %}
+<section aria-labelledby="mon-host-title"><h2 id="mon-host-title" class="mon-sr">Hosts</h2>
+<div class="mon-host-grid">{% for host in monitor.hosts %}<article class="mon-host{% if host.stale %} is-stale{% endif %}" data-host="{{ host.name }}">
+  <header class="mon-host-head"><h3>{{ host.name }}</h3><span class="mon-pill {{ host.tone }}" title="Collection status: whether the saved snapshot reached this host"><span class="mon-dot" aria-hidden="true"></span>{{ host.state_label }}</span><span class="mon-pill {{ host.health_tone }} mon-health" title="Resource health: CPU and memory against the warning thresholds">{{ host.health_label }}</span></header>
+  <div class="mon-host-body">
+    <div class="mon-host-metrics">
+      <div class="mon-metric mon-level-{{ host.cpu_level|default:'unknown' }}"><div class="mon-metric-row"><span>CPU usage</span><strong>{% if host.cpu != None %}{{ host.cpu }}%{% else %}Unavailable{% endif %}</strong></div><div class="mon-meter" aria-hidden="true"><span style="width:{{ host.cpu|default_if_none:'0' }}%"></span></div>{% if host.cpu_note %}<p class="mon-metric-note">{{ host.cpu_note }}</p>{% endif %}</div>
+      <div class="mon-metric mon-level-{{ host.memory_level|default:'unknown' }}"><div class="mon-metric-row"><span>Memory usage</span><strong>{% if host.memory_percent != None %}{{ host.memory_percent }}%{% else %}Unavailable{% endif %}</strong></div><div class="mon-meter" aria-hidden="true"><span style="width:{{ host.memory_percent|default_if_none:'0' }}%"></span></div><p class="mon-metric-note mon-metric-detail">{{ host.memory_used }} / {{ host.memory_total }}</p>{% if host.memory_note %}<p class="mon-metric-note">{{ host.memory_note }}</p>{% endif %}</div>
+    </div>
+    <dl class="mon-host-facts">
+      <div><dt>Uptime</dt><dd>{% if host.uptime_days != None %}{{ host.uptime_days }} days{% else %}Unavailable{% endif %}</dd></div>
+      <div><dt>VM / template records</dt><dd>{% if host.inventory_available %}{{ host.vms|length }}{% else %}Unavailable{% endif %}</dd>{% if host.inventory_available %}<dd class="mon-fact-detail">{{ host.vm_count }} VM{{ host.vm_count|pluralize }} · {{ host.template_count }} template{{ host.template_count|pluralize }}</dd>{% endif %}</div>
+    </dl>
+  </div>
+  {% if host.stale %}<p class="mon-check-note">Last known readings. They may not reflect the host now.</p>{% endif %}
+  {% if host.errors %}<p class="mon-check-note">Some checks could not be completed. Review host access and the collector.</p>{% endif %}
+</article>{% endfor %}</div></section>
+{% endif %}
+</div>

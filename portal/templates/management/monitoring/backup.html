@@ -1,0 +1,13 @@
+{% load tz %}{% timezone tz_name %}<div data-region="backup">
+{% if not monitor.empty %}
+<section class="mon-group" aria-labelledby="mon-backup-group"><div class="mon-card-head"><h2 id="mon-backup-group">Backup coverage &amp; review</h2><span class="mon-muted">From the last collection</span></div>
+<div class="mon-stats" aria-label="Snapshot summary">
+  <div class="mon-stat"><span>Hosts reporting</span><strong>{{ monitor.connected }}<small> / {{ monitor.hosts|length }}</small></strong><p>Fresh, complete host checks</p></div>
+  <div class="mon-stat"><span>Running VMs</span><strong>{% if monitor.inventory_complete %}{{ monitor.running }}{% else %}—{% endif %}</strong><p>{% if monitor.inventory_complete %}{{ monitor.stopped }} stopped · Last snapshot{% else %}Inventory check incomplete{% endif %}</p></div>
+  <div class="mon-stat"><span>Recent VM archives</span><strong>{{ monitor.protected }}</strong><p>Scheduled, less than 36 hours old</p></div>
+  <div class="mon-stat{% if monitor.backup_attention %} attention{% endif %}"><span>Backup checks to review</span><strong>{{ monitor.backup_attention }}</strong><p>Missing or overdue archives</p></div>
+</div>
+<div class="mon-bottom-grid"><section class="mon-panel" aria-labelledby="mon-backup-title"><div class="mon-section-title"><h3 id="mon-backup-title">Recent backup tasks</h3></div><ul class="mon-task-list">{% for task in monitor.tasks %}<li><div><strong>{{ task.host }}</strong><span>{% if task.id %}VM {{ task.id }}{% else %}Backup job{% endif %} · {{ task.date|date:"M j · H:i" }}</span></div><span class="mon-pill {% if task.status == 'OK' %}good{% elif task.status == 'FAILED' %}warning{% else %}unknown{% endif %}">{% if task.status == 'OK' %}Successful{% elif task.status == 'FAILED' %}Failed{% else %}In progress{% endif %}</span></li>{% empty %}<li>Task results not available.</li>{% endfor %}</ul></section>
+<section class="mon-panel" aria-labelledby="mon-review-title"><div class="mon-section-title"><h3 id="mon-review-title">Needs review</h3></div>{% for issue in monitor.issues %}<div class="mon-issue"><span class="mon-pill warning">{{ issue.host }}</span><strong>{{ issue.title }}</strong><p>{{ issue.detail }}</p></div>{% empty %}<div class="mon-clear"><span aria-hidden="true">&#10003;</span><strong>No host or storage warnings in this snapshot.</strong><p>Review the backup column for each VM as well.</p></div>{% endfor %}</section></div></section>
+{% endif %}
+</div>{% endtimezone %}

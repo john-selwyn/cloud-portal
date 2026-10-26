@@ -1,0 +1,4 @@
+<div data-region="alerts">
+{% if not monitor.empty and monitor.stale %}<div class="mon-banner warning" role="status"><strong>These readings are out of date.</strong> The last snapshot is shown below. Current health is not confirmed until collection resumes.</div>{% endif %}
+{% if monitor.alerts %}<div class="mon-alerts {{ monitor.alert_level }}" role="status"><span class="mon-alert-icon" aria-hidden="true">&#9888;</span><ul>{% for alert in monitor.alerts %}<li><span class="mon-alert-tag {{ alert.level }}">{% if alert.level == "critical" %}Critical{% else %}Warning{% endif %}</span> <strong>{{ alert.text }}</strong></li>{% endfor %}</ul>{% if monitor.alerts_more %}<p>And {{ monitor.alerts_more }} more. See Needs review below.</p>{% endif %}</div>{% endif %}
+</div>

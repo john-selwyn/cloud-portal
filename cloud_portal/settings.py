@@ -206,3 +206,21 @@ MONITORING_HOSTS_JSON = os.getenv("MONITORING_HOSTS_JSON", "")
 MONITORING_SNAPSHOT_PATH = os.getenv("MONITORING_SNAPSHOT_PATH", str(BASE_DIR / "var" / "monitoring.json"))
 MONITORING_STALE_SECONDS = 180
 MONITORING_BACKUP_MAX_AGE_HOURS = 36
+# The timer in deploy/cloud-portal-monitoring.timer.example waits 60 s after each completed
+# collection. This value is display text only; freshness is judged by MONITORING_STALE_SECONDS.
+MONITORING_COLLECTION_INTERVAL_SECONDS = 60
+# Monitoring pages are shown in Philippine time; Django's TIME_ZONE stays UTC for storage.
+MONITORING_TIME_ZONE = "Asia/Manila"
+MONITORING_TIME_ZONE_LABEL = "PHT"
+# Resource health thresholds (percent). Storage "warning" keeps the 80% limit the page used before
+# thresholds were centralized; the other values are sensible defaults. Invalid entries fall back to these.
+MONITORING_THRESHOLDS = {
+    "cpu": {"warning": 85, "critical": 95},
+    "memory": {"warning": 80, "critical": 90},
+    "storage": {"warning": 80, "critical": 90},
+}
+# Graphs read Proxmox RRD history on demand (GET only) and cache it per host and range.
+# Seconds a fetched history stays fresh, per range. Caches are per web worker process.
+MONITORING_HISTORY_CACHE_SECONDS = {"1h": 60, "24h": 300, "7d": 900}
+# Upper bound for one history load: no new Proxmox request starts after this many seconds.
+MONITORING_HISTORY_BUDGET_SECONDS = 10

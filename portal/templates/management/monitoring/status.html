@@ -1,0 +1,4 @@
+{% load tz %}{% timezone tz_name %}<div class="mon-status" data-region="status" data-freshness="{{ monitor.freshness }}" data-stale-seconds="{{ stale_seconds }}">
+  <span class="mon-fresh {{ monitor.freshness }}" data-fresh-pill><span class="mon-dot" aria-hidden="true"></span>{% if monitor.freshness == "none" %}No data yet{% elif monitor.freshness == "stale" %}Stale data{% else %}Fresh data{% endif %}</span>
+  <span class="mon-collected">{% if monitor.observed_at %}Last collected <time datetime="{{ monitor.observed_at|date:'c' }}" data-epoch="{{ monitor.observed_epoch|stringformat:'.0f' }}">{{ monitor.observed_at|date:"j M Y, H:i:s" }} {{ tz_label }}</time> <span class="mon-age" data-age></span>{% else %}Waiting for the first collection{% endif %}</span>
+</div>{% endtimezone %}

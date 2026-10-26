@@ -33,6 +33,12 @@ def number(value, default=None):
     return value if value >= 0 else default
 
 
+def fraction(value):
+    """A 0..1 utilisation as reported by Proxmox; anything else is unknown, never zero."""
+    value = number(value)
+    return None if value is None else min(1, value)
+
+
 def label(value, limit=100):
     return str(value or "")[:limit]
 
@@ -62,6 +68,39 @@ def stamp(value):
 def date(value):
     value = stamp(value)
     return datetime.fromtimestamp(value, datetime_timezone.utc) if value is not None else None
+
+
+# Defaults only apply when settings.MONITORING_THRESHOLDS omits or mis-states a value.
+DEFAULT_THRESHOLDS = {"cpu": (85, 95), "memory": (80, 90), "storage": (80, 90)}
+LEVEL_LABELS = {"ok": "OK", "warning": "Warning", "critical": "Critical"}
+STORAGE_TYPES = {"dir": "Directory", "nfs": "NFS", "cifs": "SMB/CIFS", "lvm": "LVM", "lvmthin": "LVM-thin",
+                 "zfspool": "ZFS pool", "zfs": "ZFS", "btrfs": "Btrfs", "cephfs": "CephFS", "rbd": "Ceph RBD",
+                 "iscsi": "iSCSI", "iscsidirect": "iSCSI direct", "glusterfs": "GlusterFS",
+                 "pbs": "Proxmox Backup Server", "filesystem": "Filesystem"}
+
+
+def thresholds():
+    """Warning/critical percentages per resource, validated so a typo cannot disable alerts."""
+    configured = getattr(settings, "MONITORING_THRESHOLDS", None)
+    configured = configured if isinstance(configured, dict) else {}
+    result = {}
+    for kind, (warning, critical) in DEFAULT_THRESHOLDS.items():
+        entry = configured.get(kind)
+        entry = entry if isinstance(entry, dict) else {}
+        low, high = number(entry.get("warning"), warning), number(entry.get("critical"), critical)
+        if not 0 < low < high <= 100:
+            low, high = warning, critical
+        result[kind] = {"warning": low, "critical": high}
+    return result
+
+
+def level(value, kind, limits=None):
+    """'ok', 'warning' or 'critical'; None when the reading is unknown (never treated as healthy)."""
+    value = number(value)
+    if value is None:
+        return None
+    limits = (limits or thresholds())[kind]
+    return "critical" if value >= limits["critical"] else ("warning" if value >= limits["warning"] else "ok")
 
 
 def host_configs():
@@ -210,6 +249,7 @@ def collect_host(config):
                 continue
             host["vms"].append({"vmid": vm["vmid"], "name": vm.get("name"),
                 "status": vm.get("status"), "template": bool(vm.get("template")),
+                "cpu": vm.get("cpu"), "mem": vm.get("mem"), "maxmem": vm.get("maxmem"),
                 "selected": selected(vm["vmid"], jobs, config["node"]) if jobs is not None else None,
                 "backup_at": archives.get(str(vm["vmid"])), "archives_complete": archives_complete})
         host["state"] = "partial" if host["errors"] else "connected"
@@ -244,7 +284,9 @@ def normalize_host(raw):
             continue
         host["vms"].append({"vmid": int(vm["vmid"]), "name": label(vm.get("name")),
             "status": vm.get("status") if vm.get("status") in ("running", "stopped") else "unknown",
-            "template": bool(vm.get("template")), "selected": vm.get("selected") if type(vm.get("selected")) is bool else None,
+            "template": bool(vm.get("template")), "cpu": fraction(vm.get("cpu")),
+            "mem": number(vm.get("mem")), "maxmem": number(vm.get("maxmem")),
+            "selected": vm.get("selected") if type(vm.get("selected")) is bool else None,
             "backup_at": stamp(vm.get("backup_at")), "archives_complete": bool(vm.get("archives_complete"))})
     for task in raw.get("tasks", [])[:50]:
         if isinstance(task, dict):
@@ -289,17 +331,40 @@ def read_snapshot():
         return None
 
 
+def resource_note(found, limits):
+    """Text label for a warning; colour alone never carries the meaning."""
+    if found in ("warning", "critical"):
+        return f"{LEVEL_LABELS[found]} · at or above {limits[found]:g}%"
+    return None
+
+
+def host_health(host):
+    """(tone, label) for CPU and memory only. Stale or unavailable readings are never called healthy."""
+    if host["stale"]:
+        return "unknown", "Last known readings"
+    known = {name: host[name + "_level"] for name in ("cpu", "memory") if host[name + "_level"]}
+    if not known:
+        return "unknown", "Resources unknown"
+    for severity in ("critical", "warning"):
+        names = [("CPU" if name == "cpu" else "Memory") for name, found in known.items() if found == severity]
+        if names:
+            return severity, " & ".join(names) + " " + severity
+    return "good", "Resources OK"
+
+
 def dashboard(snapshot=None):
     snapshot = read_snapshot() if snapshot is None else snapshot
     now = time.time()
     if not snapshot:
         return {"hosts": [], "vms": [], "tasks": [], "issues": [], "connected": 0,
                 "running": 0, "stopped": 0, "protected": 0, "backup_attention": 0,
-                "observed_at": None, "stale": False, "empty": True}
+                "observed_at": None, "observed_epoch": None, "stale": False, "empty": True,
+                "alerts": [], "alerts_more": 0, "alert_level": "warning", "freshness": "none", "thresholds": thresholds()}
     collected = stamp(snapshot.get("collected_at"))
     age = now - collected if collected else float("inf")
     stale = age > settings.MONITORING_STALE_SECONDS or age < -60
-    hosts, vms, tasks, issues = [], [], [], []
+    limits = thresholds()
+    hosts, vms, tasks, issues, alerts = [], [], [], [], []
     for raw in snapshot["hosts"]:
         host = normalize_host(raw)
         host_age = now - host["observed_at"] if host["observed_at"] else float("inf")
@@ -315,18 +380,62 @@ def dashboard(snapshot=None):
         if host["state"] != "connected" or host["stale"]:
             issues.append({"host": host["name"], "title": host["state_label"],
                            "detail": "Check the collector connection and read-only access."})
+        # Resource health is separate from collection status: a host can be Reporting and still be critical.
+        host["cpu_level"] = level(host["cpu"], "cpu", limits)
+        host["memory_level"] = level(host["memory_percent"], "memory", limits)
+        host["cpu_note"] = resource_note(host["cpu_level"], limits["cpu"])
+        host["memory_note"] = resource_note(host["memory_level"], limits["memory"])
+        host["health_tone"], host["health_label"] = host_health(host)
+        if not host["stale"]:
+            for kind, name, text in (("memory", "memory", "memory usage"), ("cpu", "cpu", "CPU usage")):
+                found = host[name + "_level"]
+                if found in ("warning", "critical"):
+                    limit = limits[kind][found]
+                    alerts.append({"level": found, "text": f"{host['name']} {text} is at or above {limit:g}% — review {'capacity' if kind == 'memory' else 'load'}."})
+                    issues.append({"host": host["name"], "title": "High memory use" if kind == "memory" else "High CPU use",
+                                   "detail": f"{LEVEL_LABELS[found]}: at or above {limit:g}%."})
         if host["root"]["total"] is not None:
-            host["storage"].insert(0, {"name": "Host root filesystem", "type": "filesystem", "active": True,
-                                       **host["root"]})
+            host["storage"].insert(0, {"name": "Root filesystem", "type": "filesystem", "active": True,
+                                       "root": True, **host["root"]})
+        capacity_groups = {}
         for disk in host["storage"]:
             disk["percent"] = percent(disk["used"], disk["total"])
             disk["used_label"], disk["total_label"] = size(disk["used"]), size(disk["total"])
-            disk["warning"] = not disk["active"] or (disk["percent"] is not None and disk["percent"] >= 80)
+            disk["type_label"] = STORAGE_TYPES.get(disk["type"].lower(), disk["type"] or "Unknown")
+            disk["level"] = level(disk["percent"], "storage", limits) if disk["active"] else None
+            disk["status_label"] = "Unavailable" if not disk["active"] else LEVEL_LABELS.get(disk["level"], "Unknown")
+            disk["warning"] = not disk["active"] or disk["level"] in ("warning", "critical")
+            disk["same_capacity_as"] = []
+            if disk["active"] and disk["used"] is not None and disk["total"]:
+                capacity_groups.setdefault((disk["used"], disk["total"]), []).append(disk)
             if disk["warning"]:
-                issues.append({"host": host["name"], "title": "Storage needs attention",
-                               "detail": disk["name"] + (" is unavailable." if not disk["active"] else " is at least 80% full.")})
+                if not disk["active"]:
+                    detail = disk["name"] + " is unavailable."
+                else:
+                    detail = f"{disk['name']} is at least {limits['storage'][disk['level']]:g}% full."
+                issues.append({"host": host["name"], "title": "Storage needs attention", "detail": detail})
+                if disk["active"] and not host["stale"]:
+                    alerts.append({"level": disk["level"], "text": f"{host['name']} storage {disk['name']} is at or above "
+                                   f"{limits['storage'][disk['level']]:g}% — review capacity."})
+        # Evidence only: identical used and total byte counts. Names never imply summed capacity.
+        for members in capacity_groups.values():
+            if len(members) > 1:
+                for disk in members:
+                    disk["same_capacity_as"] = [other["name"] for other in members if other is not disk]
+        host["vm_count"] = sum(not vm["template"] for vm in host["vms"])
+        host["template_count"] = sum(vm["template"] for vm in host["vms"])
         for vm in host["vms"]:
             vm.update(host=host["name"], stale=host["stale"])
+            if vm["template"]:
+                vm["state_key"], vm["state_label"] = "template", "Template"
+            elif vm["status"] in ("running", "stopped"):
+                vm["state_key"], vm["state_label"] = vm["status"], vm["status"].capitalize()
+            else:
+                vm["state_key"], vm["state_label"] = "unknown", "Unknown"
+            running = vm["state_key"] == "running"
+            vm["cpu_percent"] = round(vm["cpu"] * 100, 1) if running and vm["cpu"] is not None else None
+            vm["mem_used_label"] = size(vm["mem"]) if running and vm["mem"] is not None else None
+            vm["mem_total_label"] = size(vm["maxmem"]) if running and vm["maxmem"] is not None else None
             backup_age = now - vm["backup_at"] if vm["backup_at"] else None
             if vm["selected"] is None or (not vm["archives_complete"] and not vm["backup_at"]):
                 vm["backup_state"], vm["backup_label"] = "unknown", "Not verified"
@@ -355,12 +464,17 @@ def dashboard(snapshot=None):
         hosts.append(host)
     vms.sort(key=lambda vm: (vm["host"], vm["vmid"]))
     tasks.sort(key=lambda task: task["starttime"] or 0, reverse=True)
-    return {"hosts": hosts, "vms": vms, "tasks": tasks[:12], "issues": issues[:20],
+    alerts.sort(key=lambda alert: alert["level"] != "critical")
+    any_stale = stale or any(h["stale"] for h in hosts)
+    return {"hosts": hosts, "vms": vms, "tasks": tasks[:12], "issues": issues[:20], "alerts": alerts[:12],
+            "alerts_more": max(0, len(alerts) - 12),
+            "alert_level": "critical" if any(a["level"] == "critical" for a in alerts) else "warning",
             "connected": sum(h["state"] == "connected" and not h["stale"] for h in hosts),
             "inventory_complete": all(h["inventory_available"] for h in hosts),
             "running": sum(v["status"] == "running" for v in vms),
             "stopped": sum(v["status"] == "stopped" and not v["template"] for v in vms),
             "protected": sum(v["backup_state"] == "good" for v in vms),
             "backup_attention": sum(v["backup_state"] == "warning" for v in vms),
-            "observed_at": date(collected),
-            "stale": stale or any(h["stale"] for h in hosts), "empty": not hosts}
+            "observed_at": date(collected), "observed_epoch": collected,
+            "freshness": "stale" if any_stale else "fresh", "thresholds": limits,
+            "stale": any_stale, "empty": not hosts}

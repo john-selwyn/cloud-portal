@@ -84,3 +84,33 @@ Rollback: disable/stop only `cloud-portal-monitoring.timer` and `cloud-portal-mo
 Automated tests cover owner/customer/staff isolation, separate session cookies, no infrastructure calls while viewing, rendering/escaping, unknown and stale states, backup selection/exclusion and timestamps, latest task failures, partial API errors, TLS enforcement and secret omission. Mocked API responses verify behavior, not live connectivity. Preview data is synthetic and visibly labeled; it is never seeded into production.
 
 Live verification still needed: token scope and CA trust on both hosts, snapshot ownership, actual task/archive API response shape, automatic collection cadence, browser owner access after deployment and initial reading comparison. Record deployment commit, host, commands, outcomes and last collection only after these checks succeed.
+
+## Overview and Graphs tabs — added 26 October 2026 (review work, not deployed)
+
+The Monitoring page now has two tabs in the same document: **Overview** (the existing snapshot view, restyled with host cards, resource-health labels, compact storage table and a searchable VM/template inventory) and **Graphs**. Switching tabs never reloads the page or contacts Proxmox; the selected tab, host, time range and VM filters are remembered in the browser (`localStorage`, per viewer).
+
+### Where history comes from
+
+Graphs use Proxmox's own built-in RRD history, requested **on the web server** with the same read-only token the collector already uses. Verified against the Proxmox source: `GET /nodes/{node}/rrddata` needs `Sys.Audit` on the node and `GET /nodes/{node}/storage/{storage}/rrddata` needs `Datastore.Audit` on the storage, both included in `PVEAuditor`. No privilege change, migration, database table, time-series service or daemon is needed, and nothing is written to disk. The browser only talks to `/management/monitoring/history/` and never sees Proxmox URLs, tokens or raw responses. Results are cached in Django's cache (per web worker process) for 60 s (1 hour), 300 s (24 hours) and 900 s (7 days); a failing Proxmox is retried at most every 15 s and the last good history (up to 6 hours) is shown marked stale. At most one history load per host and range runs at a time, with a 10 s budget; storage requests are limited to eight names taken from the saved snapshot, never from the request.
+
+Supported ranges: 1 hour, 24 hours, 7 days (Proxmox `hour`, `day`, `week`, AVERAGE). Sample spacing is Proxmox's own (about 1 min, 30 min and 3 h respectively).
+
+### How values are interpreted
+
+- CPU: Proxmox `cpu` is a 0–1 fraction of all cores, shown as percent. Memory: `memused / memtotal`. Storage: `used / total`, plus the root filesystem from the node RRD.
+- Network: Proxmox `netin`/`netout` are bytes per second and are converted to bits per second. Per `pvestatd`, these are the **sum of the node's physical interfaces only**; bridges, bonds' virtual devices and VM interfaces are not added, so nothing is double-counted. There is no per-interface breakdown, and the chart says so.
+- Missing samples are `null` and drawn as gaps, never zero; a real 0 is kept as 0. A filler timestamp is inserted after any hole wider than 1.5 sample steps so lines break across outages.
+- "Current snapshot" is the last saved collection; "Last history sample" is the newest point on the chart. They are labelled separately because they can differ by a few minutes.
+- Times display in `MONITORING_TIME_ZONE` (Asia/Manila, "PHT"); Django's `TIME_ZONE` and stored data are unchanged.
+
+### Settings (all optional, defaults in `cloud_portal/settings.py`)
+
+`MONITORING_THRESHOLDS` (percent warning/critical for cpu, memory, storage; defaults 85/95, 80/90, 80/90 — storage warning keeps the earlier 80%; invalid values fall back to defaults so alerts cannot be switched off by a typo), `MONITORING_HISTORY_CACHE_SECONDS`, `MONITORING_HISTORY_BUDGET_SECONDS`, `MONITORING_COLLECTION_INTERVAL_SECONDS` (display text only), `MONITORING_TIME_ZONE`, `MONITORING_TIME_ZONE_LABEL`. No new `.env` entries. Run `collectstatic` on deployment: new files are `monitoring-graphs.js` and `vendor/uplot/` (uPlot 1.6.32, MIT, byte-identical to the npm package, served locally).
+
+### Known limits
+
+- Refresh view reloads the saved snapshot and, on the Graphs tab, re-requests cached history. It never starts a collection. Automatic update is opt-in per viewer and pauses while the browser tab is hidden.
+- Backup coverage remains "Not verified" when PVEAuditor hides archives; this release did not change that.
+- Chart tooltips are pointer-driven. Keyboard and screen-reader users get tabs, host/range controls, a text summary on each chart (latest, highest) and per-series latest values in the legend.
+- Storage names for the chart come from the last saved collection; a newly added storage appears after the next collection.
+- Not yet verified against live Proxmox: field names and units were checked in Proxmox source, and behaviour with fixtures, but no live RRD response has been read. Verify once after deployment (open Graphs for each host and compare with the Proxmox node Summary).

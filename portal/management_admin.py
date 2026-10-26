@@ -5,9 +5,10 @@ from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.utils import quote
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
@@ -38,7 +39,10 @@ class ManagementSite(admin.AdminSite):
 
     def get_urls(self):
         return [path("services/", self.admin_view(self.services), name="services"),
-                path("monitoring/", self.admin_view(self.monitoring), name="monitoring")] + super().get_urls()
+                path("monitoring/", self.admin_view(self.monitoring), name="monitoring"),
+                path("monitoring/overview/", self.admin_view(self.monitoring_overview), name="monitoring_overview"),
+                path("monitoring/history/", self.admin_view(self.monitoring_history), name="monitoring_history"),
+                ] + super().get_urls()
 
     def each_context(self, request):
         context = super().each_context(request)
@@ -48,16 +52,56 @@ class ManagementSite(admin.AdminSite):
         context["can_view_monitoring"] = request.user.is_superuser
         return context
 
+    def monitoring_context(self, request):
+        """Shared by the page and its overview fragment. Reads the saved snapshot only."""
+        from .monitoring import MonitoringError, dashboard, host_configs
+        from .monitoring_history import RANGES
+        try:
+            graph_hosts = [config["name"] for config in host_configs()]
+        except MonitoringError:
+            graph_hosts = []
+        return {**self.each_context(request), "title": "Infrastructure monitoring", "monitor": dashboard(),
+                "tz_name": settings.MONITORING_TIME_ZONE, "tz_label": settings.MONITORING_TIME_ZONE_LABEL,
+                "collection_interval": settings.MONITORING_COLLECTION_INTERVAL_SECONDS // 60 or 1,
+                "stale_seconds": settings.MONITORING_STALE_SECONDS, "graph_hosts": graph_hosts,
+                "graph_ranges": [(key, spec["label"]) for key, spec in RANGES.items()]}
+
     @method_decorator(require_http_methods(["GET", "HEAD"]))
     def monitoring(self, request):
         # Infrastructure inventory is broader than ordinary billing-record access.
         if not request.user.is_superuser:
             raise PermissionDenied
-        from .monitoring import dashboard
         request.current_app = self.name
-        return TemplateResponse(request, "management/monitoring.html", {
-            **self.each_context(request), "title": "Infrastructure monitoring", "monitor": dashboard(),
-        })
+        return TemplateResponse(request, "management/monitoring.html", self.monitoring_context(request))
+
+    @method_decorator(require_http_methods(["GET", "HEAD"]))
+    def monitoring_overview(self, request):
+        """HTML for the refreshable Overview regions. Saved snapshot only: never contacts Proxmox."""
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        request.current_app = self.name
+        return TemplateResponse(request, "management/monitoring_regions.html", self.monitoring_context(request))
+
+    @method_decorator(require_http_methods(["GET", "HEAD"]))
+    def monitoring_history(self, request):
+        """Cached Proxmox RRD history as JSON for the Graphs tab (read-only GETs, server-side)."""
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        from . import monitoring_history as history
+        from .monitoring import dashboard, thresholds
+        host, range_key = request.GET.get("host", "")[:64], request.GET.get("range", "24h")
+        monitor = dashboard()
+        snapshot_host = next((item for item in monitor["hosts"] if item["name"] == host), None)
+        try:
+            payload = history.get_history(host, range_key, snapshot_host)
+        except LookupError as error:
+            return JsonResponse({"error": "Unknown " + str(error) + "."}, status=400 if str(error) == "range" else 404)
+        payload = {**payload, "current": history.current_values(snapshot_host),
+                   "snapshot_at": monitor["observed_epoch"], "timezone": settings.MONITORING_TIME_ZONE,
+                   "timezone_label": settings.MONITORING_TIME_ZONE_LABEL, "thresholds": thresholds()}
+        response = JsonResponse(payload)
+        response["Cache-Control"] = "private, no-store"
+        return response
 
     def index(self, request, extra_context=None):
         cards = []

@@ -9,3 +9,7 @@ Adds owner-only Monitoring navigation and an overview shortcut; host resources, 
 Verification: full Django suite 211 passed and existing JavaScript suite 9 passed on the integrated Batch 1 layout; after preserving the latest Batch 2 stylesheet/services updates, all 19 monitoring tests passed again. No migration changes. Desktop (1440px) and phone (390px) rendered in the in-app browser; no horizontal page overflow at 390px. Filtering 1026 shows only that VM. Sample and empty snapshot states checked. Local preview uses clearly labelled synthetic data and no production connections.
 
 Next: review the UI in the existing admin preview; configure dedicated read-only Proxmox tokens and trusted CA, run collector once and verify actual readings, then enable the provided timer. See deploy/MONITORING.md for setup, checks and rollback. Application services, native database dumps, website availability, certificate expiry and resource history remain outside this first version.
+
+## Update 26 October 2026 — Overview/Graphs tabs
+
+Branch `feature/monitoring-tabs-graphs` (based on production checkout 4783e90). Adds in-page Overview and Graphs tabs, centralized thresholds, resource-health labels separate from collection status, and Proxmox RRD history graphs read server-side with short caching. Fixture-tested only; not deployed or checked against live Proxmox. See deploy/MONITORING.md.
