@@ -1,4 +1,5 @@
 import uuid
+from django.core.validators import RegexValidator, DomainNameValidator
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -47,6 +48,23 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.full_name
+
+
+class HostingAccount(models.Model):
+    """Explicit operator-verified mapping; portal usernames are not Hestia logins."""
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='hosting_accounts')
+    username = models.CharField(max_length=32, unique=True, validators=[
+        RegexValidator(r'\A[a-z][a-z0-9_-]{0,31}\Z', 'Enter the verified Hestia username.')])
+    domain = models.CharField(max_length=253, validators=[DomainNameValidator()])
+    package = models.CharField(max_length=20, choices=[(x, x.title()) for x in ('starter', 'business', 'pro')])
+    shell = models.CharField(max_length=10, default='nologin', choices=[
+        ('nologin', 'SFTP only'), ('jailbash', 'Jailed SSH and SFTP')],
+        help_text='Record the actual Hestia shell. This field does not change server access.')
+    is_active = models.BooleanField(default=True)
+    verified_at = models.DateTimeField(help_text='When ownership, domain and shell were checked in Hestia.')
+
+    def __str__(self):
+        return f'{self.domain} ({self.username})'
 
 
 class CustomerEmail(models.Model):

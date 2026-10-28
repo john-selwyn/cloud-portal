@@ -1,4 +1,22 @@
 from django.contrib import admin
+from .models import HostingAccount
+
+
+@admin.register(HostingAccount)
+class HostingAccountAdmin(admin.ModelAdmin):
+    list_display = ('domain', 'username', 'customer', 'package', 'shell', 'is_active', 'verified_at')
+    list_filter = ('package', 'shell', 'is_active')
+    search_fields = ('domain', 'username', 'customer__user__username')
+
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    has_add_permission = has_view_permission
+    has_change_permission = has_view_permission
+    has_delete_permission = has_view_permission
 
 from .models import (
     VPSPlan,

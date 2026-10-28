@@ -18,6 +18,13 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Public customer endpoint, separate from the private Hestia API endpoint.
+HOSTING_ACCESS_HOST = os.getenv('HOSTING_ACCESS_HOST', 'proxmo-2.dyndns.org')
+HOSTING_ACCESS_PORT = int(os.getenv('HOSTING_ACCESS_PORT', '2222'))
+HOSTING_ACCESS_FINGERPRINT = os.getenv(
+    'HOSTING_ACCESS_FINGERPRINT',
+    'SHA256:Rq1n3VqFXEybay61onqtGlH1SC6bKQ5NyQ1Ub4xwOIc')
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/

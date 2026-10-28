@@ -1,0 +1,31 @@
+{% extends 'portal/base.html' %}{% load static %}
+{% block title %}My hosting{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'portal/hosting-connections.css' %}">
+<section class="hosting-access-heading"><p class="eyebrow">YOUR WEBSITES</p><h1>My hosting</h1>
+<p>Connect to your website files using SFTP, or open a terminal when SSH is enabled for your account.</p></section>
+{% for connection in connections %}
+<section class="card hosting-access" aria-labelledby="hosting-{{ connection.account.pk }}">
+  <h2 id="hosting-{{ connection.account.pk }}">{{ connection.account.domain }}</h2>
+  <p>{{ connection.account.get_package_display }} · {% if connection.ssh_enabled %}Jailed SSH + SFTP{% else %}SFTP only{% endif %}</p>
+  <dl class="hosting-access-values">
+    <div><dt>Host</dt><dd><code>{{ connection.host }}</code><button type="button" data-copy-text="{{ connection.host }}" aria-label="Copy host">Copy</button></dd></div>
+    <div><dt>Port</dt><dd><code>{{ connection.port }}</code><button type="button" data-copy-text="{{ connection.port }}" aria-label="Copy port">Copy</button></dd></div>
+    <div><dt>Hosting username</dt><dd><code>{{ connection.username }}</code><button type="button" data-copy-text="{{ connection.username }}" aria-label="Copy hosting username">Copy</button></dd></div>
+    <div><dt>Website folder</dt><dd><code>{{ connection.website_root }}</code><button type="button" data-copy-text="{{ connection.website_root }}" aria-label="Copy website folder">Copy</button></dd></div>
+  </dl>
+  <p>Use your hosting-account password or an SSH key already added in Hestia. Your Cloud Portal password may be different. Passwords are not displayed here.</p>
+  <details><summary>FileZilla / WinSCP setup</summary><p>Select <strong>SFTP</strong>, enter the host, port and hosting username above, then use your hosting password or configured private key. Open the website folder after connecting.</p></details>
+  <details><summary>Terminal commands</summary>
+    <p>SFTP: <code>{{ connection.sftp_command }}</code><button type="button" data-copy-text="{{ connection.sftp_command }}">Copy SFTP command</button></p>
+    {% if connection.ssh_enabled %}<p>SSH: <code>{{ connection.ssh_command }}</code><button type="button" data-copy-text="{{ connection.ssh_command }}">Copy SSH command</button></p>
+    {% else %}<p>Interactive SSH is disabled for this account. SFTP file access is available.</p>{% endif %}
+  </details>
+  <details><summary>Verify the first connection</summary><p>Before accepting a new server key, compare its ED25519 fingerprint with:</p><p><code>{{ connection.fingerprint }}</code><button type="button" data-copy-text="{{ connection.fingerprint }}">Copy fingerprint</button></p><p>If it differs, stop and contact support.</p></details>
+  <p><a href="{% url 'hosting_welcome' connection.account.pk %}">Download connection instructions</a></p>
+  <p class="muted">Account details last verified: {{ connection.account.verified_at|date:'j M Y' }}. Contact support if your package or account access changes.</p>
+</section>
+{% empty %}<section class="card"><h2>No hosting accounts linked yet</h2><p>If your hosting is already active, contact support to link your verified hosting account. Your portal username is not automatically your hosting username.</p></section>{% endfor %}
+<p id="hosting-copy-status" role="status" aria-live="polite"></p>
+<script src="{% static 'portal/hosting-connections.js' %}" defer></script>
+{% endblock %}

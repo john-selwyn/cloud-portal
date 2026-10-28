@@ -1,0 +1,22 @@
+{% autoescape off %}Your hosting connection details — {{ account.domain }}
+
+Protocol: SFTP
+Host: {{ host }}
+Port: {{ port }}
+Hosting username: {{ username }}
+Website folder: {{ website_root }}
+Access: {% if ssh_enabled %}Jailed SSH and SFTP{% else %}SFTP only{% endif %}
+
+SFTP command: {{ sftp_command }}
+{% if ssh_enabled %}SSH command: {{ ssh_command }}
+{% endif %}
+Use your hosting-account password or a private key whose public key is already added in Hestia. Your Cloud Portal password may be different. No password is included in these instructions.
+
+FileZilla / WinSCP: choose SFTP, enter the host, port and hosting username above, and authenticate with your hosting password or configured key.
+
+Before accepting a new server key, verify this ED25519 fingerprint:
+{{ fingerprint }}
+If it differs, stop and contact support.
+
+Keep these account-specific instructions private. Never upload private keys or backup archives into your public website folder.
+{% endautoescape %}

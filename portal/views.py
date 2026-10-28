@@ -8,6 +8,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django.views.decorators.cache import never_cache
@@ -44,6 +45,30 @@ def home(request):
 @require_GET
 def web_hosting(request):
     return render(request, 'portal/web_hosting.html', {'packages': list_packages()})
+
+
+@customer_required
+@require_GET
+@never_cache
+def my_hosting(request):
+    from .hosting_connections import connection_details
+    accounts = customer_for(request.user).hosting_accounts.filter(is_active=True).order_by('domain')
+    return render(request, 'portal/my_hosting.html', {
+        'connections': [connection_details(account) for account in accounts]})
+
+
+@customer_required
+@require_GET
+@never_cache
+def hosting_welcome(request, account_id):
+    from .hosting_connections import connection_details
+    from django.template.loader import render_to_string
+    account = get_object_or_404(customer_for(request.user).hosting_accounts,
+                                pk=account_id, is_active=True)
+    response = HttpResponse(render_to_string('portal/hosting_welcome.txt', connection_details(account)),
+                            content_type='text/plain; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="hosting-connection-details.txt"'
+    return response
 
 
 @require_http_methods(['GET', 'POST'])
