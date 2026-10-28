@@ -36,6 +36,7 @@
 {% if user.is_authenticated and not user.is_staff and not user.is_superuser %}
 <a class="{% if current == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"{% if current == 'dashboard' %} aria-current="page"{% endif %}><svg class="nav-icon" aria-hidden="true" focusable="false"><use href="#i-home"/></svg>Dashboard</a>
 <a class="{% if current == 'my_vps' or current == 'vps_detail' %}active{% endif %}" href="{% url 'my_vps' %}"{% if current == 'my_vps' or current == 'vps_detail' %} aria-current="page"{% endif %}><svg class="nav-icon" aria-hidden="true" focusable="false"><use href="#i-server"/></svg>My VPS</a>
+<a class="{% if current == 'my_hosting' %}active{% endif %}" href="{% url 'my_hosting' %}">My hosting</a>
 <a class="{% if current == 'orders' or current == 'order_detail' %}active{% endif %}" href="{% url 'orders' %}"{% if current == 'orders' or current == 'order_detail' %} aria-current="page"{% endif %}><svg class="nav-icon" aria-hidden="true" focusable="false"><use href="#i-file"/></svg>Orders</a>
 <a class="{% if current == 'invoices' or current == 'invoice' %}active{% endif %}" href="{% url 'invoices' %}"{% if current == 'invoices' or current == 'invoice' %} aria-current="page"{% endif %}><svg class="nav-icon" aria-hidden="true" focusable="false"><use href="#i-receipt"/></svg>Invoices</a>
 <a class="{% if current == 'account' %}active{% endif %}" href="{% url 'account' %}"{% if current == 'account' %} aria-current="page"{% endif %}><svg class="nav-icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg>Account</a>
